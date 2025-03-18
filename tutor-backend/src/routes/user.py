@@ -36,3 +36,20 @@ def get_users():
     for row in rows:
         users.append({"id": row[0], "name": row[1], "email": row[2], "password": row[3]})
     return users
+
+@router.get("/users/")
+def delete_user(id: int):
+    conn = get_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="No hay conexión a la BD")
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM users WHERE id = %s", (id,))
+        conn.commit()
+        cursor.close()
+        return {"message": "Usuario eliminado"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
