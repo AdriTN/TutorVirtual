@@ -7,9 +7,12 @@ def create_users_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
-            username VARCHAR(100) NOT NULL,
-            email VARCHAR(100) NOT NULL,
-            password VARCHAR(200) NOT NULL
+            username VARCHAR(120) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(100) NOT NULL,
+            
+            CONSTRAINT chk_name_min_length CHECK (LENGTH(username) >= 3),
+            CONSTRAINT chk_password_complexity CHECK (password ~* '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$')
         );
     """)
     
