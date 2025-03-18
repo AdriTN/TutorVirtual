@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from ..database.database import get_connection
-from src.auth import hash_password
+from src.auth.auth import hash_password
 
 router = APIRouter()
 
@@ -14,7 +14,7 @@ def create_user(name: str, email: str, password: str):
         
         cursor = conn.cursor()
         cursor.execute("""
-                       INSERT INTO users (name, email, password) 
+                       INSERT INTO users (username, email, password) 
                        VALUES (%s, %s, %s) 
                        RETURNING id
                        """, (name, email, hased_password))
@@ -35,7 +35,7 @@ def get_users():
     if not conn:
         raise HTTPException(status_code=500, detail="No hay conexión a la BD")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, password FROM users")
+    cursor.execute("SELECT id, username, email, password FROM users")
     rows = cursor.fetchall()
     cursor.close()
     conn.close()

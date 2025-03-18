@@ -12,7 +12,7 @@ def login(email: str, password: str):
     
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name, email, password FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT id, username, email, password FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
         if not user:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
