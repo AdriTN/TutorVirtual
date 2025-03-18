@@ -1,5 +1,6 @@
-# Ignoramos la carpeta _pycache_ y los archivos .pyc
+# Ignoramos la carpetas generadas automáticamente
 __pycache__/
+.pytest_cache/
 
 # Ignoramos fichero críticos como .env
 .env
