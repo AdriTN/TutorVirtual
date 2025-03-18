@@ -1,2 +1,5 @@
 # Ignoramos la carpeta _pycache_ y los archivos .pyc
 __pycache__/
+
+# Ignoramos fichero críticos como .env
+.env
