@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from src.models.user import create_users_table
+from src.models.user import router as user_router
 
 app = FastAPI()
 
@@ -11,6 +11,4 @@ app.version = "0.0.1"
 def home():
     return {"Hello": "World"}
 
-@app.lifespan("startup")
-def on_startup():
-    create_users_table()
+app.include_router(user_router, prefix="/api", tags=["Users"])
