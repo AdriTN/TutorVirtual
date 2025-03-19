@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from ..database.database import get_connection
-from src.auth.auth import hash_password
+from ..auth.auth import hash_password
+from ..auth.auth_dependencies import jwt_required
 
 router = APIRouter()
 
@@ -30,7 +31,7 @@ def create_user(name: str, email: str, password: str):
         conn.close()
 
 @router.get("/users/")
-def get_users():
+def get_users(playload: dict = Depends(jwt_required)):
     conn = get_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="No hay conexión a la BD")
