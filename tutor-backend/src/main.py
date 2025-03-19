@@ -1,10 +1,21 @@
 from fastapi import FastAPI
 
-from src.routes.user import router as user_router
-from src.routes.login import router as login_router
-from src.routes.register import router as register_router
+from .routes.user import router as user_router
+from .routes.login import router as login_router
+from .routes.register import router as register_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Tutor Virtual",
+    version="0.0.1",
+    openapi_components={
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+)
 
 app.title = "Tutor Virtual"
 app.version = "0.0.1"
