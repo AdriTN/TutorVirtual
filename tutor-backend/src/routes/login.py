@@ -18,12 +18,12 @@ def login(email: str, password: str):
         if not user:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
-        user_id, username, email, hashed_password = user
+        user_id, username, user_email, hashed_password, user_is_admin = user
         if not verify_password(password, hashed_password):
             raise HTTPException(status_code=400, detail="Contraseña incorrecta")
         
-        token = create_jwt_token({"user_id": user_id})
-        return {"message": "Login exitoso", "user_id": user_id, "username": username,"token": token}
+        token = create_jwt_token({"user_id": user_id, "is_admin": user_is_admin})
+        return {"message": "Login exitoso", "user_id": user_id, "username": username, "user_email": user_email, "token": token}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     finally:
