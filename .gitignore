@@ -1,6 +1,56 @@
-# Ignoramos la carpetas generadas automáticamente
+######################################
+# Logs y archivos de registro
+######################################
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+######################################
+# Node / Frontend
+######################################
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Si en tu estructura el frontend está en "frontend/" añade:
+# frontend/node_modules/
+# frontend/dist/
+# frontend/dist-ssr/
+
+######################################
+# Python / Backend
+######################################
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.mypy_cache
 .pytest_cache/
 
-# Ignoramos fichero críticos como .env
+# Entornos virtuales
+env/
+venv/
+.venv/
+
+# Fichero .env con credenciales
 .env
+
+######################################
+# Editores y archivos de sistema
+######################################
+.vscode/
+!.vscode/extensions.json  # si quieres versionar esta
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
