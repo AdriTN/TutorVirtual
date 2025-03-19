@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: tutor_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tutorvirtual
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./tutor-backend   # El Dockerfile está dentro de "tutor-backend"
+      dockerfile: Dockerfile
+    container_name: tutor_backend
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      # Ajusta user/password/host si deseas
+      DATABASE_URL: "postgresql://postgres:Talaveranaranjo7@db:5432/tutorvirtual"
+      SECRET_KEY: "secret"
+    volumes:
+      - ./tutor-backend:/app  # Monta el código local en /app (útil en desarrollo)
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+volumes:
+  db_data:
