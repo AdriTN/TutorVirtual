@@ -18,12 +18,9 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 def create_jwt_token(data: dict, expires_in_hours=1) -> str:
-    expire = datetime.datetime.utcnow() + datetime.timedelta(hours=expires_in_hours)
-    payload = {
-        **data,
-        "exp": expire
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=expires_in_hours)
+    data.update({"exp": expire})
+    token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
     
     return token
 
