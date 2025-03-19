@@ -15,3 +15,15 @@ def jwt_required(
             detail="Token inválido"
         )
     return user
+
+def admin_required(
+    user: dict = Depends(jwt_required)
+):
+    # Mostramos los permisos del usuario como log
+    print(user.get("is_admin"))
+    if not user.get("is_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para realizar esta acción"
+        )
+    return user
