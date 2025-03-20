@@ -1,0 +1,52 @@
+.howContainer {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  
+  .howTitle {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #005661;
+  }
+  
+  .howSteps {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  
+  .howStep {
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    margin-bottom: 1rem;
+  }
+  
+  .howStep:hover {
+    transform: translateY(-3px);
+  }
+  
+  .howIcon {
+    width: 50px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stepTitle {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .stepText {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.4;
+  }
+  

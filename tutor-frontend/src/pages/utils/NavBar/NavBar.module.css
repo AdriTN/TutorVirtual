@@ -1,0 +1,50 @@
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+    position: relative;
+    z-index: 999;
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #005661;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  
+  .brandLogo {
+    width: 40px;
+    height: 40px;
+    margin-right: 0.5rem;
+    object-fit: contain;
+  }
+  
+  .navLinks {
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  .navLink {
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s;
+  }
+  .navLink:hover {
+    color: #005661;
+  }
+  
+  /* Responsivo: en pantallas pequeñas, podrías cambiar a un menú colapsado */
+  @media (max-width: 768px) {
+    .navLinks {
+      gap: 1rem;
+      font-size: 0.95rem;
+    }
+  }
+  
