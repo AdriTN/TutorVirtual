@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .routes.user import router as user_router
 from .routes.login import router as login_router
@@ -17,8 +18,17 @@ app = FastAPI(
     }
 )
 
-app.title = "Tutor Virtual"
-app.version = "0.0.1"
+origins = [
+    "http://localhost:5173",  # donde corre tu front
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Para permitir OPTIONS, GET, POST, etc.
+    allow_headers=["*"],
+)
 
 @app.get("/", tags=["home"])
 def home():
