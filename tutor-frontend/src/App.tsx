@@ -1,5 +1,3 @@
-// src/App.tsx
-import React from "react";
 import { BrowserRouter, Link, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import RegisterPage from "./pages/RegisterPage";
