@@ -1,4 +1,3 @@
-// src/pages/RegisterPage.tsx
 import React, { useState } from "react";
 import axios from "axios";
 import {
@@ -33,6 +32,8 @@ const RegisterPage: React.FC = () => {
         password,
       });
       setMessage("Usuario registrado correctamente");
+      
+      console.log(resp.data);
     } catch (err: any) {
       // Capturamos un posible error (422, 400, etc.)
       setError(err?.response?.data?.detail || "Error desconocido al registrar");
