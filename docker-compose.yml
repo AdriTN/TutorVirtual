@@ -31,6 +31,21 @@ services:
     volumes:
       - ./tutor-backend:/app  # Monta el código local en /app (útil en desarrollo)
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+  
+  frontend:
+    build:
+      context: ./tutor-frontend
+      dockerfile: Dockerfile
+    container_name: tutor_frontend
+    # El front servirá en el puerto 4173 (tras 'serve -s dist')
+    ports:
+      - "5173:4173"
+    depends_on:
+      - backend
+    environment:
+      # variable usada en "vite.config.ts" o `.env` del front
+      # la clave es 'VITE_API_URL' si se usa Vite
+      VITE_API_URL: "http://localhost:8000"
 
 volumes:
   db_data:
