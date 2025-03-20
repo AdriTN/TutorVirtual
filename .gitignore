@@ -54,3 +54,6 @@ venv/
 *.sln
 *.sw?
 
+# Otros
+.hintrc
+
