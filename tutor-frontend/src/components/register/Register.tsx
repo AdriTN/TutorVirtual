@@ -15,6 +15,12 @@ const Register: React.FC<RegisterFormProps> = () => {
   // Manejo de envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
+    
     try {
       // Ajusta la URL del endpoint para tu backend real:
       const response = await api.post("/api/register", {
