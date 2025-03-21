@@ -1,66 +1,153 @@
-.formContainer {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 2rem;
-    background-color: #fff;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
-  
-  .formTitle {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-    color: #005661;
-  }
-  
-  .formGroup {
-    margin-bottom: 1rem;
-  }
-  
-  .label {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid #ddd;
-    border-radius: 0.4rem;
-    font-size: 0.95rem;
-    font-family: inherit;
-  }
-  
-  .submitButton {
-    width: 100%;
-    padding: 0.7rem;
-    background-color: #005661;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 0.4rem;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: background-color 0.2s;
-  }
-  .submitButton:hover {
-    background-color: #00454f;
-  }
-  
-  .message {
-    text-align: center;
-    margin-top: 1rem;
-    font-size: 0.95rem;
-  }
-  
-  .successMessage {
-    color: green;
-  }
-  
-  .errorMessage {
-    color: red;
-  }
-  
+:global(*) {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Adaptamos .form-register a .formRegister */
+.formRegister {
+  width: 450px;
+  background: #24303c;
+  padding: 30px;
+  margin: auto;
+  margin-top: 100px;
+  border-radius: 4px;
+  font-family: 'calibri';
+  color: white;
+  box-shadow: 7px 13px 37px #000;
+}
+
+.formRegister h4 {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+/* .controls */
+.controls {
+  width: 100%;
+  background: #24303c;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #1f53c5;
+  font-family: 'calibri';
+  font-size: 18px;
+  color: white;
+}
+
+/* .botons */
+.botons {
+  width: 100%;
+  background: #1f53c5;
+  border: none;
+  padding: 12px;
+  color: white;
+  margin: 16px 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Wrapper para alinear checkbox + texto */
+.agreementWrapper {
+  margin-bottom: 16px;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* separa checkbox y texto */
+  cursor: pointer;
+  position: relative;
+  font-size: 20px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.haveAccount {
+  margin-top: 0.5rem;       /* Espacio con respecto a otros elementos */
+  text-align: center;        /* Lo alinea a la derecha */
+  font-size: 0.95rem;       /* Tamaño de fuente un poco más pequeño */
+  font-weight: 500;         /* Peso de la fuente */
+  color: #ccc;              /* Un tono gris claro, por ejemplo */
+}
+
+.haveAccount a {
+  color: #fff;              /* Color de texto para el enlace */
+  text-decoration: none;
+}
+
+.haveAccount a:hover {
+  text-decoration: underline; 
+}
+
+/* ocultamos el checkbox por defecto */
+.checkboxContainer input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* .checkmark para el círculo */
+.checkmark {
+  position: relative;
+  height: 1.3em;
+  width: 1.3em;
+  background-color: #ccc;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+/* Hover effect */
+.checkmark:hover {
+  box-shadow: inset 17px 17px 16px #b3b3b3,
+              inset -17px -17px 16px #ffffff;
+}
+
+/* Estado checked */
+.checkboxContainer input:checked ~ .checkmark {
+  box-shadow: none;
+  background-color: limegreen;
+  transform: rotateX(360deg);
+}
+.checkboxContainer input:checked ~ .checkmark:hover {
+  box-shadow: 3px 3px 3px rgba(0,0,0,0.2);
+}
+
+/* Indicador de check*/
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Muestra la palomita */
+.checkboxContainer input:checked ~ .checkmark:after {
+  display: block;
+  transform: translate(-150%, -80%) rotate(45deg);
+}
+
+.checkmark:after {
+  left: 0.96em;
+  top: 0.7em;
+  width: 0.25em;
+  height: 0.5em;
+  border: solid white;
+  border-width: 0 0.15em 0.15em 0;
+  box-shadow: 0.1em 0.1em 0em 0 rgba(0,0,0,0.3);
+  transform: rotate(45deg);
+}
+
+/* Texto al lado del check */
+.checkboxLabel {
+  font-size: 18px;
+  line-height: 2.3em; /* para alinearlo verticalmente con el círculo */
+}
+.checkboxLabel a {
+  color: white;
+  text-decoration: none;
+}
+.checkboxLabel a:hover {
+  text-decoration: underline;
+}
