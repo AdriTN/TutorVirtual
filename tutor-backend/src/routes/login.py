@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from ..database.database import get_connection
-from ..auth.auth import hash_password, verify_password, create_jwt_token
+from ..auth.auth import verify_password, create_jwt_token
 
 
 router = APIRouter()
