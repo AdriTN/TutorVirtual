@@ -10,6 +10,7 @@ const Register: React.FC<RegisterFormProps> = () => {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Manejo de envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +61,16 @@ const Register: React.FC<RegisterFormProps> = () => {
           placeholder="Ingrese su Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <input
+          className={styles.controls}
+          type="password"
+          placeholder="Repita su Contraseña"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+          style={{ width: "100%", padding: "0.5rem" }}
         />
 
         {/* CHECKBOX + TEXTO EN UNA SOLA LÍNEA */}
