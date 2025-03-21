@@ -12,6 +12,9 @@ const Register: React.FC<RegisterFormProps> = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Estado del checkbox de términos y condiciones
+  const [agreed, setAgreed] = useState(false);
+
   // Manejo de envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,17 +23,22 @@ const Register: React.FC<RegisterFormProps> = () => {
       alert("Las contraseñas no coinciden");
       return;
     }
-    
+
+    // Verificar que se acepten términos y condiciones
+    if (!agreed) {
+      alert("Debe aceptar los Términos y condiciones para registrarse.");
+      return;
+    }
+
     try {
-      // Ajusta la URL del endpoint para tu backend real:
       const response = await api.post("/api/register", {
-        nombre,
-        correo,
-        password,
+        username: nombre,
+        email: correo,
+        password: password,
+        confirmPassword: confirmPassword,
       });
       console.log("Usuario creado:", response.data);
       alert("Registrado con éxito");
-      // Podrías resetear estados o redirigir tras registrar
     } catch (error) {
       console.error("Error en registro:", error);
       alert("Error en el registro");
@@ -46,8 +54,9 @@ const Register: React.FC<RegisterFormProps> = () => {
           className={styles.controls}
           type="text"
           name="nombre"
-          placeholder="Ingrese su Nombre"
+          placeholder="Ingrese su Nombre*"
           value={nombre}
+          required
           onChange={(e) => setNombre(e.target.value)}
         />
 
@@ -55,8 +64,9 @@ const Register: React.FC<RegisterFormProps> = () => {
           className={styles.controls}
           type="email"
           name="correo"
-          placeholder="Ingrese su Correo"
+          placeholder="Ingrese su Correo*"
           value={correo}
+          required
           onChange={(e) => setCorreo(e.target.value)}
         />
 
@@ -64,25 +74,25 @@ const Register: React.FC<RegisterFormProps> = () => {
           className={styles.controls}
           type="password"
           name="password"
-          placeholder="Ingrese su Contraseña"
+          placeholder="Ingrese su Contraseña*"
           value={password}
+          required
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <input
           className={styles.controls}
           type="password"
-          placeholder="Repita su Contraseña"
+          placeholder="Repita su Contraseña*"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           style={{ width: "100%", padding: "0.5rem" }}
         />
 
-        {/* CHECKBOX + TEXTO EN UNA SOLA LÍNEA */}
         <div className={styles.agreementWrapper}>
           <label className={styles.checkboxContainer}>
-            <input type="checkbox" defaultChecked={false} />
+            <input type="checkbox" defaultChecked={false} onChange={(e) => setAgreed(e.target.checked)}/>
             <div className={styles.checkmark} />
             <span className={styles.checkboxLabel}>
               Estoy de acuerdo con <a href="#">Terminos y Condiciones</a>
