@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from ..database.database import get_connection
-from ..auth.auth import hash_password, verify_password, create_jwt_token
+from ..auth.auth import hash_password
 
 router = APIRouter()
 
@@ -9,22 +9,36 @@ class RegisterUser(BaseModel):
     username: str
     email: str
     password: str
+    confirmPassword: str
 
-@router.post("/register/", status_code=201)
+@router.post("/register", status_code=201)
 def register(body: RegisterUser):
-    hashed_password = hash_password(body.password)
-    conn = get_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="No hay conexión a la BD")
+    # Verificamos si las contraseñas coinciden
+    if body.password != body.confirmPassword:
+        raise HTTPException(status_code=400, detail="Las contraseñas no coinciden")
     
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO users (username, email, password, is_admin) VALUES (%s, %s, %s, %s) RETURNING id", (body.username, body.email, hashed_password, False))
-            user_id = cursor.fetchone()[0]
-            conn.commit()
-        return {"id": user_id, "name": body.username, "email": body.email}
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        conn.close()
+    # Verificamos si el usuario ya existe con username
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = %s", (body.username,))
+    user = cursor.fetchone()
+    
+    if user:
+        raise HTTPException(status_code=400, detail="El usuario ya existe")
+    
+    # Comprobamos si el email ya está en uso
+    cursor.execute("SELECT * FROM users WHERE email = %s", (body.email,))
+    user = cursor.fetchone()
+    
+    if user:
+        raise HTTPException(status_code=400, detail="El email ya está en uso")
+    
+    # Encriptamos la contraseña
+    hashed_password = hash_password(body.password)
+    
+    # Creamos el usuario
+    cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (body.username, body.email, hashed_password))
+    connection.commit()
+    
+    return {"message": "Usuario creado con éxito"}
+    
