@@ -3,10 +3,10 @@ import { api } from "../../services/apis/api";
 import styles from "./Register.module.css";
 
 interface RegisterFormProps {
-  endpointUrl: string; // se lo pasamos si deseas, por ejemplo
+  endpointUrl: string;
 }
 
-const Register: React.FC<RegisterFormProps> = () => {
+const Register: React.FC<RegisterFormProps> = ({ endpointUrl }) => {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +31,7 @@ const Register: React.FC<RegisterFormProps> = () => {
     }
 
     try {
-      const response = await api.post("/api/register", {
+      const response = await api.post(endpointUrl, {
         username: nombre,
         email: correo,
         password: password,
