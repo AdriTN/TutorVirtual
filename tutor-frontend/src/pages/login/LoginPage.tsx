@@ -6,7 +6,7 @@ import MyGoogleButton from "../../components/google/MyGoogleButton";
 const LoginPage: React.FC = () => {
   const baseURL = import.meta.env.VITE_BACKEND_URL;
   const loginEndpoint = `${baseURL}/api/login`;
-  const googleLoginEndpoint = `${baseURL}/api/login/google`;
+  const googleLoginEndpoint = `${baseURL}/api/google`;
 
   return (
     <div className={styles.pageContainer}>
