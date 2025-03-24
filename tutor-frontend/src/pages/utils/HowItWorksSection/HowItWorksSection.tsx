@@ -8,7 +8,7 @@ const HowItWorksSection: React.FC = () => {
       <div className={styles.howSteps}>
         <div className={styles.howStep}>
           <img
-            src="/assets/step1.svg"
+            src="../../public/step1.png"
             alt="Paso 1"
             className={styles.howIcon}
           />
@@ -19,7 +19,7 @@ const HowItWorksSection: React.FC = () => {
         </div>
         <div className={styles.howStep}>
           <img
-            src="/assets/step2.svg"
+            src="../../public/step2.png"
             alt="Paso 2"
             className={styles.howIcon}
           />
@@ -30,7 +30,7 @@ const HowItWorksSection: React.FC = () => {
         </div>
         <div className={styles.howStep}>
           <img
-            src="/assets/step3.svg"
+            src="../../public/step3.png"
             alt="Paso 3"
             className={styles.howIcon}
           />
