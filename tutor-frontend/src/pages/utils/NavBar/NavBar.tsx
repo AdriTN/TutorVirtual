@@ -20,7 +20,7 @@ const NavBar: React.FC<NavBarProps> = ({
   return (
     <nav className={styles.navbar}>
       <a href="/" className={styles.brand}>
-        {logoUrl && <img src={logoUrl} alt="Logo" className={styles.brandLogo} />}
+        {<img src={logoUrl} className={styles.brandLogo} />}
         {brandName}
       </a>
 
