@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { api } from "../../services/apis/api";
 import styles from "./Login.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 interface LoginFormProps {
   endpointUrl: string;
@@ -10,20 +11,24 @@ interface LoginFormProps {
 const Login: React.FC<LoginFormProps> = ({ endpointUrl }) => {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await api.post(endpointUrl, {
+      await api.post(endpointUrl, {
         email: correo,
-        password: password
+        password: password,
       });
-      console.log("Usuario logueado:", response.data);
-      alert("¡Login exitoso!");
+
+      // Si llega aquí, es que la autenticación fue exitosa
+      login(); // actualiza el estado global de login
+      navigate("/dashboard"); // redirige al dashboard
     } catch (error) {
       console.error("Error en login:", error);
-      alert("Error al iniciar sesión");
+      alert("Error al iniciar sesión. Verifica tus credenciales.");
     }
   };
 
