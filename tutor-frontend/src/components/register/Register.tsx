@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { api } from "../../services/apis/api";
 import styles from "./Register.module.css";
+import { Link } from "react-router-dom";
 
 interface RegisterFormProps {
   endpointUrl: string;
@@ -108,7 +109,7 @@ const Register: React.FC<RegisterFormProps> = ({ endpointUrl }) => {
       </form>
 
       <div className={styles.haveAccount}>
-        <a href="#">Ya tengo cuenta</a>
+        <Link to="/login">Ya tengo cuenta</Link>
       </div>
 
     </section>
