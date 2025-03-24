@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routes.user import router as user_router
-from .routes.login import router as login_router
+from .routes.authentication import router as login_router
 from .routes.register import router as register_router
 from .routes.google import router as google_router
 

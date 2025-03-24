@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..database.database import get_connection
-from ..auth.auth import hash_password
+from ..auth.security import hash_password
 from ..auth.auth_dependencies import admin_required, jwt_required
 
 router = APIRouter()
