@@ -17,7 +17,7 @@ const HomePage: React.FC = () => {
   return (
     <>
       <NavBar
-        logoUrl="/assets/logo.png"
+        logoUrl="../../public/logo.png"
         brandName="Tutor Virtual"
         links={[
           { label: "Inicio", path: "/" },
@@ -31,7 +31,7 @@ const HomePage: React.FC = () => {
         title="Tutor Virtual"
         subtitle="El portal de aprendizaje adaptativo, impulsado por IA."
         buttonLabel="¡Comienza Ahora!"
-        imageUrl="/assets/tutor-hero.png"
+        imageUrl="../../public/tutor-hero.png"
         onButtonClick={handleHeroButtonClick}
       />
       <HowItWorksSection />
