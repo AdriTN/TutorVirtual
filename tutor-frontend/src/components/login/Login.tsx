@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { api } from "../../services/apis/api";
 import styles from "./Login.module.css";
+import { Link } from "react-router-dom";
 
 interface LoginFormProps {
   endpointUrl: string;
@@ -57,7 +58,7 @@ const Login: React.FC<LoginFormProps> = ({ endpointUrl }) => {
       </form>
 
       <div className={styles.haveAccount}>
-        <a href="#">¿No tienes cuenta? Regístrate</a>
+        <Link to="/register">¿No tienes cuenta? Regístrate</Link>
       </div>
     </section>
   );
