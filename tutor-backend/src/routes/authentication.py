@@ -1,9 +1,11 @@
 import datetime
-from auth.security import create_refresh_token
-from fastapi import APIRouter, HTTPException
+from dependencies.security import create_refresh_token
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from ..database.database import get_connection
-from ..auth.security import verify_password, create_jwt_token
+from ..dependencies.database_dependencies import get_db
+from ..dependencies.security import verify_password, create_jwt_token
+from sqlalchemy.orm import Session
+from ..models.user import User, RefreshToken
 
 
 router = APIRouter()
@@ -13,40 +15,38 @@ class LoginRequest(BaseModel):
     password: str
 
 @router.post("/login")
-def login(data: LoginRequest):
+def login(data: LoginRequest, db: Session = Depends(get_db)):
     email = data.email
     password = data.password
     
-    conn = get_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="No hay conexión a la BD")
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Usuario no encontrado")
     
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, username, email, password, is_admin FROM users WHERE email = %s", (email,))
-        user = cursor.fetchone()
-        if not user:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        
-        user_id, username, user_email, hashed_password, user_is_admin = user
-        if not verify_password(password, hashed_password):
-            raise HTTPException(status_code=400, detail="Contraseña incorrecta")
-        
-        token = create_jwt_token({"user_id": user_id, "is_admin": user_is_admin})
-        refresh_token = create_refresh_token()
-        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
-        
-        cursor.execute(
-            "INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (%s, %s, %s)",
-            (user_id, refresh_token, expires_at)
-        )
-        conn.commit()
-        
-        return {"message": "Login exitoso", "user_id": user_id, "username": username, "user_email": user_email, "access_token": token, "refresh_token": refresh_token}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        conn.close()
+    if not verify_password(password, user.password):
+        raise HTTPException(status_code=400, detail="Contraseña incorrecta")
+    
+    access_token = create_jwt_token({"user_id": user.id, "is_admin": user.is_admin})
+    refresh_token = create_refresh_token()
+    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
+    
+    new_refresh_token = RefreshToken(
+        user_id=user.id,
+        token=refresh_token,
+        expires_at=expires_at
+    )
+    db.add(new_refresh_token)
+    db.commit()
+    db.refresh(new_refresh_token)
+    
+    return {
+        "message": "Login exitoso",
+        "user_id": user.id,
+        "username": user.username,
+        "user_email": user.email,
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    }
 
 class RefreshRequest(BaseModel):
     refresh_token: str
@@ -56,36 +56,34 @@ class TokenResponse(BaseModel):
     refresh_token: str
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh_token(refresh_data: RefreshRequest):
+def refresh_token(refresh_data: RefreshRequest, db: Session = Depends(get_db)):
     old_token = refresh_data.refresh_token
-    conn = get_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="No hay conexión a la BD")
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT rt.id, rt.user_id, rt.expires_at, u.is_admin FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token = %s", (old_token,))
-        token = cursor.fetchone()
-        if not token:
-            raise HTTPException(status_code=400, detail="Token no encontrado")
-        
-        token_id, user_id, expires_at, is_admin = token
-        if datetime.datetime.now(datetime.timezone.utc) > expires_at.replace(tzinfo=datetime.timezone.utc):
-            cursor.execute("DELETE FROM refresh_tokens WHERE id = %s", (token_id,))
-            conn.commit()
-            raise HTTPException(status_code=400, detail="Token expirado")
-        
-        new_token = create_refresh_token()
-        new_expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
-        cursor.execute(
-            "UPDATE refresh_tokens SET token = %s, expires_at = %s WHERE id = %s",
-            (new_token, new_expires_at, token_id)
-        )
-        conn.commit()
-        
-        new_access_token = create_jwt_token({"user_id": user_id, "is_admin": is_admin})
-        
-        return {"access_token": new_access_token, "refresh_token": new_token}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        conn.close()
+    refresh_db = db.query(RefreshToken).filter(RefreshToken.token == old_token).first()
+    
+    if not refresh_db:
+        raise HTTPException(status_code=400, detail="Token inválido")
+    
+    if refresh_db.expires_at < datetime.datetime.now(datetime.timezone.utc):
+        db.delete(refresh_db)
+        db.commit()
+        raise HTTPException(status_code=400, detail="Token expirado")
+    
+    new_refresh_token = create_refresh_token()
+    new_expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
+    
+    refresh_db.token = new_refresh_token
+    refresh_db.expires_at = new_expires_at
+    db.commit()
+    db.refresh(refresh_db)
+    
+    user = db.query(User).filter(User.id == refresh_db.user_id).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Usuario no encontrado")
+    
+    new_access_token = create_jwt_token({"user_id": user.id, "is_admin": user.is_admin})
+    
+    return {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token
+    }
