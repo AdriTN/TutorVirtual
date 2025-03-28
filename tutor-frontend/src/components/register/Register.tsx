@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { api } from "../../services/apis/api";
+import { api } from "../../services/apis/backend-api/api";
 import styles from "./Register.module.css";
 import { Link } from "react-router-dom";
 
