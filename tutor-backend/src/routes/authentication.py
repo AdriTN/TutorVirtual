@@ -34,7 +34,7 @@ def login(data: LoginRequest):
         
         token = create_jwt_token({"user_id": user_id, "is_admin": user_is_admin})
         refresh_token = create_refresh_token()
-        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
+        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
         
         cursor.execute(
             "INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (%s, %s, %s)",
@@ -42,7 +42,7 @@ def login(data: LoginRequest):
         )
         conn.commit()
         
-        return {"message": "Login exitoso", "user_id": user_id, "username": username, "user_email": user_email, "token": token}
+        return {"message": "Login exitoso", "user_id": user_id, "username": username, "user_email": user_email, "access_token": token, "refresh_token": refresh_token}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     finally:
@@ -63,26 +63,26 @@ def refresh_token(refresh_data: RefreshRequest):
         raise HTTPException(status_code=500, detail="No hay conexión a la BD")
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, user_id, expires_at FROM refresh_tokens WHERE token = %s", (old_token,))
+        cursor.execute("SELECT rt.id, rt.user_id, rt.expires_at, u.is_admin FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token = %s", (old_token,))
         token = cursor.fetchone()
         if not token:
-            raise HTTPException(status_code=404, detail="Token no encontrado")
+            raise HTTPException(status_code=400, detail="Token no encontrado")
         
-        token_id, user_id, expires_at = token
-        if datetime.now(datetime.timezone.utc) > expires_at:
+        token_id, user_id, expires_at, is_admin = token
+        if datetime.datetime.now(datetime.timezone.utc) > expires_at.replace(tzinfo=datetime.timezone.utc):
             cursor.execute("DELETE FROM refresh_tokens WHERE id = %s", (token_id,))
             conn.commit()
             raise HTTPException(status_code=400, detail="Token expirado")
         
         new_token = create_refresh_token()
-        new_expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        new_expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
         cursor.execute(
             "UPDATE refresh_tokens SET token = %s, expires_at = %s WHERE id = %s",
             (new_token, new_expires_at, token_id)
         )
         conn.commit()
         
-        new_access_token = create_jwt_token({"user_id": user_id})
+        new_access_token = create_jwt_token({"user_id": user_id, "is_admin": is_admin})
         
         return {"access_token": new_access_token, "refresh_token": new_token}
     except Exception as e:
