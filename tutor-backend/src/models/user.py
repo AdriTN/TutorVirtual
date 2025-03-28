@@ -1,44 +1,50 @@
-from ..database.database import get_connection
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, Integer, String, Boolean, CheckConstraint, ForeignKey, UniqueConstraint, DateTime, func
+from sqlalchemy.orm import relationship
 
-def create_users_table():
-    connection = get_connection()
-    cursor = connection.cursor()
+from ..database.database import Base
+
+class User(Base):
+    __tablename__ = "users"
     
-    # Crear tabla de usuarios locales
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            username VARCHAR(120) NOT NULL,
-            email VARCHAR(255) UNIQUE NOT NULL,
-            password VARCHAR(100) NOT NULL,
-            is_admin BOOLEAN NOT NULL DEFAULT false,
-            
-            CONSTRAINT chk_name_min_length CHECK (LENGTH(username) >= 3),
-            CONSTRAINT chk_password_complexity CHECK (password ~* '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$')
-        );
-    """)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(120), nullable=False)
+    email = Column(String(255), nullable=False, unique=True)
+    password = Column(String(100), nullable=False)
+    is_admin = Column(Boolean, nullable=False, server_default="false")
     
-    # Crear tabla de usuarios para almacenar info de cada proveedor
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users_providers (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFENCES users(id) ON DELETE CASCADE,
-            provider VARCHAR(50) NOT NULL,
-            provider_user_id VARCHAR(255) NOT NULL,
-            UNIQUE(provider_user_id, provider)
-        );
-    """)
+    __table_args__ = (
+        CheckConstraint("char_length(username) >= 3", name="chk_name_min_length"),
+        CheckConstraint("password ~* '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$'", 
+                        name="chk_password_complexity"),
+    )
     
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS refresh_tokens (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            token VARCHAR(255) NOT NULL UNIQUE,
-            expires_at TIMESTAMP NOT NULL,
-            created_at TIMESTAMP DEFAULT NOW()
-        );
-    """)
+    providers = relationship("UserProvider", back_populates="user", cascade="all, delete-orphan")
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+
+class UserProvider(Base):
+    __tablename__ = "users_providers"
     
-    connection.commit()
-    cursor.close()
-    connection.close()
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    provider = Column(String(50), nullable=False)
+    provider_user_id = Column(String(255), nullable=False)
+    
+    __table_args__ = (
+        UniqueConstraint("provider_user_id", "provider", name="uq_provider_user_id_provider"),
+    )
+    
+    user = relationship("User", back_populates="providers")
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    token = Column(String(255), nullable=False, unique=True)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    user = relationship("User", back_populates="refresh_tokens")
