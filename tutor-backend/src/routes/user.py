@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from ..database.database import get_connection
 from ..auth.security import hash_password
 from ..auth.auth_dependencies import admin_required, jwt_required
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -30,6 +31,7 @@ def create_user(name: str, email: str, password: str):
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         conn.close()
+        
 
 @router.get("/users/me")
 def get_my_data(playload: dict = Depends(jwt_required)):
@@ -49,7 +51,7 @@ def get_my_data(playload: dict = Depends(jwt_required)):
     return {"id": user[0], "name": user[1], "email": user[2]}
 
 @router.delete("/users/{id}")
-def delete_user(id: int):
+def delete_user(id: int, dict = Depends(jwt_required)):
     conn = get_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="No hay conexión a la BD")
