@@ -1,5 +1,5 @@
 import { useGoogleLogin } from "@react-oauth/google";
-import { api } from "../../services/apis/api";
+import { api } from "../../services/apis/backend-api/api";
 import styles from "./MyGoogleButton.module.css";
 
 interface MyGoogleButtonProps {
