@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { api } from "../../services/apis/api";
+import { api } from "../../services/apis/backend-api/api";
 import styles from "./Login.module.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -18,14 +18,15 @@ const Login: React.FC<LoginFormProps> = ({ endpointUrl }) => {
     e.preventDefault();
 
     try {
-      await api.post(endpointUrl, {
+      const response = await api.post(endpointUrl, {
         email: correo,
         password: password,
       });
 
-      // Si llega aquí, es que la autenticación fue exitosa
-      login(); // actualiza el estado global de login
-      navigate("/dashboard"); // redirige al dashboard
+      const { access_token, refresh_token } = response.data;
+
+      login(access_token, refresh_token);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error en login:", error);
       alert("Error al iniciar sesión. Verifica tus credenciales.");
