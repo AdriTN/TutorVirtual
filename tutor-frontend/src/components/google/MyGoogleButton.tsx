@@ -22,17 +22,13 @@ const MyGoogleButton: React.FC<MyGoogleButtonProps> = ({ endpointUrl }) => {
         return;
       }
       try {
-        // Llama a tu endpoint de Google login en el backend
         const response = await api.post(endpointUrl, { token });
         console.log("Respuesta del backend:", response.data);
 
-        // Extrae los tokens que te devuelve el backend
         const { access_token, refresh_token } = response.data;
 
-        // Usa la función login del contexto para guardar los tokens
         login(access_token, refresh_token);
 
-        // Redirige al dashboard
         navigate("/dashboard");
       } catch (error) {
         console.error("Error en login con Google:", error);
