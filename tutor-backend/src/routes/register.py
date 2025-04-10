@@ -18,7 +18,7 @@ def register(body: RegisterUser, db: Session = Depends(get_db)):
     if body.password != body.confirmPassword:
         raise HTTPException(status_code=400, detail="Las contraseñas no coinciden")
     
-    user = db.query(User).filter( User.username == body.username | User.email == body.email).first()
+    user = db.query(User).filter( (User.username == body.username) | (User.email == body.email) ).first()
     
     if user:
         raise HTTPException(status_code=400, detail="El usuario ya existe")
