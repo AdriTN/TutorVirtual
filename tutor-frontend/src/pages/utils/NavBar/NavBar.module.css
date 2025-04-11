@@ -1,50 +1,105 @@
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #ffffff;
-    border-bottom: 1px solid #ddd;
-    padding: 0.75rem 1rem;
-    position: relative;
-    z-index: 999;
-  }
-  
-  .brand {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: #005661;
-    font-size: 1.4rem;
-    font-weight: 700;
-  }
-  
-  .brandLogo {
-    width: 40px;
-    height: 40px;
-    margin-right: 0.5rem;
-    object-fit: contain;
-  }
-  
-  .navLinks {
-    display: flex;
-    gap: 1.5rem;
-  }
-  
-  .navLink {
-    color: #333;
-    text-decoration: none;
-    font-size: 1rem;
-    transition: color 0.2s;
-  }
-  .navLink:hover {
-    color: #005661;
-  }
-  
-  /* Responsivo: en pantallas pequeñas, podrías cambiar a un menú colapsado */
-  @media (max-width: 768px) {
-    .navLinks {
-      gap: 1rem;
-      font-size: 0.95rem;
-    }
-  }
-  
+.nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(16px);
+  padding: 1.5rem;
+  z-index: 999;
+}
+
+.brand {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #00ffde;
+  text-decoration: none;
+  margin-left: 54px;
+}
+
+.brand:hover {
+  color: #00ffde;
+}
+
+.navLinks {
+  list-style: none;
+  display: flex;
+  gap: 1.8rem;
+  margin-right: 54px;
+  padding: 0;
+}
+
+.navLinks li {
+  display: flex;
+  align-items: center;
+}
+
+.navbarItem {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.navbarItem:hover {
+  color: #ffffff;
+}
+
+.cta {
+  position: relative;
+  margin: auto;
+  padding: 12px 18px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.cta:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  border-radius: 50px;
+  background: #b1dae7;
+  width: 45px;
+  height: 45px;
+  transition: all 0.3s ease;
+}
+
+.cta span {
+  position: relative;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #be45e2;
+}
+
+.cta svg {
+  position: relative;
+  top: 0;
+  margin-left: 10px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: #8e30e1;
+  stroke-width: 2;
+  transform: translateX(-5px);
+  transition: all 0.3s ease;
+}
+
+.cta:hover:before {
+  width: 100%;
+  background: #b1dae7;
+}
+
+.cta:hover svg {
+  transform: translateX(0);
+}
+
+.cta:active {
+  transform: scale(0.95);
+}

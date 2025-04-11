@@ -1,40 +1,30 @@
 import React from "react";
-import { Link } from "react-router-dom"; // o un <a href> si no usas React Router
-import styles from "./NavBar.module.css";
+import styles from "./Navbar.module.css";
 
-interface NavBarProps {
-  logoUrl?: string; // opcional, si quieres un logo
-  brandName?: string; // nombre de tu marca
-  links?: Array<{ label: string; path: string }>;
-}
-
-const NavBar: React.FC<NavBarProps> = ({
-  logoUrl,
-  brandName = "Tutor Virtual",
-  links = [
-    { label: "Inicio", path: "/" },
-    { label: "Cómo Funciona", path: "/how" },
-    { label: "Ejercicios", path: "/exercises" },
-  ],
-}) => {
+const Navbar: React.FC = () => {
   return (
-    <nav className={styles.navbar}>
+    <nav className={styles.nav}>
       <a href="/" className={styles.brand}>
-        {<img src={logoUrl} className={styles.brandLogo} />}
-        {brandName}
+        Tutor Virtual
       </a>
-
-      <div className={styles.navLinks}>
-        {links.map((lnk) => (
-          // Si usas React Router, usa <Link to={lnk.path} />
-          // Si no, un simple <a href={lnk.path}>
-          <Link key={lnk.label} to={lnk.path} className={styles.navLink}>
-            {lnk.label}
-          </Link>
-        ))}
-      </div>
+      <ul className={styles.navLinks}>
+        <li>
+          <a href="/login" className={styles.navbarItem}>
+            Login
+          </a>
+        </li>
+        <li>
+          <button className={styles.cta}>
+            <span>Sign Up</span>
+            <svg width="15px" height="10px" viewBox="0 0 13 10" color="#be45e2">
+              <path d="M1,5 L11,5" />
+              <polyline points="8 1 12 5 8 9" />
+            </svg>
+          </button>
+        </li>
+      </ul>
     </nav>
   );
 };
 
-export default NavBar;
+export default Navbar;
