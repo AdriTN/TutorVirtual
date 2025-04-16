@@ -9,12 +9,24 @@
   z-index: 999;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  margin-left: 35px;
+}
+
+.logo img {
+  width: 35px;
+  height: 35px;
+  border-radius: 20px;
+}
+
 .brand {
   font-size: 1.6rem;
   font-weight: 700;
   color: #00ffde;
   text-decoration: none;
-  margin-left: 54px;
+  margin-left: 15px;
 }
 
 .brand:hover {
@@ -25,7 +37,7 @@
   list-style: none;
   display: flex;
   gap: 1.8rem;
-  margin-right: 54px;
+  margin-right: 35px;
   padding: 0;
 }
 
