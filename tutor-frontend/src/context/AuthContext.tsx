@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, use } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/apis/backend-api/api";
 
 interface AuthContextProps {
