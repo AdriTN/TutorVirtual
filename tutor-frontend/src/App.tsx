@@ -5,16 +5,35 @@ import Home from "./pages/home/Home";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./routes/PrivateRoute";
 import Dashboard from "./pages/dashboard/Dashborad";
+import GuestRoute from "./routes/GuestRoute";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-
+          <Route 
+            path="/" 
+            element={
+            <Home />
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+            } 
+          />
+          <Route 
+            path="/login" 
+            element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+            } 
+          />
           <Route
             path="/dashboard"
             element={
@@ -24,7 +43,6 @@ function App() {
             }
           />
 
-          {/* Redirige a home si la ruta no existe */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
