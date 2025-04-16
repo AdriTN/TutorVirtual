@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { api } from "../../services/apis/backend-api/api";
 import styles from "./Register.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface RegisterFormProps {
   endpointUrl: string;
@@ -12,6 +12,7 @@ const Register: React.FC<RegisterFormProps> = ({ endpointUrl }) => {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
   // Estado del checkbox de términos y condiciones
   const [agreed, setAgreed] = useState(false);
@@ -40,6 +41,8 @@ const Register: React.FC<RegisterFormProps> = ({ endpointUrl }) => {
       });
       console.log("Usuario creado:", response.data);
       alert("Registrado con éxito");
+
+      navigate("/login");
     } catch (error) {
       console.error("Error en registro:", error);
       alert("Error en el registro");
