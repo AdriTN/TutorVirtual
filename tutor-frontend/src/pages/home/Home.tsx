@@ -2,12 +2,8 @@ import React from "react";
 import NavBar from "../utils/NavBar/NavBar";
 import HeroSection from "../utils/HeroSection/HeroSection";
 import HowItWorksSection from "../utils/HowItWorksSection/HowItWorksSection";
-import FeaturesSection from "../utils/FeaturesSection/FeaturesSection";
+import BenefitsSection from "../utils/BenefitsSection/BenefitsSection";
 import Footer from "../utils/Footer/Footer";
-
-// Importa un CSS global si deseas, o uno local
-// con .homeContainer por si quieres algo extra.
-// Sino, puede quedar vacío.
 
 const HomePage: React.FC = () => {
   const handleHeroButtonClick = () => {
@@ -16,28 +12,21 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <NavBar
-        logoUrl="../../public/logo.png"
-        brandName="Tutor Virtual"
-        links={[
-          { label: "Inicio", path: "/" },
-          { label: "Cómo Funciona", path: "/how" },
-          { label: "Ejercicios", path: "/exercises" },
-          { label: "Login", path: "/login" },
-        ]}
-      />
+      <NavBar/>
 
       <HeroSection
-        title="Tutor Virtual"
-        subtitle="El portal de aprendizaje adaptativo, impulsado por IA."
-        buttonLabel="¡Comienza Ahora!"
-        imageUrl="../../public/tutor-hero.png"
+        title="Tu Tutor Inteligente."
+        subtitle="Combina el poder de la inteligencia artificial con métodos de enseñanza personalizados. Aprende lo que quieras, cuando quieras, con una experiencia adaptada a tu nivel, ritmo y estilo. Di adiós al aprendizaje genérico y empieza a avanzar de verdad."
+        imageUrl="/tutor-hero.png"
         onButtonClick={handleHeroButtonClick}
       />
       <HowItWorksSection />
-      <FeaturesSection />
+
+      <BenefitsSection />
+
       <Footer />
     </>
+    
   );
 };
 
