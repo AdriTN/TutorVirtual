@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import { api } from "../../services/apis/backend-api/api";
+import NavBar from "../utils/NavBar/NavBar";
 
 interface UserData {
   id: number;
@@ -47,6 +48,8 @@ const Dashboard: React.FC = () => {
   }
 
   return (
+    <>
+    <NavBar/>
     <div className={styles.dashboardContainer}>
       <h1>Bienvenido al Dashboard</h1>
 
@@ -72,6 +75,7 @@ const Dashboard: React.FC = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 
