@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from models import course, subject
 
 from .routes.user import router as user_router
 from .routes.authentication import router as login_router
@@ -42,3 +43,5 @@ app.include_router(user_router, prefix="/api", tags=["Users"])
 app.include_router(login_router, prefix="/api", tags=["Login"])
 app.include_router(register_router, prefix="/api", tags=["Register"])
 app.include_router(google_router, prefix="/api", tags=["Google"])
+app.include_router(subject.router)
+app.include_router(course.router)
