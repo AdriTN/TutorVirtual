@@ -8,7 +8,7 @@ from sqlalchemy import (
     UniqueConstraint
 )
 from sqlalchemy.orm import relationship
-from ..database.database import Base
+from database.database import Base
 
 class Subject(Base):
     __tablename__ = 'subjects'

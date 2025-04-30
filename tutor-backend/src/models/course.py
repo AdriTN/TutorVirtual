@@ -1,3 +1,4 @@
+from database.database import Base
 from sqlalchemy import (
     Table,
     Column,
@@ -8,9 +9,7 @@ from sqlalchemy import (
     UniqueConstraint
 )
 from sqlalchemy.orm import relationship
-from ..database.database import Base
 from .user import User
-from .subject import Subject
 
 user_courses = Table(
     'user_courses',

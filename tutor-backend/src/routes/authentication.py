@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from ..dependencies.database_dependencies import get_db
 from ..dependencies.security import verify_password, create_jwt_token
 from sqlalchemy.orm import Session
-from ..models.user import User, RefreshToken
+from models.user import User, RefreshToken
 
 
 router = APIRouter()
