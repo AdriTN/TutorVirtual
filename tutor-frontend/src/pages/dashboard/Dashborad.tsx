@@ -1,10 +1,15 @@
-// src/pages/dashboard/Dashboard.tsx
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import NavBar from "../utils/NavBar/NavBar";
+import Footer from "../utils/Footer/Footer";
 import styles from "./Dashboard.module.css";
 import { api } from "../../services/apis/backend-api/api";
-import NavBar from "../utils/NavBar/NavBar";
+
+interface Course {
+  id: number;
+  title: string;
+  description?: string | null;
+}
 
 interface UserData {
   id: number;
@@ -13,68 +18,115 @@ interface UserData {
 }
 
 const Dashboard: React.FC = () => {
-  const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // Estado para guardar los datos del usuario
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Al montar el componente, llamamos a GET /api/users/me
   useEffect(() => {
-    const fetchUserData = async () => {
+    (async () => {
       try {
-        // Ajusta la URL según tu prefix ("/api/users/me")
-        const response = await api.get("/api/users/me");
-        setUserData(response.data); // { id, name, email }
-      } catch (error) {
-        console.error("Error al obtener datos del usuario:", error);
+        const [uRes, cRes] = await Promise.all([
+          api.get<UserData>("/api/users/me"),
+          api.get<Course[]>("/api/course/my"),
+        ]);
+        setUserData(uRes.data);
+        setCourses(cRes.data);
+      } catch (err) {
+        console.error("Dashboard error:", err);
       } finally {
-        setLoadingUser(false);
+        setLoading(false);
       }
-    };
-
-    fetchUserData();
+    })();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
-
-  // Mientras obtenemos los datos del usuario
-  if (loadingUser) {
-    return <div>Cargando datos del usuario...</div>;
-  }
+  if (loading) return <div className={styles.loading}>Cargando…</div>;
 
   return (
     <>
-    <NavBar/>
-    <div className={styles.dashboardContainer}>
-      <h1>Bienvenido al Dashboard</h1>
+      <NavBar />
 
-      {/* Si ya tenemos los datos, los mostramos */}
-      {userData && (
-        <p>
-          ¡Hola <strong>{userData.name}</strong>! Tu correo es:{" "}
-          <strong>{userData.email}</strong>
-        </p>
-      )}
+      <main className={styles.wrapper}>
+        {/* Encabezado */}
+        {userData && (
+          <header className={styles.hero}>
+            <h1>
+              ¡Bienvenido, <span>{userData.name}</span>!
+            </h1>
+            <p className={styles.subtitle}>
+              Este es tu panel de control: gestiona tus cursos, revisa tu
+              progreso y descubre recomendaciones personalizadas.
+            </p>
+          </header>
+        )}
 
-      <p>Aquí podrás ver tu progreso, ejercicios recomendados y mucho más.</p>
+        {/* MIS CURSOS */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Mis Cursos</h2>
 
-      <div className={styles.actions}>
-        <button onClick={() => alert("Progreso próximamente")}>
-          Ver Progreso 📊
-        </button>
-        <button onClick={() => alert("Ejercicios próximamente")}>
-          Ir a Ejercicios 🧠
-        </button>
-        <button onClick={handleLogout} className={styles.logout}>
-          Cerrar Sesión 🔒
-        </button>
-      </div>
-    </div>
+          {courses.length === 0 ? (
+            <div className={styles.emptyState}>
+              <p>Aún no estás inscrito en ningún curso.</p>
+              <button
+                className={styles.primaryBtn}
+                onClick={() => navigate("/courses")}
+              >
+                Explorar cursos
+              </button>
+            </div>
+          ) : (
+            <ul className={styles.cardGrid}>
+              {courses.map((c) => (
+                <li key={c.id} className={styles.courseCard}>
+                <h3 className={styles.cardTitle}>{c.title}</h3>
+              
+                <p className={styles.description}>
+                  {c.description ?? "Sin descripción"}
+                </p>
+              
+                <div className={styles.progressWrap}>
+                  <div
+                    className={styles.progressFill}
+                    style={{ width: "45%" }}
+                  />
+                </div>
+                <span className={styles.progressText}>45 % completado</span>
+              
+                <button
+                  className={styles.continueBtn}
+                  onClick={() => navigate(`/courses/${c.id}`)}
+                >
+                  Continuar →
+                </button>
+              </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* RECOMENDACIONES */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Recomendaciones</h2>
+          <div className={styles.recoCard}>
+            <h3>Ejemplo de recomendación</h3>
+            <p>
+              🎯 Completa el módulo <strong>“Funciones Cuadráticas”</strong> para
+              fortalecer tu base antes del examen.
+            </p>
+          </div>
+        </section>
+
+        {/* ESTADÍSTICAS */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Estadísticas</h2>
+          <div className={styles.statsBox}>
+            <p>Gráfica de progreso próximamente 📈</p>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
     </>
   );
 };
