@@ -79,27 +79,34 @@ const Dashboard: React.FC = () => {
             <ul className={styles.cardGrid}>
               {courses.map((c) => (
                 <li key={c.id} className={styles.courseCard}>
-                <h3 className={styles.cardTitle}>{c.title}</h3>
-              
-                <p className={styles.description}>
-                  {c.description ?? "Sin descripción"}
-                </p>
-              
-                <div className={styles.progressWrap}>
-                  <div
-                    className={styles.progressFill}
-                    style={{ width: "45%" }}
-                  />
-                </div>
-                <span className={styles.progressText}>45 % completado</span>
-              
-                <button
-                  className={styles.continueBtn}
-                  onClick={() => navigate(`/courses/${c.id}`)}
-                >
-                  Continuar →
-                </button>
-              </li>
+                  {/* cabecera con gradiente y un icono/emoji */}
+                  <header className={styles.cardHeader}>
+                    <span className={styles.courseEmoji}>📚</span>
+                    <h3 className={styles.cardTitle}>{c.title}</h3>
+                  </header>
+                
+                  {/* descripción corta */}
+                  <p className={styles.description}>
+                    {c.description ?? "Sin descripción"}
+                  </p>
+                
+                  {/* barra de progreso */}
+                  <div className={styles.progressWrap}>
+                    <div
+                      className={styles.progressFill}
+                      style={{ width: "45%" }} /* sustituye por c.progress */
+                    />
+                  </div>
+                  <span className={styles.progressText}>45 % completado</span>
+                
+                  {/* CTA */}
+                  <button
+                    className={styles.continueBtn}
+                    onClick={() => navigate(`/courses/${c.id}`)}
+                  >
+                    Continuar →
+                  </button>
+                </li>
               ))}
             </ul>
           )}
