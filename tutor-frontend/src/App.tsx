@@ -6,6 +6,9 @@ import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./routes/PrivateRoute";
 import Dashboard from "./pages/dashboard/Dashborad";
 import GuestRoute from "./routes/GuestRoute";
+import CoursesPage from "./pages/explore/Courses";
+import ConfirmPage from "./pages/explore/Confirm";
+import SubjectsPage from "./pages/explore/Subjects";
 
 function App() {
   return (
@@ -42,8 +45,37 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/courses"
+            element={
+              <PrivateRoute>
+                <CoursesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/courses/:id"
+            element={
+              <PrivateRoute>
+                <SubjectsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/courses/:id/confirm"
+            element={
+              <PrivateRoute>
+                <ConfirmPage />
+              </PrivateRoute>
+            }
+          />
 
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route 
+            path="*" 
+            element={
+            <Navigate to="/" />
+            } 
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
