@@ -4,10 +4,10 @@ import {
   FiHome,
   FiBookOpen,
   FiBarChart2,
-  FiAward,
   FiCalendar,
 } from 'react-icons/fi';
 import styles from './Sidebar.module.css';
+import { FaMagnifyingGlass } from 'react-icons/fa6';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -27,9 +27,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => (
     <ul className={styles.menu}>
       {[
         { to: '/dashboard', icon: FiHome, label: 'Dashboard' },
-        { to: '/courses', icon: FiBookOpen, label: 'Mis Cursos' },
+        { to: '/miscursos', icon: FiBookOpen, label: 'Mis Cursos' },
         { to: '/statistics', icon: FiBarChart2, label: 'Estadísticas' },
-        { to: '/achievements', icon: FiAward, label: 'Logros' },
+        { to: '/courses', icon: FaMagnifyingGlass, label: 'Explorar' },
         { to: '/calendar', icon: FiCalendar, label: 'Calendario' },
       ].map(({ to, icon: Icon, label }) => (
         <li key={to} className={styles.menuItem}>
