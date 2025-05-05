@@ -9,7 +9,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const token = sessionStorage.getItem("accessToken");
   if (token) {
     config.headers["Authorization"] = `Bearer ${token}`;
   }
@@ -30,7 +30,7 @@ api.interceptors.response.use(
       const success = await tryRefreshToken();
 
       if (success) {
-        originalRequest.headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
+        originalRequest.headers["Authorization"] = `Bearer ${sessionStorage.getItem("accessToken")}`;
         return api.request(originalRequest);
       } else {
         window.location.href = "/home";

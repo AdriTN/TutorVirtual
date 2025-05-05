@@ -20,8 +20,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
+    const accessToken = sessionStorage.getItem("accessToken");
+    const refreshToken = sessionStorage.getItem("refreshToken");
 
     if (accessToken) {
       setAccessToken(accessToken);
@@ -40,16 +40,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(token);
     setRefreshToken(refreshTkn);
     setIsAuthenticated(true);
-    localStorage.setItem("accessToken", token);
-    localStorage.setItem("refreshToken", refreshTkn);
+    sessionStorage.setItem("accessToken", token);
+    sessionStorage.setItem("refreshToken", refreshTkn);
   };
 
   const logout = () => {
     setAccessToken(null);
     setRefreshToken(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("refreshToken");
   };
 
   const tryRefreshToken = async (): Promise<boolean> => {
