@@ -1,0 +1,26 @@
+.page    { display:flex; flex-direction:column; min-height:100vh; }
+.main    { flex:1; }
+
+.wrapper { max-width:1200px; margin:0 auto; padding:2rem 1rem 4rem; }
+
+/* grid de tarjetas reutilizable */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+        gap:1.5rem; list-style:none; padding:0; margin:0; }
+.card { background:#fff; border-radius:20px; box-shadow:0 6px 18px rgba(0,0,0,.06);
+        padding:1.7rem 1.5rem; display:flex; flex-direction:column; gap:.9rem;
+        transition:transform .25s, box-shadow .25s; }
+.card:hover { transform:translateY(-6px); box-shadow:0 14px 28px rgba(0,0,0,.08); }
+
+.title { font-size:1.1rem; font-weight:600; color:#006d77; }
+.desc  { font-size:.87rem; color:#45515d; line-height:1.35; flex:1; }
+
+.badge { display:inline-block; font-size:.7rem; background:#83c5be; color:#fff;
+         padding:4px 8px; border-radius:12px; margin:0 .25rem .25rem 0; }
+
+.btn   { align-self:flex-start; padding:.55rem 1.6rem; border:none; border-radius:28px;
+         font-weight:600; cursor:pointer; font-size:.87rem; }
+.btn.primary   { background:#006d77; color:#fff; }
+.btn.outline   { background:#e0e5e8; }
+.btn.primary:hover { background:#004d54; }
+
+.feedback { margin-top:.6rem; font-size:.8rem; color:#c62828; }
