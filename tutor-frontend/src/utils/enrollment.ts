@@ -3,6 +3,8 @@ import { api } from "../services/apis/backend-api/api";
 export interface Subject {
   id: number;
   name: string;
+  description?: string;
+  enrolled: boolean;
 }
 
 export interface Course {
@@ -12,12 +14,12 @@ export interface Course {
   subjects: Subject[];
 }
 
-/* ---------------- API ---------------- */
+/* ---------------- API helpers ---------------- */
 export const fetchCourses = () =>
   api.get<Course[]>("/api/course/courses").then((r) => r.data);
 
 export const fetchCourse = (id: number) =>
   api.get<Course>(`/api/course/${id}`).then((r) => r.data);
 
-export const enroll = (courseId: number, subjectId: number) =>
-  api.post(`/api/course/${courseId}/enroll`, { subject_id: subjectId });
+export const enrollSubject = (id: number) =>
+  api.post(`/api/subject/${id}/enroll`);
