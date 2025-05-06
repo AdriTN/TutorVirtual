@@ -22,6 +22,12 @@ class User(Base):
     
     providers = relationship("UserProvider", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+    
+    subjects = relationship(
+        "Subject",
+        secondary="user_subjects",
+        back_populates="students"
+    )
 
 class UserProvider(Base):
     __tablename__ = "users_providers"

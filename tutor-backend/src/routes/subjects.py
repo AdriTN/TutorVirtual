@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from models.course import Course
-from sqlalchemy.orm import Session
+from models.user import User
+from sqlalchemy.orm import Session, joinedload
 from ..dependencies.database_dependencies import get_db
-from ..dependencies.auth_dependencies import admin_required
+from ..dependencies.auth_dependencies import admin_required, jwt_required
 from models.subject import Subject
 
 router = APIRouter()
@@ -76,3 +77,38 @@ def list_subjects(db: Session = Depends(get_db)):
         }
         for s in db.query(Subject).all()
     ]
+
+@router.post("/subject/{subject_id}/enroll", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(jwt_required)],)
+def enroll_subject(
+    subject_id: int,
+    payload: dict = Depends(jwt_required),
+    db: Session = Depends(get_db),
+):
+    # 1) obtenemos usuario + asignaturas + cursos ya matriculados
+    user: User = (
+        db.query(User)
+        .options(joinedload(User.subjects))
+        .get(payload["user_id"])
+    )
+    subject: Subject = (
+        db.query(Subject)
+        .options(joinedload(Subject.courses).joinedload(Course.subjects))
+        .get(subject_id)
+    )
+    if not subject:
+        raise HTTPException(404, "Subject no encontrado")
+    
+    # 2) Si no la tiene, la añadimos
+    if subject not in user.subjects:
+        user.subjects.append(subject)
+        
+        # 3) Por cada curso asociado a la asignatura
+        for course in subject.courses:
+            # ya está en el curso → saltamos
+            if course in user.courses:
+                continue
+            # ¿tiene todas las asignaturas?
+            if all(sub in user.subjects for sub in course.subjects):
+                user.courses.append(course)
+        
+        db.commit()

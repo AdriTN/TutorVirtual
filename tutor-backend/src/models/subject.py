@@ -22,3 +22,9 @@ class Subject(Base):
         secondary='course_subjects',
         back_populates='subjects'
     )
+    
+    students = relationship(
+        'User',
+        secondary='user_subjects',
+        back_populates='subjects'
+    )
