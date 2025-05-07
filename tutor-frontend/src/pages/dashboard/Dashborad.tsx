@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
                   {/* CTA */}
                   <button
                     className={styles.continueBtn}
-                    onClick={() => navigate(`/courses/${c.id}`)}
+                    onClick={() => navigate(`/my-subjects/${c.id}`)}
                   >
                     Continuar →
                   </button>
