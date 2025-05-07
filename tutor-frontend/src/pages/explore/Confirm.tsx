@@ -10,72 +10,78 @@ import { Course, fetchCourse, enrollSubject } from "../../utils/enrollment";
 import StepIndicator from "../../components/stepIndicator/StepIndicator";
 
 const ConfirmPage: React.FC = () => {
-  /* ---------------- params & nav ---------------- */
-  const { id } = useParams<{ id: string }>();              // courseId
+  /* ---------- params & nav ---------- */
+  const { id } = useParams<{ id: string }>();      // courseId
   const [sp] = useSearchParams();
-  const subjectId = Number(sp.get("subject"));             // asignatura elegida
+  const subjectId = Number(sp.get("subject"));
   const nav = useNavigate();
 
-  /* ---------------- estado ---------------- */
+  /* ---------- state ---------- */
   const [course, setCourse] = useState<Course | null>(null);
   const [status, setStatus] = useState<"idle" | "done">("idle");
 
-  /* ---------------- carga de datos ---------------- */
+  /* ---------- load data ---------- */
   useEffect(() => {
     if (id) fetchCourse(Number(id)).then(setCourse);
   }, [id]);
 
-  /* ---------------- confirmación ---------------- */
+  /* ---------- confirm ---------- */
   const onConfirm = async () => {
     if (!subjectId) return;
     try {
-      await enrollSubject(subjectId);   // POST /subject/{subjectId}/enroll
+      await enrollSubject(subjectId);
       setStatus("done");
       setTimeout(() => nav("/dashboard"), 1200);
     } catch {
-      alert("No se pudo completar la inscripción (quizá ya estabas matriculado).");
+      alert("No se pudo completar la inscripción.");
     }
   };
 
   if (!course) return null;
-
   const subj = course.subjects.find((s) => s.id === subjectId);
 
-  /* ---------------- UI ---------------- */
+  /* ---------- UI ---------- */
   return (
     <div className={styles.page}>
       <NavBar />
+
       <main className={styles.main}>
         <div className={styles.wrapper}>
           <StepIndicator current={3} steps={["CURSO", "ASIGNATURA", "CONFIRMAR"]} />
+        </div>
 
-          <h2>Confirma tu inscripción</h2>
-          <p>
-            Curso: <strong>{course.title}</strong>
-          </p>
-          {subj && (
-            <p>
-              Asignatura: <strong>{subj.name}</strong>
-            </p>
-          )}
+        {/* caja minimalista */}
+        <section className={styles.confirmBox}>
+          <h2 className={styles.confirmTitle}>Confirmar inscripción</h2>
+
+          <ul className={styles.confirmList}>
+            <li className={styles.row}>
+              <span className={styles.key}>Curso:</span>
+              <span className={styles.val}>{course.title}</span>
+            </li>
+            {subj && (
+              <li className={styles.row}>
+                <span className={styles.key}>Asignatura:</span>
+                <span className={styles.val}>{subj.name}</span>
+              </li>
+            )}
+          </ul>
 
           {status === "done" ? (
-            <p className={styles.feedback}>¡Inscripción completada!</p>
+            <p className={styles.feedbackCenter}>¡Inscripción completada!</p>
           ) : (
-            <div style={{ marginTop: "1rem" }}>
-              <button className={`${styles.btn} ${styles.outline}`} onClick={() => nav(-1)}>
-                Volver
+            <div className={styles.actions}>
+              <button className={styles.btnOutline} onClick={() => nav(-1)}>
+                Cancelar
               </button>
-              <button
-                className={`${styles.btn} ${styles.primary}`}
-                onClick={onConfirm}
-              >
+              <button className={styles.btnPrimary} onClick={onConfirm}>
                 Confirmar
               </button>
             </div>
           )}
-        </div>
+        </section>
       </main>
+
       <Footer />
     </div>
   );
