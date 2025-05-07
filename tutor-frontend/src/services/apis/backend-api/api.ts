@@ -1,46 +1,43 @@
 import axios from "axios";
-import { useAuth } from "../../../context/AuthContext";
+import {
+  getAccessToken,
+  refreshAccessToken,
+} from "../../authService";
 
+const apiUrl = import.meta.env.VITE_BACKEND_URL;   // http://localhost:8000/api
+export const api = axios.create({ baseURL: apiUrl });
 
-const apiUrl = import.meta.env.VITE_BACKEND_URL;  // "http://localhost:8000"
-
-export const api = axios.create({
-  baseURL: apiUrl,
-});
-
+/* -------- request interceptor -------- */
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("accessToken");
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+/* -------- response interceptor -------- */
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      // Aqui necesitamos acceso a "tryRefreshToken" de AuthContext.tsx
-      const { tryRefreshToken } = useAuth();
-
-      const success = await tryRefreshToken();
-
-      if (success) {
-        originalRequest.headers["Authorization"] = `Bearer ${sessionStorage.getItem("accessToken")}`;
-        return api.request(originalRequest);
-      } else {
-        window.location.href = "/home";
-        return Promise.reject(error);
-      }
+    if (!error.response) {              /* red / CORS error */
+      return Promise.reject(error);
     }
 
+    const { status } = error.response;
+    const original = error.config;
+
+    if (status === 401 && !original._retry) {
+      original._retry = true;
+      const ok = await refreshAccessToken();
+
+      if (ok) {
+        original.headers.Authorization = `Bearer ${getAccessToken()}`;
+        return api(original);
+      }
+      sessionStorage.clear();           /* logout forzado */
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );
 
 export default api;
-  

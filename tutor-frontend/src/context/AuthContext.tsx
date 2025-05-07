@@ -1,94 +1,59 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import api from "../services/apis/backend-api/api";
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  getAccessToken,
+  setAccessToken,
+  getRefreshToken,
+  setRefreshToken,
+  refreshAccessToken,
+} from "../services/authService";
 
 interface AuthContextProps {
   isAuthenticated: boolean;
-  access_token: string | null;
-  refreshToken: string | null;
   loading: boolean;
-  login: (token: string, refreshTkn: string) => void;
+  login: (access: string, refresh: string) => void;
   logout: () => void;
   tryRefreshToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [access_token, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  /* carga inicial */
   useEffect(() => {
-    const accessToken = sessionStorage.getItem("accessToken");
-    const refreshToken = sessionStorage.getItem("refreshToken");
-
-    if (accessToken) {
-      setAccessToken(accessToken);
-      setIsAuthenticated(true);
-    }
-
-    if (refreshToken) {
-      setRefreshToken(refreshToken);
-    }
-
+    setIsAuthenticated(Boolean(getAccessToken()));
     setLoading(false);
-  }
-  , []);
+  }, []);
 
-  const login = (token: string, refreshTkn: string) => {
-    setAccessToken(token);
-    setRefreshToken(refreshTkn);
+  const login = (access: string, refresh: string) => {
+    setAccessToken(access);
+    setRefreshToken(refresh);
     setIsAuthenticated(true);
-    sessionStorage.setItem("accessToken", token);
-    sessionStorage.setItem("refreshToken", refreshTkn);
   };
 
   const logout = () => {
-    setAccessToken(null);
-    setRefreshToken(null);
+    sessionStorage.clear();
     setIsAuthenticated(false);
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("refreshToken");
   };
 
-  const tryRefreshToken = async (): Promise<boolean> => {
-    if (!refreshToken) {
-      return false;
-    }
-
-    try {
-      const response = await api.post("/api/refresh", {
-        refresh_token: refreshToken,
-      });
-
-      const { new_access_token, new_refresh_token } = response.data;
-
-      console.log("new_access_token:", new_access_token);
-      console.log("new_refresh_token:", new_refresh_token);
-      
-      login(new_access_token, new_refresh_token);
-      return true;
-    } catch (error) {
-      console.error("Error al refrescar el token:", error);
-      logout();
-      return false;
-    }
+  const tryRefreshToken = async () => {
+    const ok = await refreshAccessToken();
+    if (!ok) logout();
+    setIsAuthenticated(ok);
+    return ok;
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, access_token, refreshToken, loading, login, logout, tryRefreshToken }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout, tryRefreshToken }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-
-  return context;
-}
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+};
