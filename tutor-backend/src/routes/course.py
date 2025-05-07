@@ -141,17 +141,26 @@ def get_course(
 @router.delete(
     "/course/{course_id}/unenroll",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(jwt_required)],
 )
-def unenroll(
+def unenroll_course(
     course_id: int,
     payload: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
 ):
-    user: User = db.query(User).get(payload["user_id"])
-    course: Course = db.query(Course).get(course_id)
+    user: User   = db.query(User).options(joinedload(User.subjects)).get(payload["user_id"])
+    course: Course = db.query(Course).options(joinedload(Course.subjects)).get(course_id)
     if not course:
         raise HTTPException(404, "Curso no encontrado")
 
+    # 1) Quitar todas las asignaturas del curso
+    for subj in course.subjects:
+        if subj in user.subjects:
+            user.subjects.remove(subj)
+
+    # 2) Quitar el curso
     if course in user.courses:
         user.courses.remove(course)
-        db.commit()
+
+    db.commit()
+
