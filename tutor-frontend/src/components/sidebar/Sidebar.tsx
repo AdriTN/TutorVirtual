@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => (
     <ul className={styles.menu}>
       {[
         { to: '/dashboard', icon: FiHome, label: 'Dashboard' },
-        { to: '/miscursos', icon: FiBookOpen, label: 'Mis Cursos' },
+        { to: '/my-courses', icon: FiBookOpen, label: 'Mis Cursos' },
         { to: '/statistics', icon: FiBarChart2, label: 'Estadísticas' },
         { to: '/courses', icon: FaMagnifyingGlass, label: 'Explorar' },
         { to: '/calendar', icon: FiCalendar, label: 'Calendario' },
