@@ -23,3 +23,12 @@ export const fetchCourse = (id: number) =>
 
 export const enrollSubject = (id: number) =>
   api.post(`/api/subject/${id}/enroll`);
+
+export const fetchMyCourses = () =>
+  api.get<Course[]>("/api/course/my").then((r) => r.data);
+
+export const unenrollCourse = (courseId: number) =>
+  api.delete(`/api/course/${courseId}/unenroll`);
+
+export const unenrollSubject = (subjectId: number) =>
+  api.delete(`/api/subject/${subjectId}/unenroll`);
