@@ -78,7 +78,11 @@ def list_subjects(db: Session = Depends(get_db)):
         for s in db.query(Subject).all()
     ]
 
-@router.post("/subject/{subject_id}/enroll", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(jwt_required)],)
+@router.post(
+    "/subject/{subject_id}/enroll",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(jwt_required)],
+)
 def enroll_subject(
     subject_id: int,
     payload: dict = Depends(jwt_required),
@@ -87,28 +91,63 @@ def enroll_subject(
     # 1) obtenemos usuario + asignaturas + cursos ya matriculados
     user: User = (
         db.query(User)
-        .options(joinedload(User.subjects))
+        .options(joinedload(User.subjects), joinedload(User.courses))
         .get(payload["user_id"])
     )
     subject: Subject = (
         db.query(Subject)
-        .options(joinedload(Subject.courses).joinedload(Course.subjects))
+        .options(joinedload(Subject.courses))
         .get(subject_id)
     )
     if not subject:
         raise HTTPException(404, "Subject no encontrado")
-    
-    # 2) Si no la tiene, la añadimos
+
+    # 2) Si no tenía la asignatura, la añadimos
     if subject not in user.subjects:
         user.subjects.append(subject)
-        
-        # 3) Por cada curso asociado a la asignatura
+
+        # 3) Por cada curso al que pertenece la asignatura,
+        #    añadimos el curso si aún no está matriculado
         for course in subject.courses:
-            # ya está en el curso → saltamos
-            if course in user.courses:
-                continue
-            # ¿tiene todas las asignaturas?
-            if all(sub in user.subjects for sub in course.subjects):
+            if course not in user.courses:
                 user.courses.append(course)
-        
+
         db.commit()
+
+@router.delete(
+    "/subject/{subject_id}/unenroll",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(jwt_required)],
+)
+def unenroll_subject(
+    subject_id: int,
+    payload: dict = Depends(jwt_required),
+    db: Session = Depends(get_db),
+):
+    user: User = (
+        db.query(User)
+        .options(joinedload(User.subjects), joinedload(User.courses))
+        .get(payload["user_id"])
+    )
+    subject: Subject = (
+        db.query(Subject)
+        .options(joinedload(Subject.courses))
+        .get(subject_id)
+    )
+    if not subject:
+        raise HTTPException(404, "Subject no encontrado")
+
+    # 1) quitar la asignatura, si la tenía
+    if subject in user.subjects:
+        user.subjects.remove(subject)
+
+    # 2) Para cada curso asociado, si el usuario ya no tiene NINGUNA asignatura
+    #    de ese curso, lo sacamos también del curso.
+    for course in subject.courses:
+        still_has = any(subj for subj in course.subjects if subj in user.subjects)
+        if not still_has and course in user.courses:
+            user.courses.remove(course)
+
+    db.commit()
+
+
