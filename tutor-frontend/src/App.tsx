@@ -9,6 +9,8 @@ import GuestRoute from "./routes/GuestRoute";
 import CoursesPage from "./pages/explore/Courses";
 import ConfirmPage from "./pages/explore/Confirm";
 import SubjectsPage from "./pages/explore/Subjects";
+import MyCoursesPage from "./pages/mycourses/MyCourses";
+import MyCourseSubjectsPage from "./pages/mysubjects/MySubjects";
 
 function App() {
   return (
@@ -42,6 +44,22 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-courses"
+            element={
+              <PrivateRoute>
+                <MyCoursesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-subjects/:id"
+            element={
+              <PrivateRoute>
+                <MyCourseSubjectsPage />
               </PrivateRoute>
             }
           />
