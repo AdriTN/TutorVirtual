@@ -1,0 +1,111 @@
+/* ------- Layout ------- */
+.page { display:flex; flex-direction:column; min-height:100vh; }
+.main { flex:1; }
+
+/* ------- Buscador ------- */
+.searchContainer{ display:flex; justify-content:center; margin:2rem 0; }
+.search{
+  width:100%; max-width:420px; padding:.75rem 1.25rem;
+  border:2px solid #e2e8f0; border-radius:16px;
+  background:#f7fafc; font-size:1rem; color:#000;
+}
+.search:focus{ outline:none; border-color:#006d77; }
+
+/* ------- Estado vacío ------- */
+.empty{ text-align:center; font-size:1rem; color:#45515d; margin-top:2rem; }
+
+/* ------- Grid ------- */
+.grid{
+  display:grid; gap:1.5rem; list-style:none; margin:0; padding:0 1rem 4rem;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+}
+@media(min-width:1200px){ .grid{ grid-template-columns:repeat(6,1fr);} }
+
+/* ------- Tarjeta ------- */
+.card{
+  position:relative;                         /* para ubicar el botón */
+  background:#fff; border-radius:20px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  padding:1.8rem 1.6rem; display:flex; flex-direction:column; gap:1rem;
+  transition:transform .25s, box-shadow .25s;
+}
+.card:hover{ transform:translateY(-6px); box-shadow:0 14px 28px rgba(0,0,0,.08); }
+
+.title{ font-size:1.1rem; font-weight:600; color:#006d77; }
+.desc { font-size:.9rem; color:#45515d; line-height:1.35; flex:1; }
+
+/* ------- Badges ------- */
+.subjects{ display:flex; flex-wrap:wrap; gap:.3rem; }
+.badge{
+  font-size:.72rem; background:#83c5be; color:#fff;
+  padding:4px 9px; border-radius:12px;
+}
+
+/* ------- Botón papelera ------- */
+.deleteBtn{
+  position:absolute; top:15px; right:15px;
+  width:32px; height:32px; border:none; border-radius:50%;
+  background:#e53935; color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .2s, transform .2s;
+}
+.deleteBtn:hover{ background:#c62828; transform:scale(1.05); }
+.deleteBtn:focus{ outline:2px solid #ffcdd2; outline-offset:2px; }
+
+/* ---------- botón para ver asignaturas ---------- */
+.viewBtn{
+    margin-top:auto;
+    align-self:flex-start;
+    background:#006d77; color:#fff;
+    padding:.45rem 1.4rem; border:none; border-radius:28px;
+    font-size:.85rem; font-weight:600; cursor:pointer;
+    transition:background .2s;
+  }
+  .viewBtn:hover{ background:#004d54; }
+
+  /* ---------- botón explorar cursos (fixed) ---------- */
+  .cta {
+    position: fixed;
+    bottom: 6.5rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .cta span {
+    padding-bottom: 7px;
+    letter-spacing: 4px;
+    font-size: 14px;
+    padding-right: 15px;
+    text-transform: uppercase;
+    color: #ffffff;
+    position: relative;
+  }
+
+  .cta svg {
+    transform: translateX(-8px);
+    transition: all 0.3s ease;
+    fill: #ffffff;
+  }
+
+  .cta span::after {
+    content: "";
+    position: absolute;
+    width: 92%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #ffffff;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+  }
+
+  .cta:hover span::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+    background-color: #ffffff;
+  }
