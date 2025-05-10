@@ -54,3 +54,6 @@ class RefreshToken(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     user = relationship("User", back_populates="refresh_tokens")
+
+User.respuestas = relationship('RespuestaUsuario', back_populates='user')
+
