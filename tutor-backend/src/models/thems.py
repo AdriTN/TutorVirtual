@@ -1,6 +1,6 @@
 from unittest.mock import Base
 
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 
@@ -12,3 +12,10 @@ class Tema(Base):
     descripcion = Column(Text, nullable=True)
 
     ejercicios = relationship('Ejercicio', back_populates='tema')
+    
+    subject_id = Column(Integer, ForeignKey('subjects.id', ondelete='CASCADE'), nullable=False)
+    
+    subjects = relationship(
+        'Subject',
+        back_populates='temas'
+    )

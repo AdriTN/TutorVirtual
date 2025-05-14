@@ -28,3 +28,8 @@ class Subject(Base):
         secondary='user_subjects',
         back_populates='subjects'
     )
+    
+    themes  = relationship(
+        'Tema',
+        back_populates='subject'
+    )

@@ -28,6 +28,11 @@ class User(Base):
         secondary="user_subjects",
         back_populates="students"
     )
+    
+    respuestas = relationship(
+        "RespuestaUsuario",
+        back_populates="user"
+    )
 
 class UserProvider(Base):
     __tablename__ = "users_providers"
@@ -54,6 +59,3 @@ class RefreshToken(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     user = relationship("User", back_populates="refresh_tokens")
-
-User.respuestas = relationship('RespuestaUsuario', back_populates='user')
-
