@@ -1,4 +1,4 @@
-from unittest.mock import Base
+from database.database import Base
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -17,5 +17,5 @@ class Tema(Base):
     
     subjects = relationship(
         'Subject',
-        back_populates='temas'
+        back_populates='themes'
     )

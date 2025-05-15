@@ -31,5 +31,5 @@ class Subject(Base):
     
     themes  = relationship(
         'Tema',
-        back_populates='subject'
+        back_populates='subjects'
     )

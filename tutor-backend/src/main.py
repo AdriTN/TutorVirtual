@@ -1,6 +1,7 @@
+import models
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import course, subject, user
+
 
 from .routes.user import router as user_router
 from .routes.authentication import router as login_router
