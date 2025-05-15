@@ -44,6 +44,13 @@
 .title { font-size:1.1rem; font-weight:600; color:#006d77; }
 .desc  { font-size:.9rem; color:#45515d; line-height:1.35; flex:1; }
 
+/* ------- Themes ------- */
+.themes{ display:flex; flex-wrap:wrap; gap:.3rem; }
+.badge{
+  font-size:.72rem; background:#83c5be; color:#fff;
+  padding:4px 9px; border-radius:12px;
+}
+
 /* ========== BOTÓN PAPELERA ============================================ */
 .deleteBtn {
   position:absolute; top:12px; right:12px;

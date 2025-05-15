@@ -1,10 +1,17 @@
 import { api } from "../services/apis/backend-api/api";
 
+export interface Theme {
+  id: number;
+  title: string;
+  description?: string;
+}
+
 export interface Subject {
   id: number;
   name: string;
   description?: string;
   enrolled: boolean;
+  themes : Theme[];
 }
 
 export interface Course {

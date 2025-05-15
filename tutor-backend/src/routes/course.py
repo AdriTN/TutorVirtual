@@ -22,6 +22,10 @@ def _subject_row_to_dict(subject: Subject, enrolled: bool) -> dict:
         "name": subject.name,
         "description": subject.description,
         "enrolled": enrolled,
+        "themes": [
+            {"id": t.id, "title": t.nombre}      # t.nombre si tu columna es 'nombre'
+            for t in subject.themes
+        ],
     }
 
 def _subjects_rows_for(course: Course, user: User | None, db: Session):
@@ -90,7 +94,9 @@ def my_courses(
     user: User = (
         db.query(User)
         .options(
-            joinedload(User.courses).joinedload(Course.subjects),
+            joinedload(User.courses)
+            .joinedload(Course.subjects)
+            .joinedload(Subject.themes),
             joinedload(User.subjects),
         )
         .get(payload["user_id"])
@@ -110,7 +116,7 @@ def list_courses(
         .options(joinedload(User.subjects))
         .get(payload["user_id"])
     )
-    courses = db.query(Course).options(joinedload(Course.subjects)).all()
+    courses = db.query(Course).options(joinedload(Course.subjects).joinedload(Subject.themes)).all()
     return [
         _course_to_dict(c, _subjects_rows_for(c, user, db))
         for c in courses
@@ -129,7 +135,7 @@ def get_course(
     )
     course: Course = (
         db.query(Course)
-        .options(joinedload(Course.subjects))
+        .options(joinedload(Course.subjects).joinedload(Subject.themes))
         .get(course_id)
     )
     if not course:

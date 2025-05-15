@@ -74,6 +74,12 @@ const MyCourseSubjectsPage: React.FC = () => {
                 <p className={styles.desc}>
                   {s.description ?? "Sin descripción"}
                 </p>
+
+                <div className={styles.themes}>
+                  {s.themes.map((t) => (
+                    <span key={t.id} className={styles.badge}>{t.title}</span>
+                  ))}
+                </div>
               </li>
             ))}
           </ul>
