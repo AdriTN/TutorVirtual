@@ -9,6 +9,7 @@ import {
 
 interface AuthContextProps {
   isAuthenticated: boolean;
+  access_token?: string;
   loading: boolean;
   login: (access: string, refresh: string) => void;
   logout: () => void;
