@@ -1,13 +1,14 @@
+// src/pages/mycourses/MyCourseSubjectsPage.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import NavBar from "../utils/NavBar/NavBar";
-import Footer from "../utils/Footer/Footer";
-import styles from "./MySubjects.module.css";
+import NavBar   from "../utils/NavBar/NavBar";
+import Footer   from "../utils/Footer/Footer";
+import styles   from "./MySubjects.module.css";
 import { Course, fetchCourse, unenrollSubject } from "../../utils/enrollment";
 import { Trash2 } from "lucide-react";
 
 const MyCourseSubjectsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>(); // courseId
   const nav = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [q, setQ] = useState("");
@@ -63,6 +64,7 @@ const MyCourseSubjectsPage: React.FC = () => {
           <ul className={styles.grid}>
             {filtered.map((s) => (
               <li key={s.id} className={styles.card}>
+                {/* botón papelera */}
                 <button
                   className={styles.deleteBtn}
                   onClick={() => handleDelete(s.id)}
@@ -70,6 +72,7 @@ const MyCourseSubjectsPage: React.FC = () => {
                 >
                   <Trash2 size={16} />
                 </button>
+
                 <h3 className={styles.title}>{s.name}</h3>
                 <p className={styles.desc}>
                   {s.description ?? "Sin descripción"}
@@ -77,30 +80,33 @@ const MyCourseSubjectsPage: React.FC = () => {
 
                 <div className={styles.themes}>
                   {s.themes.map((t) => (
-                    <span key={t.id} className={styles.badge}>{t.title}</span>
+                    <span key={t.id} className={styles.badge}>
+                      {t.title}
+                    </span>
                   ))}
                 </div>
+
+                {/* Nuevo botón “Ver temas” */}
+                <button
+                  className={styles.viewBtn}
+                  onClick={() => nav(`/my-subjects/${id}/${s.id}/themes`)}
+                >
+                  Ver temas
+                </button>
               </li>
             ))}
           </ul>
         )}
       </main>
 
-        <button
-          className={styles.backBtn}
-          onClick={() => nav("/my-courses")}
-          aria-label="Volver a cursos"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 1024 1024"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M874.7 495.5c0 11.3-9.17 20.47-20.47 20.47H249.4l188.1 188.08c7.99 7.99 7.99 20.95 0 28.94-4 3.99-9.24 5.99-14.47 5.99-5.24 0-10.48-1.99-14.48-5.99L185.4 509.45c-3.84-3.84-5.99-9.05-5.99-14.47s2.15-10.63 5.99-14.47l223.02-223.03c7.99-7.99 20.96-7.99 28.95 0 7.99 8 7.99 20.95 0 28.95L249.4 474.6h604.8c11.3 0 20.47 9.16 20.47 20.9z"/>
-          </svg>
-          <span>Back</span>
-        </button>
+      {/* Botón volver al listado de cursos */}
+      <button
+        className={styles.backBtn}
+        onClick={() => nav("/my-courses")}
+        aria-label="Volver a cursos"
+      >
+        ← Volver
+      </button>
 
       <Footer />
     </div>

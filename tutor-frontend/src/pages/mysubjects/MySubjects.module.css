@@ -79,3 +79,25 @@
 .backBtn:hover{ color:#ffffff; transform:translateY(-2px); }
 .backBtn:hover svg{ transform:translateX(-4px); }
 .backBtn:focus{ outline:2px solid #ffffff; outline-offset:2px; }
+
+.viewBtn {
+  align-self: flex-end;
+  padding: 0.5rem 1.2rem;
+  background: #006d77;
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  margin-top: 0.5rem;
+}
+.viewBtn:hover {
+  background: #004d54;
+  transform: translateY(-2px);
+}
+.viewBtn:focus {
+  outline: 2px solid #83c5be;
+  outline-offset: 2px;
+}
