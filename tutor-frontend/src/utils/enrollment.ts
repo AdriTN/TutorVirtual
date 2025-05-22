@@ -22,14 +22,14 @@ export interface Course {
 }
 
 /* ---------------- API helpers ---------------- */
+
+/* Cursos */
+
 export const fetchCourses = () =>
   api.get<Course[]>("/api/course/courses").then((r) => r.data);
 
 export const fetchCourse = (id: number) =>
   api.get<Course>(`/api/course/${id}`).then((r) => r.data);
-
-export const enrollSubject = (id: number) =>
-  api.post(`/api/subject/${id}/enroll`);
 
 export const fetchMyCourses = () =>
   api.get<Course[]>("/api/course/my").then((r) => r.data);
@@ -37,5 +37,13 @@ export const fetchMyCourses = () =>
 export const unenrollCourse = (courseId: number) =>
   api.delete(`/api/course/${courseId}/unenroll`);
 
+/* Asignaturas */
+export const enrollSubject = (id: number) =>
+  api.post(`/api/subject/${id}/enroll`);
+
 export const unenrollSubject = (subjectId: number) =>
   api.delete(`/api/subject/${subjectId}/unenroll`);
+
+/* Temas */
+export const fetchThemes = (subjectId: number) =>
+  api.get<Theme[]>(`/api/subject/${subjectId}/themes`).then((r) => r.data);
