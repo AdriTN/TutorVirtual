@@ -6,9 +6,9 @@ from ..dependencies.database_dependencies import get_db
 from ..dependencies.auth_dependencies import admin_required, jwt_required
 from models.subject import Subject
 
-router = APIRouter()
+router = APIRouter(prefix="/subject")
 
-@router.post("/subject/nueva", status_code=status.HTTP_201_CREATED,
+@router.post("/nueva", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(admin_required)])
 def create_subject(
     data: dict,
@@ -37,7 +37,7 @@ def create_subject(
         "description": subj.description,
     }
 
-@router.post("/subject/course/{course_id}/subjects", status_code=status.HTTP_201_CREATED,
+@router.post("/course/{course_id}/subjects", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(admin_required)])
 def add_subject_to_course(
     course_id: int,
@@ -67,7 +67,7 @@ def add_subject_to_course(
         "description": subject.description,
     }
 
-@router.get("/subject/subjects", status_code=status.HTTP_200_OK)
+@router.get("/subjects", status_code=status.HTTP_200_OK)
 def list_subjects(db: Session = Depends(get_db)):
     return [
         {
@@ -79,7 +79,7 @@ def list_subjects(db: Session = Depends(get_db)):
     ]
 
 @router.post(
-    "/subject/{subject_id}/enroll",
+    "/{subject_id}/enroll",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(jwt_required)],
 )
@@ -115,7 +115,7 @@ def enroll_subject(
         db.commit()
 
 @router.delete(
-    "/subject/{subject_id}/unenroll",
+    "/{subject_id}/unenroll",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(jwt_required)],
 )
@@ -150,4 +150,25 @@ def unenroll_subject(
 
     db.commit()
 
+@router.get(
+    "/{subject_id}/themes",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(jwt_required)]
+)
+def list_themes(subject_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve la lista de temas para una asignatura,
+    o 404 si la asignatura no existe.
+    """
+    subj = (
+        db.query(Subject)
+        .options(joinedload(Subject.themes))
+        .get(subject_id)
+    )
+    if not subj:
+        raise HTTPException(status_code=404, detail="Asignatura no encontrada")
 
+    return [
+        {"id": t.id, "title": t.nombre, "description": t.descripcion}
+        for t in subj.themes
+    ]

@@ -42,24 +42,7 @@ def create_theme(data: dict, db: Session = Depends(get_db)):
 
 
 # ─────────────────────────────────────────────────────────────
-# 2. Listar temas de una asignatura
-# GET /theme/subject/{subject_id}
-# ─────────────────────────────────────────────────────────────
-@router.get("/subject/{subject_id}", status_code=status.HTTP_200_OK,
-            dependencies=[Depends(jwt_required)])   # opcional: solo usuarios logeados
-def list_themes_of_subject(subject_id: int, db: Session = Depends(get_db)):
-    subject = db.query(Subject).get(subject_id)
-    if not subject:
-        raise HTTPException(404, "Asignatura no encontrada")
-
-    return [
-        {"id": t.id, "nombre": t.nombre, "descripcion": t.descripcion}
-        for t in subject.themes
-    ]
-
-
-# ─────────────────────────────────────────────────────────────
-# 3. Añadir un tema existente a una asignatura (ADMIN)
+# 2. Añadir un tema existente a una asignatura (ADMIN)
 # POST /theme/subject/{subject_id}/add
 # body: { "theme_id": 3 }
 # ─────────────────────────────────────────────────────────────
