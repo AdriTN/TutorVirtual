@@ -1,0 +1,103 @@
+/* src/pages/themes/ThemesPage.module.css */
+
+/* Layout base */
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .main {
+    flex: 1;
+    padding: 2rem 1rem;
+  }
+  .wrapper { margin:0 auto; padding:2rem 1rem; }
+  
+  /* Encabezado */
+  .heading { font-size:1.7rem; font-weight:600; color:#ffffff; }
+  
+  /* Buscador */
+  .searchContainer {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+  }
+  .search {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    background: #f7fafc;
+    font-size: 1rem;
+    color: #000;
+    transition: border-color 0.2s;
+  }
+  .search:focus {
+    outline: none;
+    border-color: #006d77;
+  }
+  
+  /* Estado vacío */
+  .empty {
+    text-align: center;
+    font-size: 1rem;
+    color: #45515d;
+    margin-top: 2rem;
+  }
+  
+  /* Grid de temas */
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0 1rem 4rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  @media (min-width: 1200px) {
+    .grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  /* Tarjeta */
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    padding: 1.8rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
+  }
+  .title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #006d77;
+  }
+  .desc {
+    font-size: 0.9rem;
+    color: #45515d;
+    line-height: 1.35;
+    flex: 1;
+  }
+  
+/* ---------- Flecha regreso ---------- */
+.backBtn{
+    position:sticky; bottom:2rem; left:2rem;
+    display:flex; align-items:center; gap:6px;
+    padding:.55rem .9rem; border:none; border-radius:6px;
+    background:transparent; color:#ffffff;
+    font-weight:500; font-size:.9rem; cursor:pointer;
+    transition:color .2s, transform .2s;
+  }
+  .backBtn svg{ fill:currentColor; transition:transform .3s; }
+  .backBtn:hover{ color:#ffffff; transform:translateY(-2px); }
+  .backBtn:hover svg{ transform:translateX(-4px); }
+  .backBtn:focus{ outline:2px solid #ffffff; outline-offset:2px; }
+  
