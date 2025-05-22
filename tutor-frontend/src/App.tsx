@@ -11,6 +11,7 @@ import ConfirmPage from "./pages/explore/Confirm";
 import SubjectsPage from "./pages/explore/Subjects";
 import MyCoursesPage from "./pages/mycourses/MyCourses";
 import MyCourseSubjectsPage from "./pages/mysubjects/MySubjects";
+import ThemesPage from "./pages/themes/ThemesPage";
 
 function App() {
   return (
@@ -60,6 +61,14 @@ function App() {
             element={
               <PrivateRoute>
                 <MyCourseSubjectsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-subjects/:courseId/:subjectId/themes"
+            element={
+              <PrivateRoute>
+                <ThemesPage />
               </PrivateRoute>
             }
           />
