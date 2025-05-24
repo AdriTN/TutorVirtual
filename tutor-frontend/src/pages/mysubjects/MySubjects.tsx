@@ -85,14 +85,23 @@ const MyCourseSubjectsPage: React.FC = () => {
                     </span>
                   ))}
                 </div>
+                <div className={styles.level}>
+                  {/* botón “Ver temas” */}
+                  <button
+                    className={styles.viewBtn}
+                    onClick={() => nav(`/my-subjects/${id}/${s.id}/themes`)}
+                  >
+                    Ver temas
+                  </button>
 
-                {/* Nuevo botón “Ver temas” */}
-                <button
-                  className={styles.viewBtn}
-                  onClick={() => nav(`/my-subjects/${id}/${s.id}/themes`)}
-                >
-                  Ver temas
-                </button>
+                  {/* botón “Estudiar” */}
+                  <button
+                    className={styles.studyBtn}
+                    onClick={() => nav(`/study/${id}/${s.id}`)}
+                  >
+                    Estudiar
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
