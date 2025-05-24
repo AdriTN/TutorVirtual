@@ -10,6 +10,7 @@ from .routes.google import router as google_router
 from .routes.subjects import router as subject_router
 from .routes.course import router as course_router
 from .routes.theme import router as themes_router
+from .routes.ai import router as ai_router
 
 from dotenv import load_dotenv
 import os
@@ -50,3 +51,4 @@ app.include_router(google_router, prefix="/api", tags=["Google"])
 app.include_router(subject_router, prefix="/api", tags=["Subjects"])
 app.include_router(course_router, prefix="/api", tags=["Courses"])
 app.include_router(themes_router, prefix="/api", tags=["Themes"])
+app.include_router(ai_router, prefix="/api", tags=["AI"])
