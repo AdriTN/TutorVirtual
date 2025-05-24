@@ -12,6 +12,7 @@ import SubjectsPage from "./pages/explore/Subjects";
 import MyCoursesPage from "./pages/mycourses/MyCourses";
 import MyCourseSubjectsPage from "./pages/mysubjects/MySubjects";
 import ThemesPage from "./pages/themes/ThemesPage";
+import StudyPage from "./pages/study/StudyPage";
 
 function App() {
   return (
@@ -93,6 +94,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ConfirmPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/study/:courseId/:subjectId"
+            element={
+              <PrivateRoute>
+                <StudyPage />
               </PrivateRoute>
             }
           />
