@@ -21,6 +21,25 @@ export interface Course {
   subjects: Subject[];
 }
 
+export interface AIRequest {
+  model: string;
+  response_format: { type: string };
+  messages: { role: string; content: string }[];
+}
+
+export interface AIResponse {
+  content: string;
+}
+
+export interface AIExercise {
+  tema: string;
+  enunciado: string;
+  respuesta: string;
+  dificultad: string;
+  tipo: string;
+  explicacion: string;
+}
+
 /* ---------------- API helpers ---------------- */
 
 /* Cursos */
@@ -47,3 +66,7 @@ export const unenrollSubject = (subjectId: number) =>
 /* Temas */
 export const fetchThemes = (subjectId: number) =>
   api.get<Theme[]>(`/api/subject/${subjectId}/themes`).then((r) => r.data);
+
+/* IA */
+export const fetchAIQuestion = (body: AIRequest) =>
+  api.post<AIExercise>("/api/ai/ask", body).then(r => r.data);
