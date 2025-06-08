@@ -6,13 +6,13 @@ from pydantic import BaseModel
 from models.user import User
 from sqlalchemy.orm import Session
 
-router = APIRouter()
+router = APIRouter(prefix="/users")
 
 # Endpoints para usuarios
 
-@router.get("/users/me")
-def get_my_data(playload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
-    user_id = playload.get("user_id")
+@router.get("/me")
+def get_my_data(payload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
+    user_id = payload.get("user_id")
     user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
@@ -24,7 +24,7 @@ def get_my_data(playload: dict = Depends(jwt_required), db: Session = Depends(ge
         "email": user.email,
     }
 
-@router.delete("/users/{id}")
+@router.delete("/{id}")
 def delete_user(id: int, dict = Depends(jwt_required), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()
     
@@ -39,7 +39,7 @@ def delete_user(id: int, dict = Depends(jwt_required), db: Session = Depends(get
 
 # Endpoints para administradores
 
-@router.post("/users/{user_id}/promote")
+@router.post("/{user_id}/promote")
 def promote_to_admin(user_id: int, playload: dict = Depends(admin_required), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     
@@ -51,7 +51,7 @@ def promote_to_admin(user_id: int, playload: dict = Depends(admin_required), db:
     
     return {"message": f"Usuario {user_id} promovido a administrador"}
 
-@router.get("/users")
+@router.get("/all")
 def get_users(playload: dict = Depends(admin_required), db: Session = Depends(get_db)):
     users = db.query(User).all()
     
