@@ -9,7 +9,7 @@ from models.user import User
 from ..dependencies.database_dependencies import get_db
 from ..dependencies.auth_dependencies import jwt_required, admin_required
 
-router = APIRouter()
+router = APIRouter(prefix="/course")
 
 # ------------------------------------------------------------------ #
 # ---------------------------- HELPERS ----------------------------- #
@@ -62,7 +62,7 @@ def _course_to_dict(course: Course, subjects_rows) -> dict:
 # ------------------------------------------------------------------ #
 
 @router.post(
-    "/course/create",
+    "/create",
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(admin_required)],
 )
@@ -86,7 +86,7 @@ def create_course(data: dict, db: Session = Depends(get_db)):
     rows = _subjects_rows_for(course, None, db)
     return _course_to_dict(course, rows)
 
-@router.get("/course/my")
+@router.get("/my")
 def my_courses(
     payload: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
@@ -106,7 +106,7 @@ def my_courses(
         for c in user.courses
     ]
 
-@router.get("/course/courses")
+@router.get("/courses")
 def list_courses(
     payload: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
@@ -122,7 +122,7 @@ def list_courses(
         for c in courses
     ]
 
-@router.get("/course/{course_id}")
+@router.get("/{course_id}")
 def get_course(
     course_id: int,
     payload: dict = Depends(jwt_required),
@@ -145,7 +145,7 @@ def get_course(
     return _course_to_dict(course, rows)
 
 @router.delete(
-    "/course/{course_id}/unenroll",
+    "/{course_id}/unenroll",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(jwt_required)],
 )
