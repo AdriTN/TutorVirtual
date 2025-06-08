@@ -18,10 +18,16 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
-def create_jwt_token(data: dict, expires_in_minutes=30) -> str:
-    expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=expires_in_minutes)
-    data.update({"exp": expire})
-    token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+def _expiry(minutes: int = 30) -> datetime.datetime:
+    return datetime.datetime.now() + datetime.timedelta(minutes=minutes)
+
+def create_jwt_token(user_id: int, is_admin: bool, minutes=30) -> str:
+    payload = {
+        "user_id": user_id,
+        "is_admin": is_admin,
+        "exp": _expiry(minutes)
+        }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     
     return token
 
