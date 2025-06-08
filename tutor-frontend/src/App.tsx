@@ -13,107 +13,120 @@ import MyCoursesPage from "./pages/mycourses/MyCourses";
 import MyCourseSubjectsPage from "./pages/mysubjects/MySubjects";
 import ThemesPage from "./pages/themes/ThemesPage";
 import StudyPage from "./pages/study/StudyPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminRoute from "./routes/AdminRoute";
+import { ViewModeProvider } from "./context/ViewModeContext";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-            <Home />
-            } 
-          />
-          <Route 
-            path="/register" 
-            element={
-            <GuestRoute>
-              <RegisterPage />
-            </GuestRoute>
-            } 
-          />
-          <Route 
-            path="/login" 
-            element={
-            <GuestRoute>
-              <LoginPage />
-            </GuestRoute>
-            } 
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-courses"
-            element={
-              <PrivateRoute>
-                <MyCoursesPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-subjects/:id"
-            element={
-              <PrivateRoute>
-                <MyCourseSubjectsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-subjects/:courseId/:subjectId/themes"
-            element={
-              <PrivateRoute>
-                <ThemesPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/courses"
-            element={
-              <PrivateRoute>
-                <CoursesPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/courses/:id"
-            element={
-              <PrivateRoute>
-                <SubjectsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/courses/:id/confirm"
-            element={
-              <PrivateRoute>
-                <ConfirmPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/study/:courseId/:subjectId"
-            element={
-              <PrivateRoute>
-                <StudyPage />
-              </PrivateRoute>
-            }
-          />
+      <ViewModeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+              <Home />
+              } 
+            />
+            <Route 
+              path="/register" 
+              element={
+              <GuestRoute>
+                <RegisterPage />
+              </GuestRoute>
+              } 
+            />
+            <Route 
+              path="/login" 
+              element={
+              <GuestRoute>
+                <LoginPage />
+              </GuestRoute>
+              } 
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-courses"
+              element={
+                <PrivateRoute>
+                  <MyCoursesPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-subjects/:id"
+              element={
+                <PrivateRoute>
+                  <MyCourseSubjectsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-subjects/:courseId/:subjectId/themes"
+              element={
+                <PrivateRoute>
+                  <ThemesPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/courses"
+              element={
+                <PrivateRoute>
+                  <CoursesPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/courses/:id"
+              element={
+                <PrivateRoute>
+                  <SubjectsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/courses/:id/confirm"
+              element={
+                <PrivateRoute>
+                  <ConfirmPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/study/:courseId/:subjectId"
+              element={
+                <PrivateRoute>
+                  <StudyPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
 
-          <Route 
-            path="*" 
-            element={
-            <Navigate to="/" />
-            } 
-          />
-        </Routes>
-      </BrowserRouter>
+            <Route 
+              path="*" 
+              element={
+              <Navigate to="/" />
+              } 
+            />
+          </Routes>
+        </BrowserRouter>
+      </ViewModeProvider>
     </AuthProvider>
   );
 }
