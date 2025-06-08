@@ -5,6 +5,7 @@ export const getAccessToken  = () => sessionStorage.getItem("accessToken");
 export const setAccessToken  = (t: string) => sessionStorage.setItem("accessToken", t);
 export const getRefreshToken = () => sessionStorage.getItem("refreshToken");
 export const setRefreshToken = (t: string) => sessionStorage.setItem("refreshToken", t);
+export const clearTokens = () => sessionStorage.clear();
 
 /* refresca el access-token usando el refresh-token almacenado */
 export const refreshAccessToken = async (): Promise<boolean> => {
