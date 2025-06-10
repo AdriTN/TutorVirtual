@@ -1,0 +1,39 @@
+.card{
+    background:var(--c-surface);
+    border:1px solid var(--c-border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;
+    transition:transform var(--transition),box-shadow var(--transition);
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 6px 20px rgba(0,0,0,.12);
+  }
+  
+  .header{
+    padding:1rem 1.25rem;
+    border-bottom:1px solid var(--c-border);
+    font-weight:600;font-size:1.05rem;
+  }
+  .body{
+    padding:1.25rem;flex:1;
+    display:flex;flex-direction:column;gap:1rem;
+  }
+  
+  /* botones dentro de la tarjeta (Añadir / Quitar) */
+  .body button{
+    align-self:flex-start;padding:.55rem 1.1rem;font-size:.9rem;font-weight:500;
+    border-radius:var(--radius);cursor:pointer;
+    transition:background var(--transition),box-shadow var(--transition);
+  }
+  .body button:hover,.body button:focus-visible{box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  .body button:disabled{opacity:.55;cursor:not-allowed}
+  .body button:not(.remove){
+    background:var(--c-primary);border:1px solid var(--c-primary);color:#fff;
+  }
+  .remove{
+    background:var(--c-danger);border:1px solid var(--c-danger);color:#fff;
+  }
+  .remove:hover,.remove:focus-visible{background:var(--c-danger-hover)}
+  
