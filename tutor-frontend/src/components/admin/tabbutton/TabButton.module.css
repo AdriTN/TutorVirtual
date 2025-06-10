@@ -1,0 +1,16 @@
+.btn{
+    padding:.55rem 1.1rem;font-size:.925rem;font-weight:500;
+    border:1px solid var(--c-border);
+    background:var(--c-surface);color:var(--c-text);
+    border-radius:var(--radius);cursor:pointer;
+    transition:background var(--transition),color var(--transition),box-shadow var(--transition);
+  }
+  .btn:hover,.btn:focus-visible{
+    background:var(--c-surface-hover);
+    box-shadow:0 0 0 2px var(--c-primary-light);
+  }
+  .active{
+    background:var(--c-primary);border-color:var(--c-primary);color:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
+  }
+  
