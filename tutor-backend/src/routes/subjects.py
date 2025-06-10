@@ -37,7 +37,7 @@ def create_subject(
         "description": subj.description,
     }
 
-@router.post("/course/{course_id}/subjects", status_code=status.HTTP_201_CREATED,
+@router.post("/{course_id}/subjects", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(admin_required)])
 def add_subject_to_course(
     course_id: int,
@@ -172,3 +172,29 @@ def list_themes(subject_id: int, db: Session = Depends(get_db)):
         {"id": t.id, "title": t.nombre, "description": t.descripcion}
         for t in subj.themes
     ]
+
+@router.delete(
+    "/{course_id}/subjects/{subject_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(admin_required)],
+)
+def remove_subject_from_course(
+    course_id: int,
+    subject_id: int,
+    db: Session = Depends(get_db),
+):
+    course: Course | None = db.query(Course)\
+        .options(joinedload(Course.subjects))\
+        .get(course_id)
+    if not course:
+        raise HTTPException(404, "Curso no encontrado")
+
+    subject: Subject | None = db.query(Subject).get(subject_id)
+    if not subject:
+        raise HTTPException(404, "Asignatura no encontrada")
+
+    if subject not in course.subjects:
+        raise HTTPException(409, "La asignatura no está asociada al curso")
+
+    course.subjects.remove(subject)
+    db.commit()
