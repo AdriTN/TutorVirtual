@@ -1,3 +1,4 @@
+/* ViewModeContext.tsx – versión estable */
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 
@@ -12,60 +13,54 @@ interface ViewModeCtx {
 const Ctx = createContext<ViewModeCtx | undefined>(undefined);
 
 export const ViewModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { isAdmin, loading: authLoading } = useAuth();
+  const { isAdmin, loading: authLoading } = useAuth();
+
+  const [mode,  setModeState] = useState<ViewMode>("user");
+  const [ready, setReady]     = useState(false);
+
+  /* decide cuando Auth terminó */
+  useEffect(() => {
+    if (authLoading) return;
 
     const stored = localStorage.getItem("viewMode") as ViewMode | null;
-    const [mode, setModeState] = useState<ViewMode>("user");
-    const [ready, setReady]    = useState(false);
 
-    useEffect(() => {
-        if (authLoading) return;
-        if (stored && (stored !== "admin" || isAdmin)) {
-          setModeState(stored);
-        } else {
-          setModeState(isAdmin ? "admin" : "user");
-        }
-        setReady(true);
-      }, [authLoading]);
+    if (isAdmin) {
+      setModeState("admin");          // ← SIEMPRE admin si el rol lo permite
+    } else if (stored) {
+      setModeState(stored);           // usuario normal mantiene su elección
+    } else {
+      setModeState("user");
+    }
+    setReady(true);
+  }, [authLoading, isAdmin]);
 
-  
-    useEffect(() => {
-        if (authLoading) return;
-        if (stored && (stored !== "admin" || isAdmin)) {
-        setModeState(stored);
-        } else {
-        setModeState(isAdmin ? "admin" : "user");
-        }
+  /* persiste cada cambio */
+  useEffect(() => {
+    if (ready) localStorage.setItem("viewMode", mode);
+  }, [mode, ready]);
 
-    }, [authLoading]);
+  /* si el rol baja de admin → user */
+  useEffect(() => {
+    if (!authLoading && !isAdmin && mode === "admin") setModeState("user");
+  }, [isAdmin, authLoading, mode]);
 
+  /* setter seguro */
+  const setMode = (m: ViewMode) => {
+    if (m === "admin" && !isAdmin) return;   // impedir escalada
+    setModeState(m);
+  };
 
-    useEffect(() => {
-        if (!authLoading) localStorage.setItem("viewMode", mode);
-    }, [mode, authLoading]);
-
-
-    useEffect(() => {
-        if (authLoading) return;
-        if (!isAdmin && mode === "admin") setModeState("user");
-    }, [isAdmin, mode, authLoading]);
-
-    const setMode = (m: ViewMode) => {
-        if (m === "admin" && !isAdmin) return;
-        setModeState(m);
-    };
-
-    return <Ctx.Provider value={{ ready, mode, setMode }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ ready, mode, setMode }}>
+      {children}
+    </Ctx.Provider>
+  );
 };
 
-export const useViewMode = () => {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useViewMode must be used within ViewModeProvider");
-  return ctx;
-};
-
+/* hooks */
+export const useViewMode      = () => useContext(Ctx)!;
 export const useActingAsAdmin = () => {
-  const { isAdmin } = useAuth();
-  const { mode }    = useViewMode();
+  const { isAdmin }   = useAuth();
+  const { mode }      = useViewMode();
   return isAdmin && mode === "admin";
 };
