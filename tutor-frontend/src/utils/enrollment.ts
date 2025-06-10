@@ -56,6 +56,9 @@ export const fetchMyCourses = () =>
 export const unenrollCourse = (courseId: number) =>
   api.delete(`/api/course/${courseId}/unenroll`);
 
+export const adminCreateCourse = (title: string, description?: string) =>
+  api.post("/api/course/create", { title, description });
+
 /* Asignaturas */
 export const enrollSubject = (id: number) =>
   api.post(`/api/subject/${id}/enroll`);
@@ -63,10 +66,34 @@ export const enrollSubject = (id: number) =>
 export const unenrollSubject = (subjectId: number) =>
   api.delete(`/api/subject/${subjectId}/unenroll`);
 
+export const adminCreateSubject = (name: string, description: string) =>
+  api.post("/api/subject/nueva", { name, description });
+
+export const adminAddSubjectToCourse = (courseId: number, subjectId: number) =>
+  api.post(`/api/subject/${courseId}/subjects`, { subject_id: subjectId });
+
+export const adminRemoveSubjectFromCourse = (courseId: number, subjectId: number) =>
+  api.delete(`/api/subject/${courseId}/subjects/${subjectId}`);
+
 /* Temas */
 export const fetchThemes = (subjectId: number) =>
   api.get<Theme[]>(`/api/subject/${subjectId}/themes`).then((r) => r.data);
 
+export const adminCreateTheme = (
+  nombre: string,
+  descripcion: string,
+  subjectId: number
+) => api.post("/api/theme/new", { nombre, descripcion, subject_id: subjectId });
+
+export const adminAddThemeToSubject = (subjectId: number, themeId: number) =>
+  api.post(`/api/theme/subject/${subjectId}/add`, { theme_id: themeId });
+
 /* IA */
 export const fetchAIQuestion = (body: AIRequest) =>
   api.post<AIExercise>("/api/ai/ask", body).then(r => r.data);
+
+/* Opciones de selector (listar) --------------------------------- */
+export const listAllCourses   = () => api.get("/api/course/courses");
+export const listAllSubjects  = () => api.get("/api/subject/subjects");
+export const listThemesBySubj = (subjId: number) =>
+  api.get(`/api/subject/${subjId}/themes`);
