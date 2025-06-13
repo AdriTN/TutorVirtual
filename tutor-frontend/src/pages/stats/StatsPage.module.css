@@ -1,0 +1,11 @@
+/* src/pages/Stats/StatsPage.module.css */
+.page{background:var(--c-bg);min-height:100vh;display:flex;flex-direction:column}
+.container{width:min(1180px,100%);margin:2rem auto 4rem;padding:0 1rem;flex:1}
+.gridCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.2rem}
+.block{margin-top:2.4rem}
+.blockGrid{margin-top:2.4rem;display:grid;gap:2rem;grid-template-columns:360px 1fr}
+.themeTableWrapper{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;font-size:.9rem}
+.table th,.table td{padding:.55rem .7rem;border-bottom:1px solid var(--c-border)}
+.table tbody tr:hover{background:var(--c-surface-hover)}
+.empty{color:var(--c-text-muted);padding:.8rem 0;font-size:.9rem;text-align:center}
