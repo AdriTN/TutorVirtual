@@ -16,6 +16,7 @@ import StudyPage from "./pages/study/StudyPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoute from "./routes/AdminRoute";
 import { ViewModeProvider } from "./context/ViewModeContext";
+import StatsPage from "./pages/stats/StatsPage";
 
 function App() {
   return (
@@ -108,6 +109,14 @@ function App() {
                   <StudyPage />
                 </PrivateRoute>
               }
+            />
+            <Route 
+              path="/stats" 
+              element={
+                <PrivateRoute>
+                  <StatsPage/>
+                </PrivateRoute>
+              } 
             />
             <Route
               path="/admin"
