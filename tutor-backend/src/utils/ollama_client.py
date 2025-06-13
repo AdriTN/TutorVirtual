@@ -21,7 +21,7 @@ def generate_with_ollama(payload: dict) -> dict:
         headers["Authorization"] = f"Bearer {settings.api_key}"
 
     with httpx.Client(
-        timeout=httpx.Timeout(60.0, connect=10.0),
+        timeout=httpx.Timeout(120.0, connect=10.0),
         limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
     ) as client:
         for attempt in range(1, 4):
