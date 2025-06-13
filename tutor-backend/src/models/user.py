@@ -33,6 +33,8 @@ class User(Base):
         "RespuestaUsuario",
         back_populates="user"
     )
+    
+    progress = relationship("UserThemeProgress", cascade="all, delete-orphan")
 
 class UserProvider(Base):
     __tablename__ = "users_providers"
