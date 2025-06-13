@@ -1,0 +1,122 @@
+/* ---------------------------------------------------------------------------
+   explore.module.css  – versión unificada para Courses, Subjects y Confirm
+--------------------------------------------------------------------------- */
+
+/* ---------- Layout base ---------- */
+.page { display:flex; flex-direction:column; min-height:100vh; }
+.main { flex:1; }
+
+/* ---------- Wrapper centrado (StepIndicator y cabeceras) ---------- */
+.wrapper { max-width:1200px; margin:0 auto; padding:2rem 1rem; }
+
+/* ========== BUSCADORES ============================================ */
+.searchContainer     { display:flex; justify-content:center; margin:2rem 0; }
+.searchContainerLeft { display:flex; justify-content:flex-start; margin:2rem 1rem; }
+.search{
+  width:100%; max-width:420px; padding:.75rem 1.25rem;
+  border:2px solid #e2e8f0; border-radius:16px;
+  background:#f7fafc; font-size:1rem; color:#000;
+  transition:border-color .2s;
+}
+.search:focus{ outline:none; border-color:#006d77; }
+
+/* ---------- Título alineado a la izquierda (Subjects) ---------- */
+.left{ margin-left:1rem; }
+
+/* ========== GRIDS ================================================= */
+.grid, .gridFull{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.5rem; list-style:none; padding:0 1rem 4rem; margin:0;
+}
+@media(min-width:1200px){
+  .grid{ grid-template-columns:repeat(6,1fr); }
+  .gridFull{ grid-template-columns:repeat(6,1fr); }
+}
+
+/* ========== TARJETAS ============================================= */
+.card{
+  background:#fff; border-radius:20px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  padding:1.8rem 1.6rem;
+  display:flex; flex-direction:column; gap:1rem;
+  transition:transform .25s, box-shadow .25s;
+}
+.card:hover{ transform:translateY(-6px);
+             box-shadow:0 14px 28px rgba(0,0,0,.08);}
+.title{ font-size:1.1rem; font-weight:600; color:#006d77; }
+.desc { font-size:.9rem; color:#45515d; line-height:1.35; flex:1; }
+
+/* ---------- Badges ---------- */
+.subjects{ display:flex; flex-wrap:wrap; gap:.3rem; }
+.badge{ font-size:.72rem; background:#83c5be; color:#fff;
+        padding:4px 9px; border-radius:12px; }
+
+/* ---------- Botones & feedback ---------- */
+.btn{ align-self:flex-start; padding:.6rem 1.8rem; border:none;
+      border-radius:28px; font-weight:600; cursor:pointer; font-size:.9rem; }
+.btn.primary{ background:#006d77; color:#fff; }
+.btn.primary:hover{ background:#004d54; }
+.feedback{ margin-top:.7rem; font-size:.82rem; color:#c62828; }
+
+/* -------------------------------------------------------------------
+   ESTILOS ESPECÍFICOS PARA CONFIRMPAGE
+------------------------------------------------------------------- */
+
+/* ---------- Caja central ---------- */
+.confirmBox{
+  max-width:460px; margin:0 auto 3rem; padding:2rem 1.75rem;
+  background:#fff; border-radius:16px;
+  box-shadow:0 6px 20px rgba(0,0,0,.08);
+}
+.confirmTitle{
+  font-size:1.3rem; color:#006d77; margin-bottom:1.25rem;
+  text-align:center;                 /* ← centrado */
+}
+
+/* ---------- Lista key–value ---------- */
+.confirmList{
+  grid-template-columns: max-content 1fr; /* etiqueta auto, valor ocupa resto */
+  row-gap:.6rem; column-gap:.75rem;
+  list-style:none; margin:0 0 1.75rem; padding:0;
+}
+.key{
+  font-weight:600; color:#000;        /* etiqueta */
+}
+.val{
+  background:#f0faf9; color:#004d54;  /* valor */
+  padding:.25rem .7rem; border-radius:6px;
+  font-weight:200;
+}
+
+/* ---------- Acciones ---------- */
+.actions{ display:flex; justify-content:center; gap:1rem; }
+.btnPrimary{
+  background:#006d77; color:#fff;
+  padding:.55rem 1.6rem; border:none; border-radius:28px;
+  font-weight:600; cursor:pointer; font-size:.9rem;
+}
+.btnPrimary:hover{ background:#004d54; }
+.btnOutline{
+  background:transparent; color:#006d77; border:2px solid #006d77;
+  padding:.5rem 1.5rem; border-radius:28px; font-weight:600;
+  cursor:pointer; font-size:.9rem;
+}
+.btnOutline:hover{ background:#f0faf9; }
+
+/* ---------- Feedback centrado ---------- */
+.feedbackCenter{ font-size:1rem; color:#006d77; font-weight:600; }
+
+/* ---------- Flecha regreso ---------- */
+.backBtn{
+  position:sticky; bottom:2rem; left:2rem;
+  display:flex; align-items:center; gap:6px;
+  padding:.55rem .9rem; border:none; border-radius:6px;
+  background:transparent; color:#ffffff;
+  font-weight:500; font-size:.9rem; cursor:pointer;
+  transition:color .2s, transform .2s;
+}
+.backBtn svg{ fill:currentColor; transition:transform .3s; }
+.backBtn:hover{ color:#ffffff; transform:translateY(-2px); }
+.backBtn:hover svg{ transform:translateX(-4px); }
+.backBtn:focus{ outline:2px solid #ffffff; outline-offset:2px; }

@@ -14,7 +14,7 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { isAuthenticated, access_token, tryRefreshToken, loading } = useAuth();
+  const { isAuthenticated, accessToken, tryRefreshToken, loading } = useAuth();
   const [verifying, setVerifying] = useState(true);
 
   useEffect(() => {
@@ -23,13 +23,13 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
     }
 
     const verifyToken = async () => {
-      if (!isAuthenticated || !access_token) {
+      if (!isAuthenticated || !accessToken) {
         setVerifying(false);
         return;
       }
 
       try {
-        const decodedToken = jwtDecode<TokenPayload>(access_token);
+        const decodedToken = jwtDecode<TokenPayload>(accessToken);
         const now = Date.now().valueOf() / 1000;
 
         if (decodedToken.exp < now) {
@@ -49,7 +49,7 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
 
     verifyToken();
   }
-  , [isAuthenticated, access_token, loading, tryRefreshToken]);
+  , [isAuthenticated, accessToken, loading, tryRefreshToken]);
 
   if (loading || verifying) {
     return <div>Cargando...</div>;

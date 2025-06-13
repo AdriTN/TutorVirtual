@@ -1,0 +1,115 @@
+/* ---------- Layout base ---------- */
+.page { display:flex; flex-direction:column; min-height:100vh; }
+.main { flex:1; }
+.wrapper { margin:0 auto; padding:2rem 1rem; }
+
+/* ---------- Encabezado ---------- */
+.heading { font-size:1.7rem; font-weight:600; color:#ffffff; }
+
+/* ========== BUSCADOR ================================================ */
+.searchContainer { display:flex; justify-content:center; margin:2rem 0; }
+.search {
+  width:100%; max-width:420px; padding:.75rem 1.25rem;
+  border:2px solid #e2e8f0; border-radius:16px;
+  background:#f7fafc; font-size:1rem; color:#000;
+  transition:border-color .2s;
+}
+.search:focus { outline:none; border-color:#006d77; }
+
+/* ========== ESTADO VACÍO ============================================ */
+.empty {
+  text-align:center; font-size:1rem; color:#45515d; margin-top:2rem;
+}
+
+/* ========== GRID ====================================================== */
+.grid {
+  display:grid; gap:1.5rem; list-style:none; margin:0; padding:0 1rem 4rem;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+}
+@media(min-width:1200px){ .grid{ grid-template-columns:repeat(6,1fr); } }
+
+/* ========== TARJETAS =================================================== */
+.card {
+  position:relative;
+  background:#fff; border-radius:20px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  padding:1.8rem 1.6rem; display:flex; flex-direction:column; gap:1rem;
+  transition:transform .25s, box-shadow .25s;
+}
+.card:hover {
+  transform:translateY(-6px);
+  box-shadow:0 14px 28px rgba(0,0,0,.08);
+}
+
+.title { font-size:1.1rem; font-weight:600; color:#006d77; }
+.desc  { font-size:.9rem; color:#45515d; line-height:1.35; flex:1; }
+
+/* ------- Themes ------- */
+.themes{ display:flex; flex-wrap:wrap; gap:.3rem; }
+.badge{
+  font-size:.72rem; background:#83c5be; color:#fff;
+  padding:4px 9px; border-radius:12px;
+}
+
+/* ========== BOTÓN PAPELERA ============================================ */
+.deleteBtn {
+  position:absolute; top:12px; right:12px;
+  width:28px; height:28px; border:none; border-radius:50%;
+  background:#e53935; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .2s, transform .2s;
+}
+.deleteBtn:hover {
+  background:#c62828; transform:scale(1.1);
+}
+.deleteBtn:focus {
+  outline:2px solid #ffcdd2; outline-offset:2px;
+}
+
+/* ---------- Flecha regreso ---------- */
+.backBtn{
+  position:sticky; bottom:2rem; left:2rem;
+  display:flex; align-items:center; gap:6px;
+  padding:.55rem .9rem; border:none; border-radius:6px;
+  background:transparent; color:#ffffff;
+  font-weight:500; font-size:.9rem; cursor:pointer;
+  transition:color .2s, transform .2s;
+}
+.backBtn svg{ fill:currentColor; transition:transform .3s; }
+.backBtn:hover{ color:#ffffff; transform:translateY(-2px); }
+.backBtn:hover svg{ transform:translateX(-4px); }
+.backBtn:focus{ outline:2px solid #ffffff; outline-offset:2px; }
+
+.level {
+  display: flex;
+  justify-content: space-between; /* separa al máximo */
+  align-items: center;
+  margin-top: auto;      /* empuja hacia abajo */
+  width: 100%;           /* ocupe todo el ancho de la tarjeta */
+  gap: 0.5rem;
+}
+
+.viewBtn,
+.studyBtn {
+  padding: 0.5rem 1.2rem;
+  background: #006d77;
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.viewBtn:hover,
+.studyBtn:hover {
+  background: #004d54;
+  transform: translateY(-2px);
+}
+
+.viewBtn:focus,
+.studyBtn:focus {
+  outline: 2px solid #83c5be;
+  outline-offset: 2px;
+}

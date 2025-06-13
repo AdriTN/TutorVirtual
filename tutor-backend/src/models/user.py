@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, Integer, String, Boolean, CheckConstraint, ForeignKey, UniqueConstraint, DateTime, func
 from sqlalchemy.orm import relationship
 
-from ..database.database import Base
+from database.database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -22,6 +22,19 @@ class User(Base):
     
     providers = relationship("UserProvider", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+    
+    subjects = relationship(
+        "Subject",
+        secondary="user_subjects",
+        back_populates="students"
+    )
+    
+    respuestas = relationship(
+        "RespuestaUsuario",
+        back_populates="user"
+    )
+    
+    progress = relationship("UserThemeProgress", cascade="all, delete-orphan")
 
 class UserProvider(Base):
     __tablename__ = "users_providers"
@@ -44,7 +57,7 @@ class RefreshToken(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     token = Column(String(255), nullable=False, unique=True)
-    expires_at = Column(DateTime, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     user = relationship("User", back_populates="refresh_tokens")

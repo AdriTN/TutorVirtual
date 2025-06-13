@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 
 from src.database.database import Base
 from src.models.user import User, UserProvider, RefreshToken
+from src.models.course import Course
+from src.models.subject import Subject
 
 from logging.config import fileConfig
 

@@ -1,0 +1,43 @@
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* contenedor principal y grids */
+.container{max-width:1240px;margin:2rem auto 4rem;padding:0 1rem;color:var(--c-text)}
+.grid{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.gridWide{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+
+/* wrapper de pestañas */
+.tabs{display:flex;gap:.6rem;margin-bottom:1.8rem}
+
+/* formulario vertical y actions */
+.vForm{display:flex;flex-direction:column;gap:.75rem}
+
+.actions{
+  display:flex;gap:.7rem;justify-content:flex-end;
+}
+.actions button{
+  padding:.55rem 1.15rem;font-size:.9rem;font-weight:500;
+  border-radius:var(--radius);cursor:pointer;
+  transition:background var(--transition),box-shadow var(--transition);
+}
+.actions button:first-child{
+  background:var(--c-surface-hover);border:1px solid var(--c-border-strong);color:var(--c-text);
+}
+.actions button:first-child:hover{background:var(--c-surface-hover)}
+.actions button:last-child{
+  background:var(--c-primary);border:1px solid var(--c-primary);color:#fff;
+}
+.actions button:last-child:hover,
+.actions button:last-child:focus-visible{
+  background:var(--c-primary-hover);box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+.actions button:disabled{opacity:.5;cursor:not-allowed}

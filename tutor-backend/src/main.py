@@ -1,10 +1,18 @@
+import models
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 
 from .routes.user import router as user_router
 from .routes.authentication import router as login_router
 from .routes.register import router as register_router
 from .routes.google import router as google_router
+from .routes.subjects import router as subject_router
+from .routes.course import router as course_router
+from .routes.theme import router as themes_router
+from .routes.ai import router as ai_router
+from .routes.answer import router as answer_router
+from .routes.stats import router as stats_router
 
 from dotenv import load_dotenv
 import os
@@ -30,7 +38,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Para permitir OPTIONS, GET, POST, etc.
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -42,3 +50,9 @@ app.include_router(user_router, prefix="/api", tags=["Users"])
 app.include_router(login_router, prefix="/api", tags=["Login"])
 app.include_router(register_router, prefix="/api", tags=["Register"])
 app.include_router(google_router, prefix="/api", tags=["Google"])
+app.include_router(subject_router, prefix="/api", tags=["Subjects"])
+app.include_router(course_router, prefix="/api", tags=["Courses"])
+app.include_router(themes_router, prefix="/api", tags=["Themes"])
+app.include_router(ai_router, prefix="/api", tags=["AI"])
+app.include_router(answer_router, prefix="/api", tags=["Answer"])
+app.include_router(stats_router, prefix="/api", tags=["Stats"])

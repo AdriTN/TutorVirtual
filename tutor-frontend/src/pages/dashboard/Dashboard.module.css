@@ -1,50 +1,222 @@
-.dashboardContainer {
-    padding: 3rem;
-    text-align: center;
-    background-color: #f7f9fc;
-    min-height: 100vh;
-  }
-  
-  .dashboardContainer h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: #1f53c5;
-  }
-  
-  .dashboardContainer p {
-    font-size: 1.2rem;
-    color: #333;
-    margin-bottom: 2rem;
-  }
-  
-  .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-width: 300px;
-    margin: 0 auto;
-  }
-  
-  .actions button {
-    padding: 0.8rem 1.2rem;
-    font-size: 1rem;
-    border: none;
-    background-color: #1f53c5;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .actions button:hover {
-    background-color: #163fa1;
-  }
-  
-  .logout {
-    background-color: #e63946;
-  }
-  
-  .logout:hover {
-    background-color: #c62828;
-  }
-  
+/* -------------- PALETA Y GLOBALES ---------------- */
+:root {
+  --color-primary: #006d77;
+  --color-secondary: #83c5be;
+  --color-bg: #24303c;;
+  --color-surface: #ffffff;
+  --radius: 0.75rem;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+body {
+  background: var(--color-bg);
+  font-family: "Inter", sans-serif;
+}
+
+/* ---------- loader ---------- */
+.loading {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-primary);
+}
+
+/* ---------- layout wrapper ---------- */
+.wrapper {
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+/* ---------- hero ---------- */
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeIn 0.6s ease;
+}
+
+.hero h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.hero h1 span {
+  color: var(--color-secondary);
+}
+
+.subtitle {
+  max-width: 600px;
+  margin: 0.75rem auto 0;
+  color: #555;
+}
+
+/* ---------- sections ---------- */
+.section {
+  margin-bottom: 3.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 1.5rem;
+}
+
+/* ---------- estado vacío ---------- */
+.emptyState {
+  text-align: center;
+  background: var(--color-surface);
+  padding: 2.5rem 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.primaryBtn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.primaryBtn:hover {
+  background: #004d54;
+}
+
+/* ---------- grid tarjetas ---------- */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* -------------- TARJETA DE CURSO -------------- */
+.courseCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.9rem 1.6rem 1.7rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: var(--shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.courseCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.08);
+}
+
+/* cabecera */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #83c5be 0%, #006d77 100%);
+  color: #fff;
+  width: fit-content;
+}
+
+.courseEmoji {
+  font-size: 1.25rem;
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 160px;
+}
+
+/* descripción */
+.description {
+  font-size: 0.92rem;
+  line-height: 1.35;
+  color: #41515d;
+  flex: 1;
+}
+
+/* barra progreso */
+.progressWrap {
+  width: 100%;
+  height: 10px;
+  background: #e9eff2;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00bfa5 0%, #1de9b6 100%);
+  transition: width 0.6s ease;
+}
+
+.progressText {
+  margin-top: 0.35rem;
+  font-size: 0.79rem;
+  color: #61717d;
+  font-weight: 500;
+}
+
+/* botón CTA */
+.continueBtn {
+  align-self: flex-start;
+  margin-top: 1rem;
+  padding: 0.55rem 1.65rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+}
+.courseCard:hover .continueBtn {
+  background: #004d54;
+  transform: translateY(-2px);
+}
+
+/* ---------- recomendación ---------- */
+.recoCard {
+  background: linear-gradient(135deg, #bde0fe 0%, #a2d2ff 100%);
+  color: #033046;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- estadísticas ---------- */
+.statsBox {
+  background: #eef4f6;
+  border: 2px dashed #a5bfc4;
+  border-radius: var(--radius);
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #607d8b;
+  font-weight: 500;
+}
+
+/* ---------- animación ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(25px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 480px) {
+  .hero h1       { font-size: 1.9rem; }
+  .sectionTitle  { font-size: 1.4rem; }
+}

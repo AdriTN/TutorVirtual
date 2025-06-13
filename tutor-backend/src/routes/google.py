@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from ..dependencies.database_dependencies import get_db
 from ..dependencies.security import create_jwt_token, create_refresh_token, hash_password
 from dotenv import load_dotenv
-from ..models.user import User, UserProvider, RefreshToken
+from models.user import User, UserProvider, RefreshToken
 
 
 router = APIRouter()

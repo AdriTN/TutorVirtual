@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from ..dependencies.database_dependencies import get_db
 from ..dependencies.security import verify_password, create_jwt_token
 from sqlalchemy.orm import Session
-from ..models.user import User, RefreshToken
+from models.user import User, RefreshToken
 
 
 router = APIRouter()
@@ -26,7 +26,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     if not verify_password(password, user.password):
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
     
-    access_token = create_jwt_token({"user_id": user.id, "is_admin": user.is_admin})
+    access_token = create_jwt_token(user_id=user.id, is_admin=user.is_admin)
     refresh_token = create_refresh_token()
     expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3)
     
