@@ -40,3 +40,7 @@ def decode_jwt_token(token: str) -> dict:
 
 def create_refresh_token() -> str:
     return str(uuid.uuid4())
+
+def strip_and_lower(s: str) -> str:
+    return s.strip().lower()
+
