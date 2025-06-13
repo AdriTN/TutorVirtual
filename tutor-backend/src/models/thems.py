@@ -19,3 +19,5 @@ class Tema(Base):
         'Subject',
         back_populates='themes'
     )
+    
+    progress = relationship("UserThemeProgress", cascade="all, delete-orphan")
