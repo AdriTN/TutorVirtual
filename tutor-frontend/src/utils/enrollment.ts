@@ -1,5 +1,6 @@
 import { api } from "../services/apis/backend-api/api";
 
+
 export interface Theme {
   id: number;
   title: string;
@@ -31,13 +32,36 @@ export interface AIResponse {
   content: string;
 }
 
-export interface AIExercise {
+export interface AIExerciseOut {
+  id: number;
   tema: string;
   enunciado: string;
-  respuesta: string;
   dificultad: string;
   tipo: string;
   explicacion: string;
+}
+
+export interface AnswerOut {
+    correcto: boolean;
+}
+
+export interface StatsOverview {
+  hechos: number;
+  correctos: number;
+  porcentaje: number;
+  trend24h: string;
+}
+
+export interface StatsDaily { 
+  date:string; 
+  correctRatio:number;
+}
+export interface ThemeStat { 
+  theme_id:number; 
+  theme:string; 
+  done:number; 
+  correct:number; 
+  ratio:number; 
 }
 
 /* ---------------- API helpers ---------------- */
@@ -89,8 +113,27 @@ export const adminAddThemeToSubject = (subjectId: number, themeId: number) =>
   api.post(`/api/theme/subject/${subjectId}/add`, { theme_id: themeId });
 
 /* IA */
-export const fetchAIQuestion = (body: AIRequest) =>
-  api.post<AIExercise>("/api/ai/ask", body).then(r => r.data);
+export const askAI = (body:AIRequest)=>api.post<AIExerciseOut>("/api/ai/request", body).then(r=>r.data);
+
+/* Respuestas */
+export const sendAnswer = (
+  ejercicio_id: number,
+  respuesta: string,
+  tiempo_seg?: number
+) =>
+  api
+    .post<AnswerOut>("/api/answer", { ejercicio_id, respuesta, tiempo_seg })
+    .then((r) => r.data);
+
+/* Estadísticas */
+export const getStatsOverview = () =>
+  api.get<StatsOverview>("/api/stats/overview").then((r) => r.data);
+
+export const getStatsTimeline = () =>
+  api.get<StatsDaily[]>("/api/stats/timeline").then(r=>r.data);
+
+export const getStatsByTheme = () =>
+  api.get<ThemeStat[]>("/api/stats/by-theme").then(r=>r.data);
 
 /* Opciones de selector (listar) --------------------------------- */
 export const listAllCourses   = () => api.get("/api/course/courses");
