@@ -4,10 +4,16 @@ import sys
 import structlog
 
 def setup_logging(level: str = "INFO") -> None:
+    """
+    Configura el logger raíz de Python y structlog.
+    - force=True: elimina handlers previos (pytest, etc.) y reaplica el nuestro.
+    - level: puede ser nombre de nivel ("INFO","DEBUG",…) o constante int.
+    """
     logging.basicConfig(
         level=level,
         format="%(levelname)s %(asctime)s %(name)s: %(message)s",
         handlers=[logging.StreamHandler(sys.stdout)],
+        force=True,           # <–– aquí está la clave
     )
 
     structlog.configure(
@@ -17,8 +23,6 @@ def setup_logging(level: str = "INFO") -> None:
             structlog.processors.add_log_level,
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
-            structlog.processors.JSONRenderer(),
+            structlog.processors.JSONRenderer,
         ],
     )
-
-setup_logging()

@@ -18,13 +18,15 @@ class User(Base):
     password: Mapped[str]  = mapped_column(String(100), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
-    providers:       Mapped[List["UserProvider"]]   = relationship(back_populates="user", cascade="all, delete-orphan")
-    refresh_tokens:  Mapped[List["RefreshToken"]]   = relationship(back_populates="user", cascade="all, delete-orphan")
-    respuestas:      Mapped[List["UserResponse"]]   = relationship(back_populates="user", cascade="all, delete-orphan")
-    progress:        Mapped[List["UserThemeProgress"]] = relationship(cascade="all, delete-orphan")
+    providers:       Mapped[List["UserProvider"]]        = relationship(back_populates="user", cascade="all, delete-orphan")
+    refresh_tokens:  Mapped[List["RefreshToken"]]        = relationship(back_populates="user", cascade="all, delete-orphan")
+    respuestas:      Mapped[List["UserResponse"]]        = relationship(back_populates="user", cascade="all, delete-orphan")
+    progress:        Mapped[List["UserThemeProgress"]]   = relationship(cascade="all, delete-orphan")
+    courses:         Mapped[List["Course"]]              = relationship(secondary="user_courses", back_populates="students", lazy="selectin",)
+    subjects:        Mapped[List["Subject"]]             = relationship(secondary="user_subjects", back_populates="users", lazy="selectin",)
 
     __table_args__ = (
-        CheckConstraint("char_length(username) >= 3", name="chk_username_minlen"),
+        CheckConstraint("length(username) >= 3", name="chk_username_minlen"),
     )
 
 
@@ -39,8 +41,8 @@ class UserProvider(Base):
     user: Mapped[User] = relationship(back_populates="providers")
 
     __table_args__ = (
-        CheckConstraint("char_length(provider_user_id) > 0", name="chk_provider_uid"),
-        CheckConstraint("char_length(provider) > 0",          name="chk_provider_name"),
+        CheckConstraint("length(provider_user_id) > 0", name="chk_provider_uid"),
+        CheckConstraint("length(provider) > 0",          name="chk_provider_name"),
     )
 
 

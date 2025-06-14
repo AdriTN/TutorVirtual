@@ -22,7 +22,7 @@ class Subject(Base):
         lazy="selectin",
     )
 
-    students: Mapped[List["User"]] = relationship(
+    users: Mapped[List["User"]] = relationship(
         secondary=user_subjects,
         back_populates="subjects",
         lazy="selectin",
