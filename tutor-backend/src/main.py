@@ -1,58 +1,32 @@
-import models
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .app.api.dependencies.settings import get_settings
+from .app.core.logging import setup_logging
+from .app.api.routes import api_router
+from .app.database.base import Base
+from .app.database.session import engine
 
-from .routes.user import router as user_router
-from .routes.authentication import router as login_router
-from .routes.register import router as register_router
-from .routes.google import router as google_router
-from .routes.subjects import router as subject_router
-from .routes.course import router as course_router
-from .routes.theme import router as themes_router
-from .routes.ai import router as ai_router
-from .routes.answer import router as answer_router
-from .routes.stats import router as stats_router
+# ── 1. logging y BD ──────────────────────────────────────────
+setup_logging()
+Base.metadata.create_all(bind=engine)
 
-from dotenv import load_dotenv
-import os
+settings = get_settings()
+app = FastAPI(title=settings.api_title, version="1.0.0")
 
-app = FastAPI(
-    title="Tutor Virtual",
-    version="0.0.1",
-    openapi_components={
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer"
-            }
-        }
-    }
-)
-
-origins = [
-    f'http://localhost:{os.getenv("PORT")}',
-]
-
+# ── 2. CORS ─────────────────────────────────────────────────
+origins = [f"http://localhost:{settings.port}", "http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins     = origins,
+    allow_credentials = True,
+    allow_methods     = ["*"],
+    allow_headers     = ["*"],
 )
 
-@app.get("/", tags=["home"])
-def home():
-    return {"Hello": "World"}
+# ── 3. Rutas ────────────────────────────────────────────────
+app.include_router(api_router, prefix="/api")
 
-app.include_router(user_router, prefix="/api", tags=["Users"])
-app.include_router(login_router, prefix="/api", tags=["Login"])
-app.include_router(register_router, prefix="/api", tags=["Register"])
-app.include_router(google_router, prefix="/api", tags=["Google"])
-app.include_router(subject_router, prefix="/api", tags=["Subjects"])
-app.include_router(course_router, prefix="/api", tags=["Courses"])
-app.include_router(themes_router, prefix="/api", tags=["Themes"])
-app.include_router(ai_router, prefix="/api", tags=["AI"])
-app.include_router(answer_router, prefix="/api", tags=["Answer"])
-app.include_router(stats_router, prefix="/api", tags=["Stats"])
+@app.get("/", tags=["health"])
+def health():
+    return {"status": "ok"}
