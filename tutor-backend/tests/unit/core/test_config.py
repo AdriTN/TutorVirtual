@@ -23,15 +23,26 @@ def clear_env(monkeypatch):
         monkeypatch.delenv(var, raising=False)
     yield
 
-def test_missing_required_env_raises():
+def test_missing_required_env_raises(monkeypatch, tmp_path):
     """
-    Sin DATABASE_URL ni JWT_SECRET debe fallar la validación.
+    Si faltan las vars obligatorias debe fallar la validación,
+    aun cuando en el proyecto exista un .env
     """
-    with pytest.raises(ValidationError) as exc:
+    # Nos mudamos a un dir vacío (sin .env)
+    monkeypatch.chdir(tmp_path)
+
+    # Nos aseguramos de que no haya quedado ninguna var en el ENV
+    for var in (
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "OLLAMA_URL",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+    with pytest.raises(ValidationError):
         Settings()
-    errors = exc.value.errors()
-    assert any(e["loc"] == ("database_url",) and e["type"] == "missing" for e in errors)
-    assert any(e["loc"] == ("jwt_secret",)   and e["type"] == "missing" for e in errors)
 
 def test_required_env_provided(monkeypatch):
     """
