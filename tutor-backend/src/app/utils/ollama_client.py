@@ -10,10 +10,14 @@ logger = structlog.get_logger("ollama")
 def generate_with_ollama(payload: dict, request: Request | None = None) -> dict:
     url = settings.ollama_url.rstrip("/") + "/api/chat/completions"
     headers = {"Content-Type": "application/json"}
-    if settings.ollama_api_key:
-        headers["Authorization"] = f"Bearer {settings.ollama_api_key}"
+    if settings.api_key:
+        headers["Authorization"] = f"Bearer {settings.api_key}"
 
-    log = logger.bind(request_id=getattr(request.state, "request_id", "n/a"))
+    if request is not None and hasattr(request, "state"):
+        req_id = getattr(request.state, "request_id", "n/a")
+    else:
+        req_id = "n/a"
+    log = logger.bind(request_id=req_id)
 
     with httpx.Client(
         timeout=httpx.Timeout(120, connect=10),
