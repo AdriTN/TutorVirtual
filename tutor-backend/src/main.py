@@ -1,7 +1,7 @@
 """
 Punto de entrada FastAPI + application-factory.
 
-> uvicorn src.app.main:create_app --factory --reload
+> uvicorn src.main:create_app --factory --reload
 """
 from pathlib import Path
 from fastapi import FastAPI
