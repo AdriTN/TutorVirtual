@@ -1,22 +1,40 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ...database.session import get_db
-from ...api.dependencies.auth import jwt_required
-from ...models import RefreshToken
+from app.database.session import get_db
+from app.api.dependencies.auth import jwt_required
+from app.models import RefreshToken
+from app.api.schemas.authlogout import LogoutIn
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
-
-
-class LogoutIn(BaseModel):
-    refresh_token: str
+router = APIRouter()
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(data: LogoutIn, _: dict = Depends(jwt_required), db: Session = Depends(get_db)):
-    row = db.query(RefreshToken).filter(RefreshToken.token == data.refresh_token).first()
-    if not row:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Token no encontrado")
-    db.delete(row)
+@router.post("/logout",
+             status_code=status.HTTP_204_NO_CONTENT,
+             summary="Invalidate a refresh token",
+             responses={
+                 204: {"description": "Token invalidado correctamente"},
+                 404: {"description": "Token no encontrado"},
+             })
+def logout(
+    payload: LogoutIn,
+    user: dict = Depends(jwt_required),
+    *,
+    db: Session = Depends(get_db),
+) -> None:
+    """
+    Elimina de la base de datos el *refresh token* indicado.
+    """
+    token_row = (
+        db.query(RefreshToken)
+        .filter_by(token=payload.refresh_token, user_id=user["user_id"])
+        .one_or_none()
+    )
+    if token_row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Token no encontrado",
+        )
+
+    db.delete(token_row)
     db.commit()
