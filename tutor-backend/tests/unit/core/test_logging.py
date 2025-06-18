@@ -72,7 +72,7 @@ def test_setup_logging_default_level_and_handler_and_formatter(monkeypatch):
     # format_exc_info
     assert procs[3] is structlog.processors.format_exc_info
     # JSONRenderer
-    assert procs[4] is structlog.processors.JSONRenderer
+    assert isinstance(procs[4], structlog.processors.JSONRenderer)
 
 
 @pytest.mark.parametrize("level_name,level_const", [
