@@ -9,7 +9,7 @@ from ...core.security import hash_password
 from app.api.schemas.auth import RegisterIn, RegisterOut
 from app.models.user import User
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter()
 
 
 @router.post(
