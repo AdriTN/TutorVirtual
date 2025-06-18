@@ -1,30 +1,47 @@
 from __future__ import annotations
-
 from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-Username = Annotated[str, Field(min_length=3, strip_whitespace=True)]
-Password = Annotated[
+Username = Annotated[
     str,
-    Field(
-        min_length=8,
-        pattern=r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$",
-        description="≥8 car., 1 mayús., 1 min., 1 dígito, 1 símbolo",
-    ),
+    Field(min_length=3, strip_whitespace=True)
 ]
-
 
 class RegisterIn(BaseModel):
     username: Username
-    email: EmailStr
-    password: Password
-    confirm_password: Password
+    email:    EmailStr
+    password: str = Field(
+        ...,
+        min_length=8,
+        description="Al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 dígito y 1 símbolo"
+    )
+    confirm_password: str
+
+    @field_validator("password")
+    @classmethod
+    def _check_password_strength(cls, v: str) -> str:
+        # longitud
+        if len(v) < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
+        # minúscula
+        if not any(c.islower() for c in v):
+            raise ValueError("La contraseña debe incluir al menos una letra minúscula")
+        # mayúscula
+        if not any(c.isupper() for c in v):
+            raise ValueError("La contraseña debe incluir al menos una letra mayúscula")
+        # dígito
+        if not any(c.isdigit() for c in v):
+            raise ValueError("La contraseña debe incluir al menos un dígito")
+        # símbolo (no alfanumérico)
+        if not any(not c.isalnum() for c in v):
+            raise ValueError("La contraseña debe incluir al menos un símbolo")
+        return v
 
     @field_validator("confirm_password")
     @classmethod
-    def _match(cls, v: str, values: dict[str, str]) -> str:
-        if v != values.get("password"):
+    def _match_passwords(cls, v: str, info) -> str:
+        if v != info.data.get("password"):
             raise ValueError("Las contraseñas no coinciden")
         return v
 
@@ -33,14 +50,14 @@ class RegisterIn(BaseModel):
             "example": {
                 "username": "AdaLovelace",
                 "email": "ada@example.com",
-                "password": "Str0ng!Pass",
-                "confirm_password": "Str0ng!Pass",
+                "password": "Str0ng!Pass1",
+                "confirm_password": "Str0ng!Pass1",
             }
         }
     )
 
 
 class RegisterOut(BaseModel):
-    id: int
+    id:       int
     username: str
-    email: EmailStr
+    email:    EmailStr
