@@ -5,7 +5,7 @@ from ...database.session import get_db
 from ...api.dependencies.auth import jwt_required
 from ...services import stats_service as svc
 
-router = APIRouter(prefix="/stats", tags=["Stats"])
+router = APIRouter()
 
 
 @router.get("/overview")
