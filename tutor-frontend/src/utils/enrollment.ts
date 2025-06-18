@@ -69,48 +69,48 @@ export interface ThemeStat {
 /* Cursos */
 
 export const fetchCourses = () =>
-  api.get<Course[]>("/api/course/courses").then((r) => r.data);
+  api.get<Course[]>("/api/courses/courses").then((r) => r.data);
 
 export const fetchCourse = (id: number) =>
-  api.get<Course>(`/api/course/${id}`).then((r) => r.data);
+  api.get<Course>(`/api/courses/${id}`).then((r) => r.data);
 
 export const fetchMyCourses = () =>
-  api.get<Course[]>("/api/course/my").then((r) => r.data);
+  api.get<Course[]>("/api/courses/my").then((r) => r.data);
 
 export const unenrollCourse = (courseId: number) =>
-  api.delete(`/api/course/${courseId}/unenroll`);
+  api.delete(`/api/courses/${courseId}/unenroll`);
 
 export const adminCreateCourse = (title: string, description?: string) =>
-  api.post("/api/course/create", { title, description });
+  api.post("/api/courses/create", { title, description });
 
 /* Asignaturas */
 export const enrollSubject = (id: number) =>
-  api.post(`/api/subject/${id}/enroll`);
+  api.post(`/api/subjects/${id}/enroll`);
 
 export const unenrollSubject = (subjectId: number) =>
-  api.delete(`/api/subject/${subjectId}/unenroll`);
+  api.delete(`/api/subjects/${subjectId}/unenroll`);
 
 export const adminCreateSubject = (name: string, description: string) =>
-  api.post("/api/subject/nueva", { name, description });
+  api.post("/api/subjects/nueva", { name, description });
 
 export const adminAddSubjectToCourse = (courseId: number, subjectId: number) =>
-  api.post(`/api/subject/${courseId}/subjects`, { subject_id: subjectId });
+  api.post(`/api/subjects/${courseId}/subjects`, { subject_id: subjectId });
 
 export const adminRemoveSubjectFromCourse = (courseId: number, subjectId: number) =>
-  api.delete(`/api/subject/${courseId}/subjects/${subjectId}`);
+  api.delete(`/api/subjects/${courseId}/subjects/${subjectId}`);
 
 /* Temas */
 export const fetchThemes = (subjectId: number) =>
-  api.get<Theme[]>(`/api/subject/${subjectId}/themes`).then((r) => r.data);
+  api.get<Theme[]>(`/api/subjects/${subjectId}/themes`).then((r) => r.data);
 
 export const adminCreateTheme = (
   nombre: string,
   descripcion: string,
   subjectId: number
-) => api.post("/api/theme/new", { nombre, descripcion, subject_id: subjectId });
+) => api.post("/api/themes/new", { nombre, descripcion, subject_id: subjectId });
 
 export const adminAddThemeToSubject = (subjectId: number, themeId: number) =>
-  api.post(`/api/theme/subject/${subjectId}/add`, { theme_id: themeId });
+  api.post(`/api/themes/subject/${subjectId}/add`, { theme_id: themeId });
 
 /* IA */
 export const askAI = (body:AIRequest)=>api.post<AIExerciseOut>("/api/ai/request", body).then(r=>r.data);
@@ -136,7 +136,7 @@ export const getStatsByTheme = () =>
   api.get<ThemeStat[]>("/api/stats/by-theme").then(r=>r.data);
 
 /* Opciones de selector (listar) --------------------------------- */
-export const listAllCourses   = () => api.get("/api/course/courses");
-export const listAllSubjects  = () => api.get("/api/subject/subjects");
+export const listAllCourses   = () => api.get("/api/courses/courses");
+export const listAllSubjects  = () => api.get("/api/subjects/subjects");
 export const listThemesBySubj = (subjId: number) =>
-  api.get(`/api/subject/${subjId}/themes`);
+  api.get(`/api/subjects/${subjId}/theme`);
