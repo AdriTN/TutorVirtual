@@ -20,23 +20,23 @@ class Settings(BaseSettings):
     port:            PositiveInt   = Field(5173, env="PORT")
 
     # ── DB ────────────────────────────────────────────────────
-    database_url:    PostgresDsn   = Field(..., env="DATABASE_URL")
+    database_url:    PostgresDsn   = Field("postgresql+psycopg://user:pass@localhost/test_db", env="DATABASE_URL")
     pool_size:       PositiveInt   = 10
 
     # ── Auth ─────────────────────────────────────────────────
-    jwt_secret:      str           = Field(..., env="JWT_SECRET", min_length=32)
+    jwt_secret:      str           = Field("test-secret-key-must-be-32chars-long!!", env="JWT_SECRET", min_length=32)
     jwt_algorithm:   str           = "HS256"
     jwt_access_minutes: PositiveInt = 30
     jwt_refresh_days:   PositiveInt = 3
     bcrypt_rounds:      PositiveInt = 12
 
     # ── Google OAuth ─────────────────────────────────────────
-    google_client_id:     str      = Field(..., env="GOOGLE_CLIENT_ID")
-    google_client_secret: str      = Field(..., env="GOOGLE_CLIENT_SECRET")
+    google_client_id:     str      = Field("", env="GOOGLE_CLIENT_ID")
+    google_client_secret: str      = Field("", env="GOOGLE_CLIENT_SECRET")
 
     # ── Ollama / RAG ─────────────────────────────────────────
     # We keep this as `str` so we don’t get HttpUrl’s extra slash
-    ollama_url:      str           = Field(..., env="OLLAMA_URL")
+    ollama_url:      str           = Field("http://localhost:11434", env="OLLAMA_URL")
     api_key:         Optional[str] = Field(None, env="API_KEY")
 
     # ── Misc ─────────────────────────────────────────────────
