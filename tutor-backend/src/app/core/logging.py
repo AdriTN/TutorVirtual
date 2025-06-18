@@ -23,6 +23,6 @@ def setup_logging(level: str = "INFO") -> None:
             structlog.processors.add_log_level,
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
-            structlog.processors.JSONRenderer,
+            structlog.processors.JSONRenderer(),
         ],
     )
