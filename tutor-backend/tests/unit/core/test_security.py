@@ -62,8 +62,16 @@ def test_decode_expired_token_returns_none():
     )
     assert sec.decode_token(expired_token) is None
 
-def test_create_refresh_token_is_uuid():
-    tok = sec.create_refresh_token()
-    # Debe ser un UUID válido
-    parsed = uuid.UUID(tok)
-    assert isinstance(parsed, uuid.UUID)
+def test_create_refresh_token_has_entropy_and_uniqueness():
+    tok1 = sec.create_refresh_token()
+    tok2 = sec.create_refresh_token()
+
+    assert isinstance(tok1, str)
+    assert isinstance(tok2, str)
+
+    # token_urlsafe(32) → ≥ 43 caracteres base64-url
+    assert len(tok1) >= 43
+    assert len(tok2) >= 43
+
+    # nunca deben coincidir
+    assert tok1 != tok2
