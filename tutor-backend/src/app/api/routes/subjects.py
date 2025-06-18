@@ -5,7 +5,7 @@ from ...database.session import get_db
 from ...api.dependencies.auth import jwt_required, admin_required
 from ...models import Subject, User
 
-router = APIRouter(prefix="/subjects", tags=["Subjects"])
+router = APIRouter()
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, dependencies=[Depends(admin_required)])
