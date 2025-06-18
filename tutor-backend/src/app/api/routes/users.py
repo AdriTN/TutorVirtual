@@ -5,7 +5,7 @@ from ...database.session import get_db
 from ...api.dependencies.auth import jwt_required, admin_required
 from ...models import User
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter()
 
 
 @router.get("/me")
