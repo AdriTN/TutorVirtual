@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
       try {
         const [uRes, cRes] = await Promise.all([
           api.get<UserData>("/api/users/me"),
-          api.get<Course[]>("/api/course/my"),
+          api.get<Course[]>("/api/courses/my"),
         ]);
         setUserData(uRes.data);
         setCourses(cRes.data);
