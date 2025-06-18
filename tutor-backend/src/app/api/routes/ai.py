@@ -9,27 +9,12 @@ from sqlalchemy.orm import Session
 
 from ...database.session import get_db
 from ...api.dependencies.auth import jwt_required
+from ...api.schemas.ai import RawOllamaRequest, AIExerciseOut
 from ...models import Exercise, Theme
 from ...services.exercise_service import create_exercise_from_ai
 from ...utils.ollama_client import generate_with_ollama
 
-router = APIRouter(prefix="/ai", tags=["AI"])
-
-
-# ────────── Schemas ──────────
-class RawOllamaRequest(BaseModel):
-    model: str
-    response_format: Dict[str, Any]
-    messages: List[Dict[str, Any]]
-
-
-class AIExerciseOut(BaseModel):
-    id: int
-    tema: str
-    enunciado: str
-    dificultad: str
-    tipo: str
-    explicacion: str | None = None
+router = APIRouter()
 
 
 # ────────── Endpoint ──────────
@@ -55,7 +40,7 @@ def ask_ollama(
 
     tema: Theme | None = (
         db.query(Theme)
-        .filter(func.lower(Theme.nombre) == data["tema"].strip().lower())
+        .filter(func.lower(Theme.name) == data["tema"].strip().lower())
         .first()
     )
     if not tema:
@@ -65,9 +50,9 @@ def ask_ollama(
 
     return AIExerciseOut(
         id=ej.id,
-        tema=tema.nombre,
-        enunciado=ej.enunciado,
-        dificultad=ej.dificultad,
-        tipo=ej.tipo,
-        explicacion=ej.explicacion,
+        tema=tema.name,
+        enunciado=ej.statement,
+        dificultad=ej.difficulty,
+        tipo=ej.type,
+        explicacion=ej.explanation,
     )
