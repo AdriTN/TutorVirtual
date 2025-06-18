@@ -1,3 +1,4 @@
+from app.api.schemas.answer import AnswerOut, AnswerIn
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -7,17 +8,7 @@ from ...api.dependencies.auth import jwt_required
 from ...models import Exercise
 from ...services.exercise_service import register_user_answer
 
-router = APIRouter(prefix="/answer", tags=["Answer"])
-
-
-class AnswerIn(BaseModel):
-    ejercicio_id: int
-    respuesta: str
-    tiempo_seg: int | None = None
-
-
-class AnswerOut(BaseModel):
-    correcto: bool
+router = APIRouter()
 
 
 @router.post("", response_model=AnswerOut, status_code=status.HTTP_201_CREATED)
@@ -31,6 +22,6 @@ def answer(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Ejercicio no encontrado")
 
     ok = register_user_answer(
-        payload["user_id"], ej, body.respuesta, body.tiempo_seg, db
+        payload["user_id"], ej, body.answer, body.tiempo_seg, db
     )
     return AnswerOut(correcto=ok)
