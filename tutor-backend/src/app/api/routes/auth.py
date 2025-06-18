@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.exc import IntegrityError
 
+from app.api.schemas.authlog import LoginIn, RefreshIn, TokenOut
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from sqlalchemy  import delete
 from sqlalchemy.orm import Session
 
 from ...database.session import get_db
@@ -12,22 +14,7 @@ from ...core.security import (
 )
 from ...models import User, RefreshToken
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
-
-
-# ──────────── Pydantic ────────────
-class LoginIn(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class RefreshIn(BaseModel):
-    refresh_token: str
-
-
-class TokenOut(BaseModel):
-    access_token: str
-    refresh_token: str
+router = APIRouter()
 
 
 # ──────────── Endpoints ───────────
@@ -48,23 +35,32 @@ def login(data: LoginIn, db: Session = Depends(get_db)) -> TokenOut:
 @router.post("/refresh", response_model=TokenOut)
 def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
     stored: RefreshToken | None = (
-        db.query(RefreshToken).filter(RefreshToken.token == data.refresh_token).first()
+        db.query(RefreshToken).filter_by(token=data.refresh_token).first()
     )
     if not stored:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Token inválido")
 
-    if stored.expires_at < datetime.now(timezone.utc):
-        db.delete(stored)
+    # ── token caducado ────────────────────────────────────────────────────
+    exp = stored.expires_at
+    if exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+
+    if exp < datetime.now(timezone.utc):
+        db.execute(delete(RefreshToken).where(RefreshToken.id == stored.id))
         db.commit()
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Token expirado")
 
-    # rotación
-    stored.token = create_refresh_token()
-    stored.expires_at = _expiry(days=3)
-    db.commit()
-    db.refresh(stored)
+    # ── rotación garantizando unicidad ───────────────────────────────────
+    while True:
+        stored.token = create_refresh_token()
+        stored.expires_at = datetime.now(timezone.utc) + timedelta(days=3)
+        try:
+            db.commit()
+            break
+        except IntegrityError:
+            db.rollback()
 
-    user: User = db.query(User).get(stored.user_id)
+    user: User = db.get(User, stored.user_id)
 
     return TokenOut(
         access_token=create_access_token(user.id, user.is_admin),
