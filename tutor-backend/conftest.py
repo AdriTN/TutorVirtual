@@ -63,17 +63,6 @@ def _fake_psycopg_module(name: str) -> types.ModuleType:
     return m
 
 
-for _mod in (
-    "psycopg",
-    "psycopg_pool",
-    "psycopg.rows",
-    "psycopg.adapt",
-    # Compatibilidad con proyectos que sigan usando «psycopg2»
-    "psycopg2",
-    "psycopg2.extensions",
-):
-    sys.modules.setdefault(_mod, _fake_psycopg_module(_mod))
-
 # ──────────────────── 3) Añadimos el repo al PYTHONPATH ────────────────────
 ROOT = Path(__file__).resolve().parents[1]  # …/tutor-backend
 sys.path.insert(0, str(ROOT))               # para importar como «src.»
