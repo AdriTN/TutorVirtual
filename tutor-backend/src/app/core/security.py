@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-import uuid
+import secrets
 
 import jwt
 from passlib.context import CryptContext
@@ -66,4 +66,4 @@ def create_refresh_token() -> str:
     """
     Genera un UUID4 como token de refresco.
     """
-    return str(uuid.uuid4())
+    return secrets.token_urlsafe(32)
