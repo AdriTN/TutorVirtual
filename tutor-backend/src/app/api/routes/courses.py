@@ -69,7 +69,7 @@ def my_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_
     return [_course_to_schema(c, user) for c in user.courses]
 
 
-@router.get("", response_model=list[CourseOut])
+@router.get("/courses", response_model=list[CourseOut])
 def list_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
     user: User = (
         db.query(User).options(selectinload(User.subjects)).get(payload["user_id"])
