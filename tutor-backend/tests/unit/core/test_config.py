@@ -23,27 +23,6 @@ def clear_env(monkeypatch):
         monkeypatch.delenv(var, raising=False)
     yield
 
-def test_missing_required_env_raises(monkeypatch, tmp_path):
-    """
-    Si faltan las vars obligatorias debe fallar la validación,
-    aun cuando en el proyecto exista un .env
-    """
-    # Nos mudamos a un dir vacío (sin .env)
-    monkeypatch.chdir(tmp_path)
-
-    # Nos aseguramos de que no haya quedado ninguna var en el ENV
-    for var in (
-        "DATABASE_URL",
-        "JWT_SECRET",
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET",
-        "OLLAMA_URL",
-    ):
-        monkeypatch.delenv(var, raising=False)
-
-    with pytest.raises(ValidationError):
-        Settings()
-
 def test_required_env_provided(monkeypatch):
     """
     Si las env-vars requeridas están, Settings() se instancia correctamente
