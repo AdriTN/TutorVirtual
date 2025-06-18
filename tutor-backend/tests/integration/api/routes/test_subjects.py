@@ -15,13 +15,16 @@ from starlette.status import (
 
 from app.models import Subject, User
 
-API = "/api/subjects"
+API = "/api/subjects"        # prefijo común
 
 
 # ───────────────────────── helpers ──────────────────────────
 def _mk_subject(client, name: str, *, desc: str | None = None):
-    body = {"name": name, **({"description": desc} if desc else {})}
-    return client.post(API, json=body)
+    """POST /api/subjects/nueva (description es obligatoria)."""
+    if desc is None:                     # proveemos una por defecto
+        desc = f"{name} desc"
+    body = {"name": name, "description": desc}
+    return client.post(f"{API}/nueva", json=body)
 
 
 def _enroll(client, subj_id: int):
@@ -34,35 +37,30 @@ def _unenroll(client, subj_id: int):
 
 # ───────────────────────── tests ────────────────────────────
 def test_create_subject_ok(client, db_session):
-    """
-    ✔ Devuelve 201 y persiste el subject.
-    """
+    """✔ Devuelve 201 y persiste el subject."""
     resp = _mk_subject(client, "Maths", desc="Álgebra y cálculo")
     assert resp.status_code == HTTP_201_CREATED
-    data = resp.json()
-    assert data == {"id": 1, "name": "Maths", "description": "Álgebra y cálculo"}
-
-    # BBDD realmente contiene la fila
+    assert resp.json() == {
+        "id": 1,
+        "name": "Maths",
+        "description": "Álgebra y cálculo",
+    }
     assert db_session.query(Subject).count() == 1
 
 
 def test_create_subject_duplicate(client, db_session):
-    """
-    ✔ Nombre repetido → 409 Conflict.
-    """
-    _mk_subject(client, "Physics")
-    resp = _mk_subject(client, "Physics")
+    """✔ Nombre repetido → 409 Conflict."""
+    _mk_subject(client, "Physics", desc="Física clásica")
+    resp = _mk_subject(client, "Physics", desc="Física clásica")
     assert resp.status_code == HTTP_409_CONFLICT
-    assert db_session.query(Subject).count() == 1   # nada nuevo
+    assert db_session.query(Subject).count() == 1
 
 
 def test_list_subjects(client):
-    """
-    ✔ GET /subjects devuelve todos los registros.
-    """
-    _mk_subject(client, "Art")
-    _mk_subject(client, "History")
-    resp = client.get(API)
+    """✔ GET /subjects devuelve todos los registros."""
+    _mk_subject(client, "Art", desc="Historia del arte")
+    _mk_subject(client, "History", desc="Historia universal")
+    resp = client.get(f"{API}/subjects")
     assert resp.status_code == 200
     names = {s["name"] for s in resp.json()}
     assert names == {"Art", "History"}
@@ -70,38 +68,28 @@ def test_list_subjects(client):
 
 def test_enroll_and_unenroll_flow(client, db_session):
     """
-    ✔ Post /enroll asocia el subject al usuario.
-    ✔ Delete /unenroll quita la relación y cursos huérfanos.
+    ✔ POST /enroll asocia el subject al usuario.
+    ✔ DELETE /unenroll quita la relación y cursos huérfanos.
     """
-    # Creamos usuario 1 en BBDD (conftest solo “finge” el payload JWT)
     user = User(id=1, username="test", email="t@t.com", password="x")
-    db_session.add(user)
-    subj = Subject(name="Bio")
-    db_session.add(subj)
+    subj = Subject(name="Bio", description="Biología")
+    db_session.add_all([user, subj])
     db_session.commit()
 
-    # --- enroll -------------------------------------------------
-    resp = _enroll(client, subj.id)
-    assert resp.status_code == HTTP_204_NO_CONTENT
+    assert _enroll(client, subj.id).status_code == HTTP_204_NO_CONTENT
     db_session.refresh(user)
     assert subj in user.subjects
 
-    # idempotencia: segundo enrolamiento debe ser inofensivo
     assert _enroll(client, subj.id).status_code == HTTP_204_NO_CONTENT
 
-    # --- unenroll ----------------------------------------------
-    resp = _unenroll(client, subj.id)
-    assert resp.status_code == HTTP_204_NO_CONTENT
+    assert _unenroll(client, subj.id).status_code == HTTP_204_NO_CONTENT
     db_session.refresh(user)
     assert subj not in user.subjects
 
-    # idempotencia de nuevo
     assert _unenroll(client, subj.id).status_code == HTTP_204_NO_CONTENT
 
 
 def test_enroll_unenroll_subject_not_found(client):
-    """
-    ✔ Subject inexistente → 404.
-    """
+    """✔ Subject inexistente → 404."""
     assert _enroll(client, 999).status_code   == HTTP_404_NOT_FOUND
     assert _unenroll(client, 999).status_code == HTTP_404_NOT_FOUND

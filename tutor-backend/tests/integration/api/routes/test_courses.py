@@ -125,7 +125,7 @@ def test_list_courses_enrolled_flag(client, db_session, sample_data, monkeypatch
     user, course1, course2, subj_enrolled = sample_data
     _as_user(monkeypatch, user)
 
-    r = client.get("/api/courses")
+    r = client.get("/api/courses/courses")
     assert r.status_code == 200
     payload = r.json()
     assert {c["title"] for c in payload} == {"C1", "C2"}
