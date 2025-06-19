@@ -2,13 +2,13 @@ from sqlalchemy import Text, Boolean, DateTime, UniqueConstraint
 from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.sql import func
 
-from app.database.base import Base
+from src.database.base import Base
 # Importamos los modelos relacionados para forzar el registro en Base.metadata
-import app.models.exercise
-import app.models.user
-from app.models.user_response import UserResponse
-from app.models.exercise import Exercise
-from app.models.user import User
+import src.models.exercise
+import src.models.user
+from src.models.user_response import UserResponse
+from src.models.exercise import Exercise
+from src.models.user import User
 
 
 def test_user_response_table_registered():

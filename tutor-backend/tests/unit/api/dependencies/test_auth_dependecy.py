@@ -2,8 +2,8 @@ import pytest
 from fastapi import HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 
-from app.api.dependencies.auth import jwt_required, admin_required
-import app.api.dependencies.auth as auth_dep
+from src.api.dependencies.auth import jwt_required, admin_required
+import src.api.dependencies.auth as auth_dep
 
 @pytest.fixture(autouse=True)
 def clear_decode_token(monkeypatch):

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 from sqlalchemy.orm import Session
 
-from app.models import RefreshToken
+from src.models import RefreshToken
 
 
 # ───────── helpers ──────────────────────────────────────────────────────────

@@ -13,7 +13,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from app.models import Subject, User
+from src.models import Subject, User
 
 API = "/api/subjects"        # prefijo común
 

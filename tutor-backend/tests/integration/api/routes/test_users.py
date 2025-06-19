@@ -6,8 +6,8 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
     HTTP_404_NOT_FOUND,
 )
-from app.models import User
-from app.core.security import hash_password
+from src.models import User
+from src.core.security import hash_password
 
 
 def _insert_user(db, *, uname, email, is_admin=False):

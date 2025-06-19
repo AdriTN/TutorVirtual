@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.api.schemas.answer import AnswerIn, AnswerOut
+from src.api.schemas.answer import AnswerIn, AnswerOut
 
 VALID_IN = {
     "ejercicio_id": 1,

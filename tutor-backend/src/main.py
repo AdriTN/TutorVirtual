@@ -7,11 +7,11 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .app.api.dependencies.settings import get_settings
-from .app.core.logging      import setup_logging
-from .app.api.routes        import api_router
-from .app.database.base     import Base
-from .app.database.session  import get_engine
+from src.api.dependencies.settings import get_settings
+from src.core.logging      import setup_logging
+from src.api.routes        import api_router
+from src.database.base     import Base
+from src.database.session  import get_engine
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]

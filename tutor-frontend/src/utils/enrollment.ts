@@ -139,4 +139,4 @@ export const getStatsByTheme = () =>
 export const listAllCourses   = () => api.get("/api/courses/courses");
 export const listAllSubjects  = () => api.get("/api/subjects/subjects");
 export const listThemesBySubj = (subjId: number) =>
-  api.get(`/api/subjects/${subjId}/theme`);
+  api.get(`/api/subjects/${subjId}/themes`);

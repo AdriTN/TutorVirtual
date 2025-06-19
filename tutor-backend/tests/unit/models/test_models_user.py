@@ -1,16 +1,16 @@
 from sqlalchemy import Boolean, String, ColumnDefault
 from sqlalchemy.orm.relationships import RelationshipProperty
 
-from app.database.base import Base
+from src.database.base import Base
 # Importamos todos los módulos de modelos para que se registren en Base.metadata
-import app.models.user          # noqa: F401
-import app.models.course        # noqa: F401
-import app.models.subject       # noqa: F401
-import app.models.associations  # noqa: F401
-import app.models.user_response # noqa: F401
-import app.models.user_theme_progress  # noqa: F401
+import src.models.user          # noqa: F401
+import src.models.course        # noqa: F401
+import src.models.subject       # noqa: F401
+import src.models.associations  # noqa: F401
+import src.models.user_response # noqa: F401
+import src.models.user_theme_progress  # noqa: F401
 
-from app.models.user import User, UserProvider, RefreshToken
+from src.models.user import User, UserProvider, RefreshToken
 
 
 def test_users_table_registered():
@@ -87,20 +87,20 @@ def test_user_relationships():
 
     # respuestas (user_responses)
     rr = rels["respuestas"]
-    from app.models.user_response import UserResponse
+    from src.models.user_response import UserResponse
     assert rr.mapper.class_ is UserResponse
     assert rr.back_populates == "user"
     assert rr.uselist is True
 
     # progress (user_theme_progress)
     pg = rels["progress"]
-    from app.models.user_theme_progress import UserThemeProgress
+    from src.models.user_theme_progress import UserThemeProgress
     assert pg.mapper.class_ is UserThemeProgress
     assert pg.uselist is True
 
     # courses (many-to-many)
     cr = rels["courses"]
-    from app.models.course import Course
+    from src.models.course import Course
     assert cr.mapper.class_ is Course
     assert cr.secondary.name == "user_courses"
     assert cr.back_populates == "students"
@@ -108,7 +108,7 @@ def test_user_relationships():
 
     # subjects (many-to-many)
     sb = rels["subjects"]
-    from app.models.subject import Subject
+    from src.models.subject import Subject
     assert sb.mapper.class_ is Subject
     assert sb.secondary.name == "user_subjects"
     assert sb.back_populates == "users"

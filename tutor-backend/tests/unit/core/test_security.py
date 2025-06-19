@@ -3,7 +3,7 @@ import jwt
 import uuid
 from datetime import datetime, timedelta, timezone
 
-import app.core.security as sec
+import src.core.security as sec
 
 class DummySettings:
     jwt_secret = "x" * 32

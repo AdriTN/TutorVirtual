@@ -1,17 +1,17 @@
 from sqlalchemy import String, Text
 from sqlalchemy.orm import RelationshipProperty
 
-from app.database.base import Base
+from src.database.base import Base
 # Importamos los modelos para que se registren en Base.metadata
-import app.models.subject
-import app.models.course
-import app.models.user
-import app.models.theme
+import src.models.subject
+import src.models.course
+import src.models.user
+import src.models.theme
 
-from app.models.subject import Subject
-from app.models.course import Course
-from app.models.user import User
-from app.models.theme import Theme
+from src.models.subject import Subject
+from src.models.course import Course
+from src.models.user import User
+from src.models.theme import Theme
 
 
 def test_subject_table_registered():

@@ -10,7 +10,7 @@ from starlette.status import (
     HTTP_200_OK,
 )
 
-from app.models import Subject, Theme
+from src.models import Subject, Theme
 
 
 # ───────────────── helpers ──────────────────────────────

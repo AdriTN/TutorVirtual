@@ -2,8 +2,8 @@ import json
 import pytest
 import httpx
 
-from app.models import Theme
-import src.app.api.routes.ai as ai_module
+from src.models import Theme
+import src.api.routes.ai as ai_module
 
 
 def insert_theme(db_session, name="Números naturales", description="Tema de prueba"):
@@ -102,7 +102,7 @@ def test_success_path(client, db_session, monkeypatch):
     assert body["explicacion"] == data["explicacion"]
 
     # Además debe haberse creado el Exercise en la BBDD
-    from app.models import Exercise
+    from src.models import Exercise
     ej = db_session.query(Exercise).get(body["id"])
     assert ej is not None
     assert ej.answer == data["respuesta"]

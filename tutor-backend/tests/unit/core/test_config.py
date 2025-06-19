@@ -1,7 +1,7 @@
 import os
 import pytest
 from pydantic import ValidationError
-from app.core.config import Settings, get_settings
+from src.core.config import Settings, get_settings
 
 @pytest.fixture(autouse=True)
 def clear_env(monkeypatch):

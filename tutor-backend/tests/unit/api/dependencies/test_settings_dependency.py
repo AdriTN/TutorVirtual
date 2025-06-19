@@ -1,8 +1,8 @@
 # tests/unit/api/dependencies/test_settings.py
 
 import pytest
-from app.api.dependencies.settings import settings_dependency
-from app.core.config import get_settings, Settings
+from src.api.dependencies.settings import settings_dependency
+from src.core.config import get_settings, Settings
 
 @pytest.fixture(autouse=True)
 def clear_settings_cache():

@@ -5,7 +5,7 @@ from starlette.status import (
 )
 from sqlalchemy.orm import Session
 
-from app.models import User
+from src.models import User
 
 
 # ───────────────── helpers ──────────────────────────────────────────────
