@@ -4,7 +4,7 @@ import sys
 import pytest
 import structlog
 
-import app.core.logging as core_logging
+import src.core.logging as core_logging
 
 @pytest.fixture(autouse=True)
 def reset_logging(monkeypatch):

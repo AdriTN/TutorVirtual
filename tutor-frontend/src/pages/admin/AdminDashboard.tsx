@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 import { useCourses }  from "../../hooks/useCourses";
@@ -24,19 +24,18 @@ import styles from "./AdminDashboard.module.css";
 import { Spinner } from "../../components/spinner/Spinner";
 
 const toInt = (v: string) => Number.parseInt(v, 10);
-
 type ToastState = { msg: string; varnt: "success"|"error"|"info" } | null;
 
 export default function AdminDashboard() {
   const qc = useQueryClient();
 
   /* ---------- datos base ---------- */
-  const coursesQ  = useCourses();                     // AxiosResponse<Course[]>
-  const subjectsQ = useSubjects();                    // AxiosResponse<Subject[]>
+  const coursesQ  = useCourses();
+  const subjectsQ = useSubjects();
   const courseList:  Course[]  = coursesQ.data?.data  ?? [];
   const subjectList: Subject[] = subjectsQ.data?.data ?? [];
 
-  /* ---------- UI state ---------- */
+  /* ---------- UI global ---------- */
   const [tab, setTab] = useState<"catalog"|"links"|"users">("catalog");
   const [toast, setToast] = useState<ToastState>(null);
 
@@ -49,7 +48,7 @@ export default function AdminDashboard() {
   const [sName,setSName]   = useState(""); const [sDesc,setSDesc] = useState("");
   const [tTitle,setTTitle] = useState("");const [tDesc,setTDesc]  = useState("");const [tSubj,setTSubj]=useState("");
 
-  /* ---------- mutaciones catálogo ---------- */
+  /* ---------- mutaciones de catálogo ---------- */
   const createCourse = useMutation({
     mutationFn: () => adminCreateCourse(cTitle, cDesc),
     onSuccess: () => {
@@ -80,54 +79,69 @@ export default function AdminDashboard() {
     onError: () => setToast({ msg: "Error al crear tema", varnt: "error" })
   });
 
-  /* ---------- links ---------- */
-  const [courseId,setCourseId]   = useState("");
-  const [subjectId,setSubjectId] = useState("");
-  const [linkSubjId,setLinkSubjId] = useState("");
-  const [themeId,setThemeId]     = useState("");
+  /* ---------- enlaces curso-asignatura ---------- */
+  const [courseId,   setCourseId]   = useState("");
+  const [subjAddId,  setSubjAddId]  = useState("");   // selector “añadir”
+  const [subjDelId,  setSubjDelId]  = useState("");   // selector “quitar”
+  const [linkSubjId, setLinkSubjId] = useState("");   // para temas
+  const [themeId,    setThemeId]    = useState("");
 
-  const subjectsByCourse: Subject[] = useMemo(() => {
-    if (!courseId) return subjectList;
-    const course = courseList.find((c) => c.id === toInt(courseId));
-    return course ? course.subjects : [];
-  }, [courseId, courseList, subjectList]);
+  /* ---------- listas derivadas ---------- */
+  const courseSelected = courseList.find(c => c.id === toInt(courseId));
+  const inCourse       = courseSelected?.subjects ?? [];
 
-  const themesQ = useThemes(linkSubjId);
-  const themeList: Theme[] = themesQ.data?.data ?? [];
+  const subjectsToAdd: Subject[] = subjectList.filter(
+    s => !inCourse.some(ic => ic.id === s.id)
+  );
+  const subjectsToDel: Subject[] = inCourse;
 
+  /* ---------- mutaciones de vínculo ---------- */
   const addSubj = useMutation({
-    mutationFn: () => adminAddSubjectToCourse(toInt(courseId), toInt(subjectId)),
+    mutationFn: () => adminAddSubjectToCourse(toInt(courseId), toInt(subjAddId)),
     onSuccess: () => {
-      setCourseId(""); setSubjectId("");
-      setToast({msg:"Asignatura añadida",varnt:"success"});
+      qc.invalidateQueries({ queryKey: ["courses"] });
+      setSubjAddId("");
+      setToast({ msg: "Asignatura añadida", varnt: "success" });
     },
-    onError: () => setToast({msg:"Error al añadir asignatura",varnt:"error"})
+    onError: () => setToast({ msg: "Error al añadir asignatura", varnt: "error" })
   });
 
   const removeSubj = useMutation({
-    mutationFn: () => adminRemoveSubjectFromCourse(toInt(courseId), toInt(subjectId)),
+    mutationFn: () => adminRemoveSubjectFromCourse(toInt(courseId), toInt(subjDelId)),
     onMutate: async () => {
       if (!window.confirm("¿Quitar la asignatura del curso?")) throw new Error("cancelado");
     },
     onSuccess: () => {
-      setCourseId(""); setSubjectId("");
-      setToast({msg:"Asignatura desvinculada",varnt:"info"});
+      qc.invalidateQueries({ queryKey: ["courses"] });
+      setSubjDelId("");
+      setToast({ msg: "Asignatura desvinculada", varnt: "info" });
     },
     onError: (err) => {
       if ((err as Error).message !== "cancelado")
-        setToast({msg:"Error al desvincular asignatura",varnt:"error"});
+        setToast({ msg: "Error al desvincular asignatura", varnt: "error" });
     }
   });
 
+  /* ---------- temas → asignatura ---------- */
+  const themesQ = useThemes(linkSubjId);
+  const themeList: Theme[] = themesQ.data?.data ?? [];
+
   const addTheme = useMutation({
     mutationFn: () => adminAddThemeToSubject(toInt(linkSubjId), toInt(themeId)),
-    onSuccess: () => { setLinkSubjId(""); setThemeId(""); setToast({msg:"Tema vinculado",varnt:"success"}); },
-    onError: () => setToast({msg:"Error al vincular tema",varnt:"error"})
+    onSuccess: () => {
+      setLinkSubjId(""); setThemeId("");
+      setToast({ msg: "Tema vinculado", varnt: "success" });
+    },
+    onError: () => setToast({ msg: "Error al vincular tema", varnt: "error" })
   });
 
-  /* ---------- loaders globales ---------- */
+  /* ---------- loaders ---------- */
   if (coursesQ.isLoading || subjectsQ.isLoading)
-    return <div style={{display:"flex",justifyContent:"center",marginTop:"4rem"}}><Spinner size={40}/></div>;
+    return (
+      <div style={{display:"flex",justifyContent:"center",marginTop:"4rem"}}>
+        <Spinner size={40}/>
+      </div>
+    );
 
   if (coursesQ.isError || subjectsQ.isError)
     return <Toast message="Error al cargar datos" variant="error" />;
@@ -139,18 +153,26 @@ export default function AdminDashboard() {
         <NavBar />
 
         <main className={styles.main}>
-
           {/* Tabs */}
           <div className={styles.tabs} role="tablist">
-            <TabButton id="tab-cat"  controls="panel-cat"  active={tab==="catalog"} onClick={()=>setTab("catalog")}>Catálogo</TabButton>
-            <TabButton id="tab-link" controls="panel-link" active={tab==="links"}   onClick={()=>setTab("links")}>Vínculos</TabButton>
-            <TabButton id="tab-user" controls="panel-user" active={tab==="users"}   onClick={()=>setTab("users")}>Usuarios</TabButton>
+            <TabButton id="tab-cat"  controls="panel-cat"
+                       active={tab==="catalog"} onClick={()=>setTab("catalog")}>
+              Catálogo
+            </TabButton>
+            <TabButton id="tab-link" controls="panel-link"
+                       active={tab==="links"}   onClick={()=>setTab("links")}>
+              Vínculos
+            </TabButton>
+            <TabButton id="tab-user" controls="panel-user"
+                       active={tab==="users"}   onClick={()=>setTab("users")}>
+              Usuarios
+            </TabButton>
           </div>
 
           {/* ---------- Catálogo ---------- */}
           {tab==="catalog" && (
             <section id="panel-cat" role="tabpanel" aria-labelledby="tab-cat"
-                    className={`${styles.container} ${styles.grid}`}>
+                     className={`${styles.container} ${styles.grid}`}>
               <AdminCard title={`Cursos (${courseList.length})`}>
                 <button onClick={()=>setShowCourse(true)}>Nuevo curso</button>
               </AdminCard>
@@ -166,33 +188,42 @@ export default function AdminDashboard() {
           {/* ---------- Vínculos ---------- */}
           {tab==="links" && (
             <section id="panel-link" role="tabpanel" aria-labelledby="tab-link"
-                    className={`${styles.container} ${styles.gridWide}`}>
+                     className={`${styles.container} ${styles.gridWide}`}>
 
+              {/* ───────────────── Asignatura → Curso ───────────────── */}
               <AdminCard title="Asignatura → Curso">
                 <div className={styles.vForm}>
+                  {/* Selector de curso */}
                   <SelectField id="selCourse" label="Curso" value={courseId}
-                    onChange={v=>{setCourseId(v); setSubjectId("");}}
+                    onChange={(v)=>{ setCourseId(v); setSubjAddId(""); setSubjDelId(""); }}
                     options={courseList.map(c=>({id:c.id,label:c.title}))}/>
 
-                  <SelectField id="selSubj" label="Asignatura" value={subjectId}
-                    onChange={setSubjectId}
-                    options={subjectsByCourse.map(s=>({id:s.id,label:s.name}))}/>
+                  {/* Selector A -> Añadir */}
+                  <SelectField id="selSubjAdd" label="Añadir asignatura" value={subjAddId}
+                    options={!courseId ? [] : subjectsToAdd.map(s => ({ id: s.id, label: s.name }))}
+                    onChange={setSubjAddId}/>
 
-                  <div className={styles.actions}>
-                    <button disabled={!courseId||!subjectId||addSubj.isPending}
-                            onClick={()=>addSubj.mutate()}>
-                      {addSubj.isPending ? <Spinner size={16}/> : "Añadir"}
-                    </button>
+                  <button disabled={!courseId||!subjAddId||addSubj.isPending}
+                          onClick={()=>addSubj.mutate()}>
+                    {addSubj.isPending ? <Spinner size={16}/> : "Añadir"}
+                  </button>
 
-                    <button className={styles.remove}
-                            disabled={!courseId||!subjectId||removeSubj.isPending}
-                            onClick={()=>removeSubj.mutate()}>
-                      {removeSubj.isPending ? <Spinner size={16}/> : "Quitar"}
-                    </button>
-                  </div>
+                  <hr className={styles.divider}/>
+
+                  {/* Selector B -> Quitar */}
+                  <SelectField id="selSubjDel" label="Quitar asignatura" value={subjDelId}
+                    onChange={setSubjDelId}
+                    options={!courseId ? [] : subjectsToDel.map(s=>({id:s.id,label:s.name}))}/>
+
+                  <button className={styles.remove}
+                          disabled={!courseId||!subjDelId||removeSubj.isPending}
+                          onClick={()=>removeSubj.mutate()}>
+                    {removeSubj.isPending ? <Spinner size={16}/> : "Quitar"}
+                  </button>
                 </div>
               </AdminCard>
 
+              {/* ───────────────── Tema → Asignatura ───────────────── */}
               <AdminCard title="Tema → Asignatura">
                 <div className={styles.vForm}>
                   <SelectField id="selSubjTheme" label="Asignatura" value={linkSubjId}
@@ -216,11 +247,13 @@ export default function AdminDashboard() {
             </section>
           )}
 
-          {/* ---------- Usuarios placeholder ---------- */}
+          {/* ---------- Usuarios (placeholder) ---------- */}
           {tab==="users" && (
             <section id="panel-user" role="tabpanel" aria-labelledby="tab-user"
-                    className={styles.container}>
-              <p style={{marginTop:"2rem"}}>Aquí podrás gestionar los usuarios (pendiente).</p>
+                     className={styles.container}>
+              <p style={{marginTop:"2rem"}}>
+                Aquí podrás gestionar los usuarios (pendiente).
+              </p>
             </section>
           )}
 

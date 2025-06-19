@@ -5,8 +5,8 @@ import pytest
 from starlette.testclient import TestClient
 from sqlalchemy.orm import Session
 
-import src.app.api.routes.courses as courses_module
-from app.models import User, Course, Subject, Theme
+import src.api.routes.courses as courses_module
+from src.models import User, Course, Subject, Theme
 
 
 # ───────────────── helpers ──────────────────────────────────────────────────

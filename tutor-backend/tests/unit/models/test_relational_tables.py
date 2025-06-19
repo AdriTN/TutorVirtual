@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy import Table, MetaData, UniqueConstraint
 
-from app.database.base import Base
-from app.models.associations import user_courses, user_subjects, course_subjects
+from src.database.base import Base
+from src.models.associations import user_courses, user_subjects, course_subjects
 
 @pytest.fixture(scope="module")
 def metadata() -> MetaData:

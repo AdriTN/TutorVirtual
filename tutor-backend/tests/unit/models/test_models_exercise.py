@@ -2,14 +2,14 @@ import pytest
 from sqlalchemy import Text, String, DateTime, ForeignKey
 from sqlalchemy.orm import RelationshipProperty
 
-from app.database.base import Base
-import app.models.theme            # registra Theme y su relación
-import app.models.user_response   # registra UserResponse y su relación
-import app.models.exercise        # registra Exercise
+from src.database.base import Base
+import src.models.theme            # registra Theme y su relación
+import src.models.user_response   # registra UserResponse y su relación
+import src.models.exercise        # registra Exercise
 
-from app.models.exercise import Exercise
-from app.models.theme import Theme
-from app.models.user_response import UserResponse
+from src.models.exercise import Exercise
+from src.models.theme import Theme
+from src.models.user_response import UserResponse
 
 
 def test_exercise_table_registered():

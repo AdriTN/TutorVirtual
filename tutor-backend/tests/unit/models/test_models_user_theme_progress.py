@@ -1,11 +1,11 @@
 from sqlalchemy import Integer, DateTime as SaDateTime
 from sqlalchemy.sql.schema import ColumnDefault
 
-from app.database.base import Base
+from src.database.base import Base
 # Importamos los modelos relacionados para que sus tablas queden registradas
-import app.models.user  # noqa: F401
-import app.models.theme  # noqa: F401
-from app.models.user_theme_progress import UserThemeProgress
+import src.models.user  # noqa: F401
+import src.models.theme  # noqa: F401
+from src.models.user_theme_progress import UserThemeProgress
 
 
 def test_table_registered():

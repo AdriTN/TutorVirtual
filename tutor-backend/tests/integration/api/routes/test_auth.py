@@ -2,9 +2,9 @@ from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-import src.app.api.routes.auth as auth_module
-from app.models import User, RefreshToken
-from app.core.security import hash_password
+import src.api.routes.auth as auth_module
+from src.models import User, RefreshToken
+from src.core.security import hash_password
 
 
 # ------------- helpers ----------------

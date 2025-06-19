@@ -1,8 +1,8 @@
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import RelationshipProperty
 
-from app.models.course import Course
-from app.models.associations import course_subjects, user_courses
+from src.models.course import Course
+from src.models.associations import course_subjects, user_courses
 
 
 def test_tablename_registered():

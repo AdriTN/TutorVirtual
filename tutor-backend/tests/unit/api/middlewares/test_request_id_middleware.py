@@ -4,7 +4,7 @@ import pytest
 from fastapi import FastAPI, Request
 from starlette.testclient import TestClient
 
-from app.api.middlewares.request_id import RequestIDMiddleware
+from src.api.middlewares.request_id import RequestIDMiddleware
 
 # Creamos una mini-app fastapi para probar el middleware
 @pytest.fixture

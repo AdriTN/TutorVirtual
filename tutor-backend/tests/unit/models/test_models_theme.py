@@ -2,15 +2,15 @@ import pytest
 from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.orm import RelationshipProperty
 
-from app.database.base import Base
+from src.database.base import Base
 # Importamos los modelos relacionados para que se registren en Base.metadata
-import app.models.subject
-import app.models.exercise
-import app.models.user_theme_progress
-from app.models.theme import Theme
-from app.models.subject import Subject
-from app.models.exercise import Exercise
-from app.models.user_theme_progress import UserThemeProgress
+import src.models.subject
+import src.models.exercise
+import src.models.user_theme_progress
+from src.models.theme import Theme
+from src.models.subject import Subject
+from src.models.exercise import Exercise
+from src.models.user_theme_progress import UserThemeProgress
 
 
 def test_theme_table_registered():

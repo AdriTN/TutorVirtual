@@ -16,7 +16,7 @@ import pytest
 from types import SimpleNamespace
 from fastapi import Request
 
-from app.utils.ollama_client import generate_with_ollama, settings
+from src.utils.ollama_client import generate_with_ollama, settings
 
 
 class DummyRequest:

@@ -1,11 +1,11 @@
 import pytest
 
-import src.app.api.routes.answer as answer_module
+import src.api.routes.answer as answer_module
 
 # ── helpers --------------------------------------------------------------------
 def insert_exercise(db, **kwargs):
     """Crea un Exercise mínimo en la BBDD de pruebas."""
-    from app.models import Exercise
+    from src.models import Exercise
     defaults = dict(
         statement="¿Cuánto es 2+2?",
         answer="4",

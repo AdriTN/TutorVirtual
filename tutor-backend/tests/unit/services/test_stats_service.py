@@ -4,13 +4,13 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
-from app.database.base import Base
-from app.services.stats_service import overview, timeline, by_theme
+from src.database.base import Base
+from src.services.stats_service import overview, timeline, by_theme
 
-from app.models.subject import Subject
-from app.models.theme import Theme
-from app.models.exercise import Exercise
-from app.models.user_response import UserResponse
+from src.models.subject import Subject
+from src.models.theme import Theme
+from src.models.exercise import Exercise
+from src.models.user_response import UserResponse
 
 # Alias para que timeline() encuentre el atributo que usa el servicio
 UserResponse.respondida_en = UserResponse.created_at  # mapea respondida_en a created_at

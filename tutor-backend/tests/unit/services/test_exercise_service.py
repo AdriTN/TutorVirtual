@@ -2,13 +2,13 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database.base import Base
-from app.models.subject import Subject
-from app.models.theme import Theme
-from app.models.exercise import Exercise
-from app.models.user_response import UserResponse
-from app.models.user_theme_progress import UserThemeProgress
-from app.services.exercise_service import (
+from src.database.base import Base
+from src.models.subject import Subject
+from src.models.theme import Theme
+from src.models.exercise import Exercise
+from src.models.user_response import UserResponse
+from src.models.user_theme_progress import UserThemeProgress
+from src.services.exercise_service import (
     create_exercise_from_ai,
     register_user_answer,
 )

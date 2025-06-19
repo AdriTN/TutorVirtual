@@ -1,5 +1,5 @@
 import pytest
-from app.utils.utils import strip_and_lower
+from src.utils.utils import strip_and_lower
 
 @pytest.mark.parametrize(
     "input_str, expected",
