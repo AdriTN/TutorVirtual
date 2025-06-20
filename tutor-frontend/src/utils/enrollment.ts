@@ -118,11 +118,11 @@ export const askAI = (body:AIRequest)=>api.post<AIExerciseOut>("/api/ai/request"
 /* Respuestas */
 export const sendAnswer = (
   ejercicio_id: number,
-  respuesta: string,
+  answer: string,
   tiempo_seg?: number
 ) =>
   api
-    .post<AnswerOut>("/api/answer", { ejercicio_id, respuesta, tiempo_seg })
+    .post<AnswerOut>("/api/answer", { ejercicio_id, answer, tiempo_seg })
     .then((r) => r.data);
 
 /* Estadísticas */
