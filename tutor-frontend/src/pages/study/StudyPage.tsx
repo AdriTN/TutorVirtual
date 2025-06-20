@@ -84,8 +84,17 @@ const StudyPage: React.FC = () => {
   /* ─── generar ejercicio ─── */
   const generateExercise = async () => {
     if (!selectedTheme) return;
-    setLoading(true); setError(null);
-
+  
+    // ── limpiar UI del ejercicio anterior ──
+    setExercise(null);
+    setUserAnswer("");
+    setChecked(false);
+    setIsCorrect(null);
+    startTs.current = null;
+  
+    setLoading(true);
+    setError(null);
+  
     const body: AIRequest = {
       model: "profesor",
       response_format: { type: "json_object" },
@@ -96,12 +105,12 @@ const StudyPage: React.FC = () => {
         },
       ],
     };
-
+  
     try {
       const ex = await askAI(body);
       setExercise(ex);
       startTs.current = performance.now();
-    } catch (e:any) {
+    } catch (e: any) {
       setError(e.message ?? "Error desconocido");
     } finally {
       setLoading(false);
