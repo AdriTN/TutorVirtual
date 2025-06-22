@@ -1,0 +1,23 @@
+@keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
+  
+  .spinner {
+    animation: rotate 1s linear infinite;
+    display: block;
+  }
+  
+  .track {
+    fill: none;
+    stroke: var(--color-text, #0f172a);
+    stroke-opacity: .25;
+    stroke-width: 4;
+  }
+  
+  .arc {
+    fill: none;
+    stroke: var(--color-primary, #3b82f6);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  

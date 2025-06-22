@@ -1,11 +1,40 @@
 {
   "compilerOptions": {
+    /* ───── lenguaje / salida ───── */
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+
+    /* ───── aliases idénticos a Vite ───── */
+    "baseUrl": "./",
+    "paths": {
+      "@/*":           ["src/*"],
+      "@app/*":        ["src/app/*"],
+      "@features/*":   ["src/features/*"],
+      "@components/*": ["src/components/*"],
+      "@hooks/*":      ["src/hooks/*"],
+      "@context/*":    ["src/context/*"],
+      "@services/*":   ["src/services/*"],
+      "@utils/*":      ["src/utils/*"],
+      "@styles/*":     ["src/styles/*"],
+      "@assets/*":     ["src/assets/*"],
+      "@types":        ["src/types/index.ts"],
+      "@types/*":      ["src/types/*"]
+    },
+
+    /* ───── calidad / DX ───── */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "skipLibCheck": true,
+
+    /* sourcemaps + tipado Vite */
+    "sourceMap": true,
+    "types": ["vite/client"]
   },
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+
+  "include": ["src/**/*", "vite.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }
