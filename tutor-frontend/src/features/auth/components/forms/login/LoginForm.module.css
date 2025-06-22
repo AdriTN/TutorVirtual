@@ -1,0 +1,64 @@
+.form {
+  width: 450px;
+  background: #24303c;
+  padding: 30px;
+  border-radius: 4px;
+  font-family: calibri, sans-serif;
+  color: #fff;
+  box-shadow: 7px 13px 37px #000;
+  text-align: center;
+}
+
+.title {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 16px;
+}
+
+.field input {
+  width: 100%;
+  background: #24303c;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #1f53c5;
+  color: #fff;
+  font-size: 18px;
+}
+
+.submit {
+  width: 100%;
+  background: #1f53c5;
+  border: none;
+  padding: 12px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.haveAccount {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ccc;
+}
+
+.haveAccount a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.haveAccount a:hover {
+  text-decoration: underline;
+}

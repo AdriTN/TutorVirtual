@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, joinedload
 
 from src.database.session import get_db
 from src.api.dependencies.auth import jwt_required, admin_required
@@ -84,6 +84,31 @@ def list_courses(payload: dict = Depends(jwt_required), db: Session = Depends(ge
     )
     return [_course_to_schema(c, user) for c in courses]
 
+@router.delete(
+    "/{course_id}/unenroll",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(jwt_required)],
+)
+def unenroll_course(
+    course_id: int,
+    payload: dict = Depends(jwt_required),
+    db: Session = Depends(get_db),
+):
+    user: User   = db.query(User).options(joinedload(User.subjects)).get(payload["user_id"])
+    course: Course = db.query(Course).options(joinedload(Course.subjects)).get(course_id)
+    if not course:
+        raise HTTPException(404, "Curso no encontrado")
+
+    # 1) Quitar todas las asignaturas del curso
+    for subj in course.subjects:
+        if subj in user.subjects:
+            user.subjects.remove(subj)
+
+    # 2) Quitar el curso
+    if course in user.courses:
+        user.courses.remove(course)
+
+    db.commit()
 
 @router.get("/{course_id}", response_model=CourseOut)
 def get_course(

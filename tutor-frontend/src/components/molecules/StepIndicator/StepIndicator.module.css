@@ -1,0 +1,61 @@
+:root {
+  --step-green:  #31b56c;
+  --step-bg:     #ffffff;
+  --step-track:  #ffffff;
+}
+
+/* contenedor ----------------------------------------------------------- */
+.track {
+  display: flex;
+  justify-content: space-between;
+  margin-block: 0 2.5rem;
+  padding: 0;
+  list-style: none;
+  position: relative;
+}
+
+/* paso ----------------------------------------------------------------- */
+.step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;           /* sobre la línea */
+}
+
+.circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--step-bg);
+  border: 3px solid var(--step-bg);
+  color: #000;
+  font: 700 0.9rem/34px system-ui, sans-serif;
+  display: inline-block;
+}
+
+.label {
+  display: block;
+  margin-top: .6rem;
+  font: 600 0.8rem/1.1 var(--font-sans, system-ui);
+  text-transform: uppercase;
+  color: var(--step-track);
+}
+
+.done .circle { color: var(--step-green); }
+.done .label  { color: var(--step-green); }
+
+/* línea horizontal derecha -------------------------------------------- */
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 17px;                         /* centro vertical del círculo */
+  left: calc(50% + 17px);            /* borde derecho */
+  width: calc(100% - 34px);          /* hasta siguiente círculo */
+  height: 3px;
+  background: var(--step-track);
+  z-index: -1;
+}
+
+.done:not(:last-child)::after {
+  background: var(--step-green);
+}
