@@ -3,7 +3,7 @@ import MyGoogleButton from "../../components/buttons/google/MyGoogleButton";
 import styles         from "./Login.module.css";
 
 const LoginPage: React.FC = () => (
-  <div className={styles.page}>
+  <div className={styles.pageContainer}>
     <LoginForm />
     <MyGoogleButton />
   </div>

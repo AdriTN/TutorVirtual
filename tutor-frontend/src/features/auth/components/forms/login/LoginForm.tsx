@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { useLoginMutation } from "../../../hooks/useLoginMutation";
 import { useAuth } from "@context/auth/AuthContext";
 import styles from "./LoginForm.module.css";
+import { Link } from "react-router-dom";
 
 type FormValues = { email: string; password: string };
 
@@ -43,11 +44,15 @@ const LoginForm: React.FC = () => {
 
       <button
         type="submit"
-        className={styles.btn}
+        className={styles.botons}
         disabled={mutation.isPending}
       >
-        {mutation.isPending ? "Entrando…" : "Entrar"}
+        {mutation.isPending ? "Iniciando Sesión…" : "Iniciar Sesión"}
       </button>
+
+      <div className={styles.haveAccount}>
+        <Link to="/register">¿No tienes cuenta? Regístrate</Link>
+      </div>
     </form>
   );
 };
