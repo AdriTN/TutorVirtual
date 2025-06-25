@@ -25,18 +25,20 @@ const LoginForm: React.FC = () => {
       <h2 className={styles.title}>Iniciar sesión</h2>
 
       <label className={styles.field}>
-        <span>Email</span>
         <input
           type="email"
+          placeholder="Correo electrónico"
+          autoComplete="email"
           {...register("email", { required: "Obligatorio" })}
         />
         {errors.email && <small>{errors.email.message}</small>}
       </label>
 
       <label className={styles.field}>
-        <span>Contraseña</span>
         <input
           type="password"
+          placeholder="Contraseña"
+          autoComplete="current-password"
           {...register("password", { required: "Obligatorio" })}
         />
         {errors.password && <small>{errors.password.message}</small>}
