@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     # ── Google OAuth ─────────────────────────────────────────
     google_client_id:     str      = Field("", env="GOOGLE_CLIENT_ID")
     google_client_secret: str      = Field("", env="GOOGLE_CLIENT_SECRET")
+    google_redirect_uri:  str      = Field("", env="GOOGLE_REDIRECT_URI")
 
     # ── Ollama / RAG ─────────────────────────────────────────
     # We keep this as `str` so we don’t get HttpUrl’s extra slash

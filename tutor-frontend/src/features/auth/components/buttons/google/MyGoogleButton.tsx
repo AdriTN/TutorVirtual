@@ -1,44 +1,31 @@
 import { useGoogleLogin } from "@react-oauth/google";
 import { api } from "@services/api/backend";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@context/auth/AuthContext";
+import { useAuth } from "@context/auth";
 import styles from "./MyGoogleButton.module.css";
 
 interface MyGoogleButtonProps {
     endpointUrl: string;
 }
 
-const MyGoogleButton: React.FC<MyGoogleButtonProps> = ({ endpointUrl = "/api/auth/google" }) => {
+const MyGoogleButton: React.FC<MyGoogleButtonProps> = ({}) => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const googleLogin = useGoogleLogin({
-    scope: "profile email",
-    onSuccess: async (credentialResponse) => {
-      const token = credentialResponse.access_token;
-      console.log("Token de Google:", token);
-      if (!token) {
-        console.error("No se obtuvo token de Google");
-        return;
-      }
+    flow: "auth-code",
+    scope: "openid profile email",
+    onSuccess: async ({ code }) => {
       try {
-        const response = await api.post(endpointUrl, { token });
-        console.log("Respuesta del backend:", response.data);
-
-        const { access_token, refresh_token } = response.data;
-
-        login(access_token, refresh_token);
-
+        const { data } = await api.post("/api/auth/google", { code });
+        login(data.access_token, data.refresh_token);
         navigate("/dashboard");
-      } catch (error) {
-        console.error("Error en login con Google:", error);
-        alert("Error al iniciar sesión con Google");
+      } catch (err) {
+        console.error("Error al hacer login con Google:", err);
+        alert("No se pudo iniciar sesión con Google");
       }
     },
-    onError: (errorResponse) => {
-      console.error("Error en Google login:", errorResponse);
-      alert("Error en el proceso de autenticación con Google");
-    },
+    onError: err => console.error("Google login error:", err),
   });
 
   return (

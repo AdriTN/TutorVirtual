@@ -61,3 +61,6 @@ class RegisterOut(BaseModel):
     id:       int
     username: str
     email:    EmailStr
+
+class GoogleCode(BaseModel):
+    code: str
