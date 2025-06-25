@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta, timezone
 import random
 import string
+
+from src.core.config import get_settings
+
+from src.api.schemas.auth import GoogleCode
 from src.api.schemas.google import GoogleToken
 from src.models.user import UserProvider
 from sqlalchemy.exc import IntegrityError
 
 from src.api.schemas.authlog import LoginIn, RefreshIn, TokenOut
-from fastapi import APIRouter, Depends, HTTPException, requests, status
+from fastapi import APIRouter, Depends, HTTPException, status
+import requests
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 from sqlalchemy  import delete
 from sqlalchemy.orm import Session
 
@@ -20,6 +27,8 @@ from src.models import User, RefreshToken
 from src.core.security import hash_password
 
 router = APIRouter()
+
+settings = get_settings()
 
 
 # ──────────── Endpoints ───────────
@@ -72,93 +81,73 @@ def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
         refresh_token=stored.token,
     )
 
-@router.post("/google")
-def google_login(token: GoogleToken, db: Session = Depends(get_db)):
+@router.post("/google", response_model=TokenOut)
+def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut:
+    # 1. Intercambiar el code por tokens de Google
+    token_resp = requests.post(
+        "https://oauth2.googleapis.com/token",
+        data={
+            "code": payload.code,
+            "client_id": settings.google_client_id,
+            "client_secret": settings.google_client_secret,
+            "redirect_uri": "postmessage",
+            "grant_type": "authorization_code",
+        },
+        timeout=5,
+    )
+    
+    if token_resp.status_code != 200:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            f"Google token error: {token_resp.text}")
+
+    tokens = token_resp.json()
+
+    # 2. Verificar id_token y extraer identidad
     try:
-        userinfo_response = requests.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            params={"access_token": token.token}
+        idinfo = google_id_token.verify_oauth2_token(
+            tokens["id_token"],
+            google_requests.Request(),
+            settings.google_client_id,
         )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Token inválido")
-    
-    user_info = userinfo_response.json()
-    user_google_id = user_info.get("sub")
-    email = user_info.get("email")
-    
-    if not user_google_id or not email:
-        raise HTTPException(status_code=400, detail="No se pudo obtener la información del usuario")
-    
-    user_provider = db.query(UserProvider).filter(UserProvider.provider_user_id == user_google_id, UserProvider.provider == "google").first()
-    
-    if user_provider:
-        user = db.query(User).filter(User.id == user_provider.user_id).first()
-        if not user:
-            raise HTTPException(status_code=400, detail="Usuario no encontrado")
-        
-        jwt_token = create_access_token({"user_id": user.id, "is_admin": user.is_admin})
-        refresh_token = create_refresh_token()
-        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
-        
-        new_refresh_token = RefreshToken(user_id=user.id, token=refresh_token, expires_at=expires_at)
-        db.add(new_refresh_token)
+    except ValueError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"id_token inválido: {e}")
+
+    sub   = idinfo["sub"]
+    email = idinfo["email"]
+
+    # 3. Buscar o crear usuario local
+    provider = (db.query(UserProvider)
+                  .filter_by(provider="google", provider_user_id=sub)
+                  .first())
+
+    if provider:
+        user = db.get(User, provider.user_id)
+    else:
+        username = email.split("@")[0]
+        # evita colisiones de usernames
+        base, i = username, 1
+        while db.query(User).filter_by(username=username).first():
+            username = f"{base}{i}"; i += 1
+
+        user = User(username=username,
+                    email=email,
+                    password=hash_password(generate_password()))
+        db.add(user); db.commit(); db.refresh(user)
+
+        db.add(UserProvider(user_id=user.id,
+                            provider="google",
+                            provider_user_id=sub))
         db.commit()
-        db.refresh(new_refresh_token)
-        
-        return {
-            "message": "Login exitoso",
-            "user_id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "access_token": jwt_token,
-            "refresh_token": refresh_token
-        }
-    
-    username = email.split("@")[0]
-    
-    existing_user = db.query(User).filter(User.username == username).first()
-    
-    if existing_user:
-        i = 1
-        base_username = username
-        while existing_user:
-            username = f"{base_username}{i}"
-            existing_user = db.query(User).filter(User.username == username).first()
-            i += 1
-    
 
-    password = generar_password()
-    hashed_password = hash_password(password)
-    
-    new_user = User(username=username, email=email, password=hashed_password)
-    db.add(new_user)
+    # 4. Emitir tokens
+    access  = create_access_token(user.id, user.is_admin)
+    refresh = create_refresh_token()
+    db.add(RefreshToken(user_id=user.id,
+                        token=refresh,
+                        expires_at=datetime.now(timezone.utc)+timedelta(days=3)))
     db.commit()
-    db.refresh(new_user)
-    
 
-    new_provider = UserProvider(user_id=new_user.id, provider="google", provider_user_id=user_google_id)
-    db.add(new_provider)
-    db.commit()
-    db.refresh(new_provider)
-    
-    
-    jwt_token = create_access_token({"user_id": new_user.id, "is_admin": new_user.is_admin})
-    refresh_token = create_refresh_token()
-    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
-    
-    new_refresh_token = RefreshToken(user_id=new_user.id, token=refresh_token, expires_at=expires_at)
-    db.add(new_refresh_token)
-    db.commit()
-    db.refresh(new_refresh_token)
-    
-    return {
-        "message": "Usuario registrado",
-        "user_id": new_user.id,
-        "username": new_user.username,
-        "email": new_user.email,
-        "access_token": jwt_token,
-        "refresh_token": refresh_token
-    }
+    return TokenOut(access_token=access, refresh_token=refresh)
 
 
 # ──────────── helpers ────────────
@@ -178,7 +167,7 @@ def _store_refresh(user: User, db: Session) -> str:
     db.commit()
     return token
 
-def generar_password(longitud=12):
+def generate_password(longitud=12):
     """
     Genera una contraseña aleatoria de la longitud especificada (por defecto 12).
     Se asegura de que cumpla con los requisitos:

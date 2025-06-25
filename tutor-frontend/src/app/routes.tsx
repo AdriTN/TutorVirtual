@@ -44,6 +44,7 @@ export const router = createBrowserRouter([
       { path: "/courses/:id/confirm",                      element: <ConfirmPage /> },
       { path: "/study/:courseId/:subjectId",               element: <StudyPage /> },
       { path: "/stats",                                    element: <StatsPage /> },
+      { path: "/auth/google/callback",                     element: <Navigate to="/dashboard" replace /> },
 
     ],
   },
