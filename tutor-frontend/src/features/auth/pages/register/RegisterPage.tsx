@@ -3,7 +3,7 @@ import MyGoogleButton from "../../components/buttons/google/MyGoogleButton";
 import styles from "./Register.module.css";
 
 const RegisterPage: React.FC = () => (
-  <div className={styles.pageContainer}>
+  <div className={styles.page}>
     <RegisterForm />
     <MyGoogleButton  />
   </div>

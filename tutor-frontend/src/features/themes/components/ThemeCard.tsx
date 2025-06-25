@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../pages/Themes.module.css";
+import styles from "./ThemesCard.module.css";
 import { Theme } from "@types";
 
 const ThemeCard: React.FC<{ theme: Theme }> = ({ theme }) => (

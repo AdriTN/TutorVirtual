@@ -61,9 +61,9 @@ const Dashboard: React.FC = () => {
 
                   {/* TODO: sustituir 45 % por c.progress cuando exista */}
                   <div className={styles.progressWrap}>
-                    <div className={styles.progressFill} style={{ width: "45%" }}/>
+                    <div className={styles.progressFill} style={{ width: "99%" }}/>
                   </div>
-                  <span className={styles.progressText}>45 % completado</span>
+                  <span className={styles.progressText}>99 % completado</span>
 
                   <button
                     className={styles.continueBtn}

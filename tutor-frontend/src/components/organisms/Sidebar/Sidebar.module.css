@@ -1,78 +1,68 @@
-.sidebar {
-  position: fixed;
-  inset: 0 0 0 0;
-  max-width: 260px;
-  background: #1b394e;
-  color: #fff;
-  transform: translateX(-100%);
-  transition: transform .25s ease;
-  z-index: 900;
+/* ==========================================================================
+   Sidebar – paleta clara académica + tokens globales
+   ==========================================================================*/
+
+/* ---------- Contenedor off-canvas ---------- */
+.sidebar{
+  position:fixed;
+  inset:0 0 0 0;
+  max-width:260px;
+  background:var(--color-primary-hover);   /* antes #1b394e */
+  color:#fff;
+  transform:translateX(-100%);
+  transition:transform .25s ease;
+  z-index:900;
+}
+.open{transform:translateX(0)}
+
+/* ---------- Cabecera ---------- */
+.header{
+  position:absolute;
+  top:1.6rem;left:1.5rem;
+  display:flex;align-items:center;
 }
 
-.open {
-  transform: translateX(0);
+.menuButton{
+  display:flex;flex-direction:column;gap:4px;
+  background:none;border:0;cursor:pointer;
+}
+.menuButton:focus-visible{outline:2px solid var(--color-primary)}
+
+/* barras */
+.hamburger{
+  width:24px;height:3px;
+  background:currentColor;
+  border-radius:2px;
 }
 
-.header {
-  position: absolute;
-  top: 1.6rem;
-  left: 1.5rem;
-  display: flex;
-  align-items: center;
+.brand{
+  margin-left:1rem;
+  font-size:1.4rem;
+  font-weight:700;
 }
 
-.menuButton {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: none;
-  border: 0;
-  cursor: pointer;
+/* ---------- Navegación ---------- */
+.nav{margin-top:6.5rem}
+
+.menu{
+  list-style:none;
+  padding:0 1.5rem;
 }
+.menuItem+.menuItem{margin-top:1rem}
 
-.menuButton:focus-visible { outline: 2px solid #00ffde; }
-
-.hamburger {
-  width: 24px;
-  height: 3px;
-  background: currentColor;
-  border-radius: 2px;
+.menuLink{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.75rem;
+  color:var(--color-text-muted);           /* antes #cbd8e3 */
+  text-decoration:none;
+  border-radius:var(--radius-md);
+  transition:background var(--ease-fast),color var(--ease-fast);
 }
-
-.brand {
-  margin-left: 1rem;
-  font-size: 1.4rem;
-  font-weight: 700;
-}
-
-.nav { margin-top: 6.5rem; }
-
-.menu {
-  list-style: none;
-  padding: 0 1.5rem;
-}
-
-.menuItem + .menuItem { margin-top: 1rem; }
-
-.menuLink {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  padding: .75rem;
-  color: #cbd8e3;
-  text-decoration: none;
-  border-radius: .4rem;
-  transition: background .2s, color .2s;
-}
-
 .menuLink:hover,
-.menuLink:focus-visible {
-  background: rgba(255 255 255 / .08);
-  color: #fff;
+.menuLink:focus-visible{
+  background:rgba(255,255,255,.08);
+  color:#fff;
 }
+.active{color:var(--color-accent)}          /* antes #00ffde */
 
-.active {
-  color: #00ffde;
-}
-
-.menuIcon { font-size: 1.25rem; }
+.menuIcon{font-size:1.25rem}

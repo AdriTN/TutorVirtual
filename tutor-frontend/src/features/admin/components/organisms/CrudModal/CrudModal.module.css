@@ -1,62 +1,103 @@
-/* ---------- Overlay & Caja ---------- */
+/* ==========================================================================
+   Overlay + Modal Dialog
+   ==========================================================================*/
+
+/* ---------- Overlay ---------- */
 .overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.45);
-    display:flex;align-items:center;justify-content:center;
-    z-index:1000;backdrop-filter:blur(2px);
-  }
-  .box{
-    background:var(--c-surface);color:var(--c-text);
-    width:100%;max-width:460px;
-    padding:1.5rem 1.75rem 2rem;
-    border-radius:calc(var(--radius) + 2px);
-    box-shadow:var(--shadow);
-    animation:fade .25s ease-out;
-  }
-  @keyframes fade{from{transform:translateY(-10px) scale(.97);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-  
-  /* ---------- Cabecera ---------- */
-  .header{
-    display:flex;justify-content:space-between;align-items:center;
-    margin-bottom:1.25rem;
-  }
-  .header h3{margin:0;font-size:1.05rem;font-weight:600}
-  
-  /* ---------- Botón cerrar ---------- */
-  .close{
-    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-    font-size:1.25rem;line-height:1;
-    border:none;border-radius:50%;
-    background:transparent;
-    color:var(--c-text-muted);
-    cursor:pointer;
-    transition:background var(--transition),color var(--transition);
-  }
-  .close:hover,.close:focus-visible{
-    background:var(--c-surface-hover);
-    color:var(--c-text);outline:none;
-  }
-  
-  /* ---------- Campos ---------- */
-  .field{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem}
-  
-  .box input,
-  .box textarea,
-  .box select{
-    width:100%;padding:.80rem .9rem;
-    border:1px solid var(--c-border-strong);
-    border-radius:var(--radius);
-    font-size:.9rem;font-family:inherit;
-    background:var(--c-surface);color:var(--c-text);
-    transition:border-color var(--transition),box-shadow var(--transition);
-  }
-  .box input:focus-visible,
-  .box textarea:focus-visible,
-  .box select:focus-visible{
-    border-color:var(--c-primary);
-    box-shadow:0 0 0 3px var(--c-primary-light);
-    outline:none;
-  }
-  .box textarea{min-height:80px;resize:vertical}
-  
-  .box label{font-size:.85rem;color:var(--c-text-muted)}
-  
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(2px);
+  z-index:1000;
+}
+
+/* ---------- Modal box ---------- */
+.box{
+  width:100%;
+  max-width:460px;
+  padding:1.6rem 1.9rem 2.1rem;
+  background:var(--color-surface);
+  color:var(--color-text);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-elevated);
+  animation:fadeIn .25s var(--ease-fast);
+}
+
+@keyframes fadeIn{
+  from{transform:translateY(-14px) scale(.96);opacity:0}
+  to  {transform:translateY(0) scale(1);opacity:1}
+}
+
+/* ---------- Header ---------- */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:1.25rem;
+}
+.header h3{
+  margin:0;
+  font-size:1.05rem;
+  font-weight:600;
+}
+
+/* ---------- Close button ---------- */
+.close{
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;
+  border:none;
+  border-radius:50%;
+  background:transparent;
+  color:var(--color-text-muted);
+  cursor:pointer;
+  transition:background var(--ease-fast),color var(--ease-fast);
+}
+.close:hover,
+.close:focus-visible{
+  background:var(--color-surface-hover);
+  color:var(--color-text);
+  outline:none;
+}
+
+/* ---------- Form fields ---------- */
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:.45rem;
+  margin-bottom:1rem;
+}
+
+.box input,
+.box textarea,
+.box select{
+  width:100%;
+  padding:.85rem 1rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  background:var(--color-surface);
+  color:var(--color-text);
+  font-size:.9rem;
+  font-family:inherit;
+  transition:border-color var(--ease-fast),box-shadow var(--ease-fast);
+}
+.box input:focus-visible,
+.box textarea:focus-visible,
+.box select:focus-visible{
+  border-color:var(--color-primary);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--color-primary) 40%,transparent);
+  outline:none;
+}
+
+.box textarea{
+  min-height:80px;
+  resize:vertical;
+}
+
+.box label{
+  font-size:.85rem;
+  color:var(--color-text-muted);
+}

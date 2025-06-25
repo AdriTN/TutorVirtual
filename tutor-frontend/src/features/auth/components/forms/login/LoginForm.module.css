@@ -1,75 +1,78 @@
-.form {
-  width: 450px;
-  background: #24303c;
-  padding: 30px;
-  border-radius: 4px;
-  font-family: calibri, sans-serif;
-  color: #fff;
-  box-shadow: 7px 13px 37px #000;
-  text-align: center;
-}
+/* ==========================================================================
+   Formulario de Autenticación (Login / Register)
+   ==========================================================================*/
 
-.title {
-  font-size: 22px;
-  margin-bottom: 20px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 16px;
-}
-
-.field input {
-  width: 100%;
-  background: #24303c;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #1f53c5;
-  color: #fff;
-  font-size: 18px;
-}
-
-.submit {
-  width: 100%;
-  background: #1f53c5;
-  border: none;
-  padding: 12px;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.botons {
-  width: 100%;
-  background: #1f53c5;
-  border: none;
-  padding: 12px;
-  color: white;
-  margin: 16px 0;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.haveAccount {
-  margin-top: 0.5rem;
-  text-align: center;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #ccc;
-}
-
-.haveAccount a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.haveAccount a:hover {
-  text-decoration: underline;
-}
+   .form{
+    width:450px;
+    background:#24303c;                  /* se mantiene el fondo oscuro original */
+    padding:2rem;                       /* 30px → 2rem */
+    border-radius:var(--radius-md);
+    box-shadow:0 8px 30px rgba(0,0,0,.35);
+    color:#fff;
+    font-family:"Calibri",sans-serif;
+    text-align:center;
+  }
+  
+  .title{
+    font-size:1.35rem;                  /* 22px → 1.35rem */
+    margin-bottom:1.25rem;
+    font-weight:600;
+  }
+  
+  /* ---------- Campos ---------- */
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:.4rem;
+    margin-bottom:1rem;
+  }
+  .field input{
+    width:100%;
+    padding:.65rem 1rem;
+    border-radius:var(--radius-md);
+    border:1px solid #1f53c5;
+    background:#24303c;
+    color:#fff;
+    font-size:1rem;
+  }
+  
+  /* ---------- Botones ---------- */
+  .submit,
+  .botons{
+    width:100%;
+    padding:.75rem 1rem;
+    font-size:.95rem;
+    font-weight:600;
+    border:none;
+    border-radius:var(--radius-md);
+    background:#1f53c5;
+    color:#fff;
+    cursor:pointer;
+    transition:background var(--ease-fast),opacity var(--ease-fast);
+  }
+  
+  .submit:hover,
+  .botons:hover{
+    background:#264edb;
+  }
+  .submit:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+  }
+  
+  /* ---------- Enlace “¿ya tienes cuenta?” ---------- */
+  .haveAccount{
+    margin-top:.6rem;
+    text-align:center;
+    font-size:.95rem;
+    font-weight:500;
+    color:#ccc;
+  }
+  .haveAccount a{
+    color:#fff;
+    text-decoration:none;
+  }
+  .haveAccount a:hover{
+    text-decoration:underline;
+  }
+  

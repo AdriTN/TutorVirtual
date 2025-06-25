@@ -1,20 +1,25 @@
-/* src/pages/Stats/StatCard/StatCard.module.css */
-.card{
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: 1rem 1.2rem;
-    box-shadow: var(--shadow-sm);
-    display:flex;
-    flex-direction:column;
-    gap:.5rem
+/* ==========================================================================
+   StatCard
+   ==========================================================================*/
+
+   .card{
+    background:var(--color-surface);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-lg);
+    padding:1rem 1.2rem;
+    box-shadow:var(--shadow-elevated);
+    display:flex;flex-direction:column;gap:.5rem;
   }
-  .title {font-size:.85rem;color:var(--c-text-muted)}
-  .value {font-size:1.7rem;font-weight:600;min-height:2rem}
-  .trendUp {color:#22c55e;font-size:.8rem}
+  
+  .title{font-size:.85rem;color:var(--color-text-muted)}
+  .value{font-size:1.7rem;font-weight:600;min-height:2rem}
+  
+  .trendUp  {color:#22c55e;font-size:.8rem}
   .trendDown{color:#ef4444;font-size:.8rem}
+  
   .chart{height:40px}
   
+  /* skeleton */
   .skeleton{
     display:inline-block;
     width:60px;height:1.3rem;border-radius:4px;

@@ -1,0 +1,28 @@
+/* ==========================================================================
+   ThemeCard – tarjeta individual
+   ==========================================================================*/
+
+   .card{
+    background:var(--color-surface);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-elevated);
+    padding:1.8rem 1.6rem;
+    display:flex;flex-direction:column;gap:1rem;
+    transition:transform var(--ease-fast),box-shadow var(--ease-fast);
+  }
+  .card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 14px 28px rgba(0,0,0,.08);
+  }
+  
+  .title{
+    font-size:1.1rem;font-weight:600;
+    color:var(--color-primary);
+  }
+  
+  .desc{
+    font-size:.9rem;line-height:1.4;
+    color:var(--color-text-muted);
+    flex:1;
+  }
+  

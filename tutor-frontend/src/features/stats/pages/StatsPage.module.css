@@ -1,11 +1,82 @@
-/* src/pages/Stats/StatsPage.module.css */
-.page{background:var(--c-bg);min-height:100vh;display:flex;flex-direction:column}
-.container{width:min(1180px,100%);margin:2rem auto 4rem;padding:0 1rem;flex:1}
-.gridCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.2rem}
-.block{margin-top:2.4rem}
-.blockGrid{margin-top:2.4rem;display:grid;gap:2rem;grid-template-columns:360px 1fr}
-.themeTableWrapper{overflow-x:auto}
-.table{width:100%;border-collapse:collapse;font-size:.9rem}
-.table th,.table td{padding:.55rem .7rem;border-bottom:1px solid var(--c-border)}
-.table tbody tr:hover{background:var(--c-surface-hover)}
-.empty{color:var(--c-text-muted);padding:.8rem 0;font-size:.9rem;text-align:center}
+/* ==========================================================================
+   Stats Page – layout & tablas
+   ==========================================================================*/
+
+   .page{
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    background:var(--color-bg);
+  }
+  
+  .container{
+    width:min(1180px,100%);
+    margin:2rem auto 4rem;
+    padding:0 var(--space-md);
+    flex:1;
+  }
+  
+  /* ---------- cabecera ---------- */
+  .headerRow{
+    display:flex;
+    align-items:center;
+    gap:var(--space-md);
+    margin-bottom:var(--space-lg);
+  }
+  .heading{
+    font-size:1.3rem;
+    font-weight:600;
+    color:var(--color-primary);
+    margin:0;
+  }
+  
+  /* ---------- loading ---------- */
+  .loading{
+    text-align:center;
+    padding:4rem 0;
+    color:var(--color-primary);
+    flex:1;
+  }
+  
+  /* ---------- KPI cards ---------- */
+  .gridCards{
+    display:grid;
+    gap:1.2rem;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  }
+  
+  /* ---------- bloques ---------- */
+  .block{margin-top:2.4rem}
+  .blockGrid{
+    margin-top:2.4rem;
+    display:grid;
+    gap:2rem;
+    grid-template-columns:360px 1fr;
+  }
+  @media(max-width:768px){
+    .blockGrid{grid-template-columns:1fr}
+  }
+  
+  /* ---------- tabla de temas ---------- */
+  .themeTableWrapper{overflow-x:auto}
+  .table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.9rem;
+  }
+  .table td:nth-child(n+2),
+  .table th:nth-child(n+2){
+    text-align:right;
+  }
+  .table tbody tr:hover{
+    background:var(--color-surface-hover);
+  }
+  
+  /* ---------- mensajes vacíos ---------- */
+  .empty{
+    color:var(--color-text-muted);
+    padding:.8rem 0;
+    font-size:.9rem;
+    text-align:center;
+  }
+  

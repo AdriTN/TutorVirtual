@@ -1,13 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { enrollSubject }               from "@/services/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { enrollSubject } from "@/services/api";
 
+export const useEnrollSubject = () => {
+  const qc = useQueryClient();
 
+  return useMutation({
+    mutationKey: ["enrollSubject"],
+    mutationFn : (subjectId: number) => enrollSubject(subjectId),
 
-export const useEnrollSubject = () =>
-  useQuery({ 
-    staleTime:0,
-    queryKey: ["courses/all"], queryFn: ({ queryKey }) => {
-      const subjectId = queryKey[1] as unknown as number;
-      return enrollSubject(subjectId);
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-courses"] });
     },
   });
+};

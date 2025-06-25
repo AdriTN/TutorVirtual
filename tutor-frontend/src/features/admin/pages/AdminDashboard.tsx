@@ -21,8 +21,8 @@ import {
 } from "@features/admin/components";
 
 import { useCourses   } from "@features/explore/hooks/useCourses";
-import { useSubjects  } from "@features/subjects/hooks/useSubjects";
-import { useThemes    } from "@features/subjects/hooks/useThemes";
+import { useSubjects  } from "../hooks/useSubjects";
+import { useThemes    } from "../hooks/useThemes";
 
 import {
   adminCreateCourse,

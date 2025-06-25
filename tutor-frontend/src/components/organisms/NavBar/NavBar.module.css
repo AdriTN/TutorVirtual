@@ -1,99 +1,88 @@
-.nav {
-  position: static;
-  top: 0;
-  display: flex;
-  align-items: center;
-  padding: 1.5rem;
-  transition: margin-left 0.3s ease;
-  justify-content: space-between;
-}
+/* ==========================================================================
+   Navbar – paleta clara académica + tokens globales
+   ==========================================================================*/
 
-.logo {
-  display: flex;
-  align-items: center;
-  margin-left: 35px;
-}
-
-.logo img {
-  width: 35px;
-  height: 35px;
-  border-radius: 20px;
-}
-
-.brand {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #00ffde;
-  text-decoration: none;
-  margin-left: 15px;
-}
-
-.brand:hover {
-  color: #00ffde;
-}
-
-.navLinks {
-  list-style: none;
-  display: flex;
-  gap: 1.8rem;
-  margin-right: 35px;
-  padding: 0;
-}
-
-.navLinks li {
-  display: flex;
-  align-items: center;
-}
-
-.navbarItem {
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: 600;
-  transition: opacity 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.navbarItem:hover {
-  opacity: 0.8;
-}
-
-/* estado autenticado */
-.menuButton {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.hamburger {
-  width: 25px;
-  height: 3px;
-  background: #fff;
-  border-radius: 2px;
-  transition: transform 0.2s ease;
-}
-
-.userSection {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  gap: 1rem;
-}
-
-.welcome {
-  color: #fff;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-.profileImg {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-}
-
-
+   .nav{
+    position:static;
+    top:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:var(--space-lg) var(--space-md);
+    transition:margin-left .3s ease;
+  }
+  
+  /* ----------  Branding  ---------- */
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:var(--space-sm);
+    margin-left:35px;                     /* conserva ancho de sidebar */
+  }
+  .logo img{
+    width:35px;height:35px;
+    border-radius:var(--radius-lg);
+  }
+  
+  .brand{
+    font-size:1.6rem;
+    font-weight:700;
+    margin-left: 10px;
+    color:var(--color-primary);           /* antes #00ffde */
+    text-decoration:none;
+  }
+  .brand:hover{
+    color:color-mix(in srgb,var(--color-primary) 80%,var(--color-text) 20%);
+  }
+  
+  /* ----------  Links principales  ---------- */
+  .navLinks{
+    list-style:none;
+    display:flex;
+    gap:1.8rem;
+    margin-right:35px;
+    padding:0;
+  }
+  .navLinks li{
+    display:flex;align-items:center;
+  }
+  .navbarItem{
+    color:var(--color-text);              /* antes #ffffff */
+    text-decoration:none;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity var(--ease-fast);
+  }
+  .navbarItem:hover{opacity:.8}
+  
+  /* ----------  Botón hamburguesa (modo móvil) ---------- */
+  .menuButton{
+    display:flex;flex-direction:column;gap:5px;
+    background:none;border:none;cursor:pointer;
+  }
+  .hamburger{
+    width:25px;height:3px;
+    background:var(--color-text);
+    border-radius:2px;
+    transition:transform var(--ease-fast);
+  }
+  
+  /* ----------  Sección usuario autenticado ---------- */
+  .userSection{
+    display:flex;
+    align-items:center;
+    margin-left:auto;
+    gap:var(--space-md);
+  }
+  .welcome{
+    color:var(--color-text);
+    font-size:.9rem;
+    white-space:nowrap;
+  }
+  .profileImg{
+    width:32px;height:32px;
+    border-radius:50%;
+    object-fit:cover;
+    cursor:pointer;
+  }
+  

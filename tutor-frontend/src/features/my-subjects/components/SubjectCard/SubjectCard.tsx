@@ -1,6 +1,6 @@
 import { Subject }     from "@types";
 import { Trash2 }      from "lucide-react";
-import styles          from "../../pages/MySubjects.module.css";
+import styles          from "./SubjectCard.module.css";
 
 interface Props {
   subject   : Subject;
