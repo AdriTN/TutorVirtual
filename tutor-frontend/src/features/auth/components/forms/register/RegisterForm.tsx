@@ -1,5 +1,5 @@
 import { useState }       from "react";
-import { useNavigate }    from "react-router-dom";
+import { Link, useNavigate }    from "react-router-dom";
 import { api }            from "@services/api/backend";
 import styles             from "./RegisterForm.module.css";
 
@@ -84,22 +84,23 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
         required
       />
 
-      <label className={styles.checkbox}>
-        <input
-          type="checkbox"
-          checked={agreed}
-          onChange={e => setAgreed(e.target.checked)}
-        />
-        <span className={styles.fakeBox} />
-        Acepto los&nbsp;
-        <a href="/legal/terms" target="_blank" rel="noopener noreferrer">
-          Términos y condiciones
-        </a>
-      </label>
+        <div className={styles.agreementWrapper}>
+          <label className={styles.checkboxContainer}>
+            <input type="checkbox" defaultChecked={false} onChange={(e) => setAgreed(e.target.checked)}/>
+            <div className={styles.checkmark} />
+            <span className={styles.checkboxLabel}>
+              Estoy de acuerdo con <a href="#">Terminos y Condiciones</a>
+            </span>
+          </label>
+        </div>
 
       <button className={styles.submit} type="submit" disabled={loading}>
         {loading ? "Registrando…" : "Registrarse"}
       </button>
+      
+      <div className={styles.haveAccount}>
+        <Link to="/login">Ya tengo cuenta</Link>
+      </div>
     </form>
   );
 };
