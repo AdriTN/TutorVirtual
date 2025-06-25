@@ -1,14 +1,31 @@
-.wrapper{display:flex;flex-direction:column;gap:.45rem}
+/* ==========================================================================
+   Select field + etiqueta
+   ==========================================================================*/
 
-.select{
-  width:100%;padding:.55rem .9rem;
-  border:1px solid var(--c-border-strong);
-  border-radius:var(--radius);
-  background:var(--c-surface);color:var(--c-text);
-  font-size:.9rem;transition:border-color var(--transition),box-shadow var(--transition);
-}
-.select:focus-visible{
-  border-color:var(--c-primary);
-  box-shadow:0 0 0 3px var(--c-primary-light);
-  outline:none;
-}
+   .wrapper{
+    display:flex;
+    flex-direction:column;
+    gap:.45rem;
+  }
+  
+  .select{
+    width:100%;
+    padding:.55rem .9rem;
+    font-size:.9rem;
+    font-family:inherit;
+  
+    background:var(--color-surface);
+    color:var(--color-text);
+  
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-md);
+  
+    transition:border-color var(--ease-fast),box-shadow var(--ease-fast);
+  }
+  
+  .select:focus-visible{
+    border-color:var(--color-primary);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--color-primary) 40%,transparent);
+    outline:none;
+  }
+  

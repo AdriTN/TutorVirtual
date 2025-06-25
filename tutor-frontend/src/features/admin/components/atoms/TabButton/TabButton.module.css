@@ -1,16 +1,36 @@
-.btn{
-    padding:.55rem 1.1rem;font-size:.925rem;font-weight:500;
-    border:1px solid var(--c-border);
-    background:var(--c-surface);color:var(--c-text);
-    border-radius:var(--radius);cursor:pointer;
-    transition:background var(--transition),color var(--transition),box-shadow var(--transition);
+/* ==========================================================================
+   Botón neutro con estado activo
+   ==========================================================================*/
+
+   .btn{
+    padding:.55rem 1.1rem;
+    font-size:.925rem;
+    font-weight:500;
+  
+    background:var(--color-surface);
+    color:var(--color-text);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-md);
+  
+    cursor:pointer;
+    transition:
+      background var(--ease-fast),
+      color      var(--ease-fast),
+      box-shadow var(--ease-fast);
   }
-  .btn:hover,.btn:focus-visible{
-    background:var(--c-surface-hover);
-    box-shadow:0 0 0 2px var(--c-primary-light);
+  
+  .btn:hover,
+  .btn:focus-visible{
+    background:var(--color-surface-hover);
+    box-shadow:0 0 0 2px color-mix(in srgb,var(--color-primary) 30%,transparent);
+    outline:none;
   }
+  
+  /* ---------- Estado activo ---------- */
   .active{
-    background:var(--c-primary);border-color:var(--c-primary);color:#fff;
+    background:var(--color-primary);
+    border-color:var(--color-primary);
+    color:#fff;
     box-shadow:0 2px 8px rgba(0,0,0,.12);
   }
   

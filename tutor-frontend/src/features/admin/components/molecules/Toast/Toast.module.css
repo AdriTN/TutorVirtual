@@ -1,13 +1,44 @@
-.toast{
-  display:flex;align-items:center;gap:.5rem;
-  position:fixed;bottom:1rem;right:1rem;z-index:1100;
-  padding:.7rem 1.1rem;border-radius:8px;font-size:.875rem;
-  background:var(--c-surface);color:var(--c-text);
-  box-shadow:0 4px 14px rgba(0,0,0,.25);
-  animation:fadein .25s ease;
-}
-@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* ==========================================================================
+   Toast – notificaciones flotantes
+   ==========================================================================*/
 
-.success{border-left:4px solid #16a34a;color:#16a34a;}
-.error  {border-left:4px solid #dc2626;color:#dc2626;}
-.info   {border-left:4px solid var(--c-primary);color:var(--c-primary);}
+   .toast{
+    position:fixed;
+    bottom:1rem;
+    right:1rem;
+    z-index:1100;
+  
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  
+    padding:.75rem 1.25rem;
+    border-radius:var(--radius-md);
+    font-size:.875rem;
+  
+    background:var(--color-surface);
+    color:var(--color-text);
+    box-shadow:0 4px 14px rgba(0 0 0 /.25);
+  
+    animation:fadeIn .25s var(--ease-fast);
+  }
+  
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(8px)}
+    to  {opacity:1;transform:translateY(0)}
+  }
+  
+  /* ---------- variants ---------- */
+  .success{
+    border-left:4px solid var(--color-success, #16a34a);
+    color:var(--color-success, #16a34a);
+  }
+  .error{
+    border-left:4px solid var(--color-danger,  #dc2626);
+    color:var(--color-danger,  #dc2626);
+  }
+  .info{
+    border-left:4px solid var(--color-primary);
+    color:var(--color-primary);
+  }
+  

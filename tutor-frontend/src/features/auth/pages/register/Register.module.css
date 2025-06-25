@@ -1,161 +1,116 @@
-:global(*) {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* =======================================================================
+   Página Auth  –  Register / Login centrados + GoogleButton opcional
+   =======================================================================*/
+
+/* ---------- Reset (usa tu global.css; aquí por seguridad) ---------- */
+:global(*),
+:global(*::before),
+:global(*::after){
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
-.pageContainer {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;   /* pila vertical  RegisterForm + GoogleBtn */
-  align-items: center;      /* centra en X */
-  justify-content: center;  /* centra en Y */
-  gap: 2rem;                /* separación entre los hijos */
-  padding: 1rem;
+/* ---------- Wrapper de página (centra vertical + horizontal) ---------- */
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;           /* Stack: form + botón Google */
+  align-items:center;
+  justify-content:center;
+  gap:var(--space-xl);             /* antes 2rem */
+  padding:var(--space-lg);         /* antes 1rem */
+
+  background:var(--color-bg);
+  color:var(--color-text);
 }
 
-/* Adaptamos .form-register a .formRegister */
-.formRegister {
-  width: 450px;
-  background: #24303c;
-  padding: 30px;
-  border-radius: 4px;
-  font-family: 'calibri';
-  color: white;
-  box-shadow: 7px 13px 37px #000;
+/* ==========================================================================
+   Registro / Login form
+   ==========================================================================*/
+.form{
+  width:450px;
+  background:#24303c;              /* ⬅️  mantiene tu esquema oscuro local */
+  padding:2rem;                    /* 30px → 2rem */
+  border-radius:var(--radius-md);
+  color:#fff;
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+  font-family:"Calibri",sans-serif;
 }
 
-.formRegister h4 {
-  font-size: 22px;
-  margin-bottom: 20px;
+.form h4{
+  font-size:1.35rem;
+  margin-bottom:1.25rem;
 }
 
-/* .controls */
-.controls {
-  width: 100%;
-  background: #24303c;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  border: 1px solid #1f53c5;
-  font-family: 'calibri';
-  font-size: 18px;
-  color: white;
+/* Inputs genéricos ------------------------------------------------------ */
+.input{
+  width:100%;
+  padding:.7rem 1rem;
+  margin-bottom:1rem;
+  border-radius:var(--radius-md);
+  border:1px solid #1f53c5;
+  background:#24303c;
+  color:#fff;
+  font-size:1rem;
 }
 
-/* .botons */
-.botons {
-  width: 100%;
-  background: #1f53c5;
-  border: none;
-  padding: 12px;
-  color: white;
-  margin: 16px 0;
-  font-size: 16px;
-  cursor: pointer;
+/* Submit button --------------------------------------------------------- */
+.btnSubmit{
+  width:100%;
+  padding:.75rem 1rem;
+  background:#1f53c5;
+  border:none;
+  border-radius:var(--radius-md);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:background var(--ease-fast);
 }
+.btnSubmit:hover{background:#264edb}
 
-/* Wrapper para alinear checkbox + texto */
-.agreementWrapper {
-  margin-bottom: 16px;
+/* ---------- Checkbox + label ---------- */
+.checkboxRow{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  margin-bottom:1rem;
+  font-size:.95rem;
 }
+.checkboxRow input{
+  appearance:none;
+  width:1.1rem;
+  height:1.1rem;
+  border:2px solid #1f53c5;
+  border-radius:.2rem;
+  position:relative;
+  cursor:pointer;
+}
+.checkboxRow input:checked{
+  background:#1f53c5;
+}
+.checkboxRow input:checked::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  background:#fff;
+}
+.checkboxRow a{
+  color:#fff;
+  text-decoration:none;
+}
+.checkboxRow a:hover{text-decoration:underline}
 
-.checkboxContainer {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; /* separa checkbox y texto */
-  cursor: pointer;
-  position: relative;
-  font-size: 20px;
-  -webkit-user-select: none;
-  user-select: none;
+/* ---------- “¿Ya tienes cuenta?” ---------- */
+.haveAccount{
+  margin-top:.5rem;
+  text-align:center;
+  font-size:.95rem;
+  font-weight:500;
+  color:#ccc;
 }
-
-.haveAccount {
-  margin-top: 0.5rem;       /* Espacio con respecto a otros elementos */
-  text-align: center;        /* Lo alinea a la derecha */
-  font-size: 0.95rem;       /* Tamaño de fuente un poco más pequeño */
-  font-weight: 500;         /* Peso de la fuente */
-  color: #ccc;              /* Un tono gris claro, por ejemplo */
+.haveAccount a{
+  color:#fff;
+  text-decoration:none;
 }
-
-.haveAccount a {
-  color: #fff;              /* Color de texto para el enlace */
-  text-decoration: none;
-}
-
-.haveAccount a:hover {
-  text-decoration: underline; 
-}
-
-/* ocultamos el checkbox por defecto */
-.checkboxContainer input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-/* .checkmark para el círculo */
-.checkmark {
-  position: relative;
-  height: 1.3em;
-  width: 1.3em;
-  background-color: #ccc;
-  border-radius: 50%;
-  transition: 0.4s;
-}
-
-/* Hover effect */
-.checkmark:hover {
-  box-shadow: inset 17px 17px 16px #b3b3b3,
-              inset -17px -17px 16px #ffffff;
-}
-
-/* Estado checked */
-.checkboxContainer input:checked ~ .checkmark {
-  box-shadow: none;
-  background-color: limegreen;
-  transform: rotateX(360deg);
-}
-.checkboxContainer input:checked ~ .checkmark:hover {
-  box-shadow: 3px 3px 3px rgba(0,0,0,0.2);
-}
-
-/* Indicador de check*/
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-/* Muestra la palomita */
-.checkboxContainer input:checked ~ .checkmark:after {
-  display: block;
-  transform: translate(-150%, -80%) rotate(45deg);
-}
-
-.checkmark:after {
-  left: 0.96em;
-  top: 0.7em;
-  width: 0.25em;
-  height: 0.5em;
-  border: solid white;
-  border-width: 0 0.15em 0.15em 0;
-  box-shadow: 0.1em 0.1em 0em 0 rgba(0,0,0,0.3);
-  transform: rotate(45deg);
-}
-
-/* Texto al lado del check */
-.checkboxLabel {
-  font-size: 18px;
-  line-height: 2.3em; /* para alinearlo verticalmente con el círculo */
-}
-.checkboxLabel a {
-  color: white;
-  text-decoration: none;
-}
-.checkboxLabel a:hover {
-  text-decoration: underline;
-}
+.haveAccount a:hover{text-decoration:underline}

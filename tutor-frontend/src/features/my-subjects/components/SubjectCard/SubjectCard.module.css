@@ -1,0 +1,80 @@
+/* ==========================================================================
+   SubjectCard – tarjeta individual
+   ==========================================================================*/
+
+   .card{
+    position:relative;
+    display:flex;flex-direction:column;gap:1rem;
+    padding:1.8rem 1.6rem;
+    background:var(--color-surface);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-elevated);
+    transition:transform var(--ease-fast),box-shadow var(--ease-fast);
+  }
+  .card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 14px 28px rgba(0,0,0,.08);
+  }
+  
+  /* título y descripción */
+  .title{
+    font-size:1.1rem;font-weight:600;
+    color:var(--color-primary);
+  }
+  .desc{
+    font-size:.9rem;line-height:1.35;
+    color:var(--color-text-muted);
+    flex:1;
+  }
+  
+  /* listado de temas */
+  .themes{display:flex;flex-wrap:wrap;gap:.3rem}
+  .badge{
+    font-size:.72rem;
+    background:var(--color-accent);color:#fff;
+    padding:4px 9px;border-radius:12px;
+  }
+  
+  /* botón papelera */
+  .deleteBtn{
+    position:absolute;top:12px;right:12px;
+    width:28px;height:28px;border:none;border-radius:50%;
+    background:#e53935;color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background var(--ease-fast),transform var(--ease-fast);
+  }
+  .deleteBtn:hover{background:#c62828;transform:scale(1.1)}
+  .deleteBtn:focus{outline:2px solid #ffcdd2;outline-offset:2px}
+  
+  /* contenedor botones inferiores */
+  .level{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:auto;
+    width:100%;
+    gap:.5rem;
+  }
+  
+  /* botones CTA */
+  .viewBtn,
+  .studyBtn{
+    padding:.5rem 1.2rem;
+    background:var(--color-primary);color:#fff;
+    border:none;border-radius:28px;
+    font-size:.85rem;font-weight:600;
+    cursor:pointer;
+    transition:background var(--ease-fast),transform var(--ease-fast);
+  }
+  .viewBtn:hover,
+  .studyBtn:hover{
+    background:var(--color-primary-hover);
+    transform:translateY(-2px);
+  }
+  .viewBtn:focus,
+  .studyBtn:focus{
+    outline:2px solid var(--color-accent);
+    outline-offset:2px;
+  }
+  

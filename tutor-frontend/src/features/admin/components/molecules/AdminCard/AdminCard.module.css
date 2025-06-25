@@ -1,39 +1,79 @@
-.card{
-    background:var(--c-surface);
-    border:1px solid var(--c-border);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    display:flex;flex-direction:column;
-    transition:transform var(--transition),box-shadow var(--transition);
+/* ==========================================================================
+   Card – contenedor genérico (con acciones internas)
+   ==========================================================================*/
+
+   .card{
+    background:var(--color-surface);
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-elevated);
+  
+    display:flex;
+    flex-direction:column;
+  
+    transition:transform var(--ease-fast),box-shadow var(--ease-fast);
   }
   .card:hover{
     transform:translateY(-3px);
     box-shadow:0 6px 20px rgba(0,0,0,.12);
   }
   
+  /* ---------- Header ---------- */
   .header{
     padding:1rem 1.25rem;
-    border-bottom:1px solid var(--c-border);
-    font-weight:600;font-size:1.05rem;
-  }
-  .body{
-    padding:1.25rem;flex:1;
-    display:flex;flex-direction:column;gap:1rem;
+    border-bottom:1px solid var(--color-border);
+    font-size:1.05rem;
+    font-weight:600;
   }
   
-  /* botones dentro de la tarjeta (Añadir / Quitar) */
+  /* ---------- Body ---------- */
+  .body{
+    padding:1.25rem;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+  }
+  
+  /* ---------- Buttons inside card ---------- */
   .body button{
-    align-self:flex-start;padding:.55rem 1.1rem;font-size:.9rem;font-weight:500;
-    border-radius:var(--radius);cursor:pointer;
-    transition:background var(--transition),box-shadow var(--transition);
+    align-self:flex-start;
+    padding:.55rem 1.2rem;
+    font-size:.9rem;
+    font-weight:500;
+    border-radius:var(--radius-md);
+    cursor:pointer;
+  
+    transition:background var(--ease-fast),box-shadow var(--ease-fast);
   }
-  .body button:hover,.body button:focus-visible{box-shadow:0 2px 8px rgba(0,0,0,.12)}
-  .body button:disabled{opacity:.55;cursor:not-allowed}
+  .body button:hover,
+  .body button:focus-visible{
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
+  }
+  .body button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+  }
+  
+  /* ----- Primary (añadir) ----- */
   .body button:not(.remove){
-    background:var(--c-primary);border:1px solid var(--c-primary);color:#fff;
+    background:var(--color-primary);
+    border:1px solid var(--color-primary);
+    color:#fff;
   }
+  .body button:not(.remove):hover,
+  .body button:not(.remove):focus-visible{
+    background:var(--color-primary-hover);
+  }
+  
+  /* ----- Remove / danger ----- */
   .remove{
-    background:var(--c-danger);border:1px solid var(--c-danger);color:#fff;
+    background:var(--color-danger, #ef4444);
+    border:1px solid var(--color-danger, #ef4444);
+    color:#fff;
   }
-  .remove:hover,.remove:focus-visible{background:var(--c-danger-hover)}
+  .remove:hover,
+  .remove:focus-visible{
+    background:var(--color-danger-hover, #dc2626);
+  }
   

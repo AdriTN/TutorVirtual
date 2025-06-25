@@ -1,6 +1,6 @@
 import { Course }                  from "@types";
 import { Trash2 }                  from "lucide-react";
-import styles                      from "../../pages/MyCourses.module.css";
+import styles                      from "./CourseCard.module.css";
 
 interface Props {
   course   : Course;

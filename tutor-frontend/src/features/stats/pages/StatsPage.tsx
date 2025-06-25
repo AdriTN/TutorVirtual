@@ -2,20 +2,20 @@ import { format } from "date-fns";
 import { Line, Doughnut } from "react-chartjs-2";
 import "chart.js/auto";
 
-import NavBar from "@components/organisms/NavBar/NavBar";
-import Footer from "@components/organisms/Footer/Footer";
+import NavBar  from "@components/organisms/NavBar/NavBar";
+import Footer  from "@components/organisms/Footer/Footer";
 
 import { useStatsOverview }  from "../hooks/useStatsOverview";
 import { useStatsTimeline }  from "../hooks/useStatsTimeline";
-import { useStatsTheme }   from "../hooks/useStatsByTheme";
+import { useStatsTheme }     from "../hooks/useStatsByTheme";
 
 import StatCard  from "../components/StatCard/StatCard";
 import styles    from "./StatsPage.module.css";
 
-
 const n = (x: number) => x.toLocaleString("es-ES");
 
 const StatsPage: React.FC = () => {
+
   /* ---------- queries ---------- */
   const { data: ovw }      = useStatsOverview();
   const { data: timeline } = useStatsTimeline();
@@ -24,11 +24,13 @@ const StatsPage: React.FC = () => {
   /* ---------- loader ---------- */
   if (!ovw || !timeline || !byTheme) {
     return (
-      <div className={styles.page}>
+      <>
         <NavBar />
-        <main className={styles.loading}>Cargando estadísticas…</main>
-        <Footer />
-      </div>
+        <div className={styles.page}>
+          <main className={styles.loading}>Cargando estadísticas…</main>
+          <Footer />
+        </div>
+      </>
     );
   }
 
@@ -45,61 +47,71 @@ const StatsPage: React.FC = () => {
 
   /* ---------- render ---------- */
   return (
-    <div className={styles.page}>
+    <>
       <NavBar />
 
-      <main className={styles.container}>
-        {/* KPI cards */}
-        <section className={styles.gridCards}>
-          <StatCard title="Ejercicios hechos" value={n(ovw.hechos)} />
-          <StatCard title="Aciertos"          value={n(ovw.correctos)} />
-          <StatCard
-            title="Precisión"
-            value={`${ovw.porcentaje.toFixed(1)} %`}
-            trend={parseFloat(ovw.trend24h)}
-          />
-        </section>
+      {/* wrapper que empuja el footer al fondo */}
+      <div className={styles.page}>
+        <main className={styles.container}>
+          {/* cabecera */}
+          <header className={styles.headerRow}>
+            <h2 className={styles.heading}>Estadísticas globales</h2>
+          </header>
 
-        {/* Evolución diaria */}
-        <section className={styles.block}>
-          <h4>Evolución diaria</h4>
-          {timeline.length ? <Line data={lineData} /> : <p>No hay datos aún.</p>}
-        </section>
+          {/* KPI cards */}
+          <section className={styles.gridCards}>
+            <StatCard title="Ejercicios hechos" value={n(ovw.hechos)} />
+            <StatCard title="Aciertos"          value={n(ovw.correctos)} />
+            <StatCard
+              title="Precisión"
+              value={`${ovw.porcentaje.toFixed(1)} %`}
+              trend={parseFloat(ovw.trend24h)}
+            />
+          </section>
 
-        {/* Donut + tabla */}
-        <section className={styles.blockGrid}>
-          <div>
-            <h4>Correctas vs Fallos</h4>
-            <Doughnut data={donutData} />
-          </div>
+          {/* Evolución diaria */}
+          <section className={styles.block}>
+            <h4>Evolución diaria</h4>
+            {timeline.length
+              ? <Line data={lineData} />
+              : <p className={styles.empty}>No hay datos aún.</p>}
+          </section>
 
-          <div className={styles.themeTableWrapper}>
-            <h4>Progreso por tema</h4>
-            {byTheme.length ? (
-              <table className={styles.table}>
-                <thead>
-                  <tr><th>Tema</th><th>Completados</th><th>Correctos</th><th>%</th></tr>
-                </thead>
-                <tbody>
-                  {byTheme.map(t => (
-                    <tr key={t.theme_id}>
-                      <td>{t.theme}</td>
-                      <td>{n(t.done)}</td>
-                      <td>{n(t.correct)}</td>
-                      <td>{t.ratio.toFixed(1)} %</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No hay datos.</p>
-            )}
-          </div>
-        </section>
-      </main>
+          {/* Donut + tabla */}
+          <section className={styles.blockGrid}>
+            <div>
+              <h4>Correctas vs Fallos</h4>
+              <Doughnut data={donutData} />
+            </div>
 
-      <Footer />
-    </div>
+            <div className={styles.themeTableWrapper}>
+              <h4>Progreso por tema</h4>
+              {byTheme.length ? (
+                <table className={styles.table}>
+                  <thead>
+                    <tr><th>Tema</th><th>Completados</th><th>Correctos</th><th>% Aciertos</th></tr>
+                  </thead>
+                  <tbody>
+                    {byTheme.map(t => (
+                      <tr key={t.theme_id}>
+                        <td>{t.theme}</td>
+                        <td>{n(t.done)}</td>
+                        <td>{n(t.correct)}</td>
+                        <td>{t.ratio.toFixed(1)} %</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className={styles.empty}>No hay datos.</p>
+              )}
+            </div>
+          </section>
+        </main>
+
+        <Footer />
+      </div>
+    </>
   );
 };
 
