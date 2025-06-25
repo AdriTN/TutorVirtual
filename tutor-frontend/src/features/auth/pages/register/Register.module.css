@@ -4,6 +4,16 @@
   box-sizing: border-box;
 }
 
+.pageContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;   /* pila vertical  RegisterForm + GoogleBtn */
+  align-items: center;      /* centra en X */
+  justify-content: center;  /* centra en Y */
+  gap: 2rem;                /* separación entre los hijos */
+  padding: 1rem;
+}
+
 /* Adaptamos .form-register a .formRegister */
 .formRegister {
   width: 450px;
