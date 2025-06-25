@@ -1,0 +1,23 @@
+.card{
+    background:#fff;
+    padding:2rem;
+    border-radius:16px;
+    box-shadow:0 6px 20px rgba(0,0,0,.08);
+    margin-bottom:2rem;
+  }
+  
+  .question{
+    font-size:1.1rem;
+    margin-bottom:1rem;
+    color:#000;
+  }
+  
+  .correct   {color:#2e7d32;font-weight:600;margin-top:.75rem}
+  .incorrect {color:#c62828;font-weight:600;margin-top:.75rem}
+  
+  .explanation{
+    margin-top:1.5rem;
+    font-size:.95rem;
+    color:#45515d;
+  }
+  

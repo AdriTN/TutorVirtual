@@ -1,4 +1,4 @@
-import styles from "../pages/Study.module.css";
+import styles from "./Controls.module.css";
 
 interface Props {
   userAnswer: string;

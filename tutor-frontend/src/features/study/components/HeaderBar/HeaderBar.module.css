@@ -1,0 +1,25 @@
+.header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:2rem;
+  }
+  
+  .courseInfo,
+  .difficulty{
+    font-size:1rem;
+    color:var(--color-text-secondary);
+  }
+  
+  .selectWrapper{
+    display:flex;
+    gap:.4rem;
+    align-items:center;
+  }
+  
+  .select{
+    padding:.4rem .8rem;
+    border:2px solid #e2e8f0;
+    border-radius:8px;
+    font-size:1rem;
+  }
+  

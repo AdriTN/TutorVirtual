@@ -1,4 +1,4 @@
-import styles from "../pages/Study.module.css";
+import styles from "./HeaderBar.module.css";
 import { Course, Subject } from "@/types";
 
 interface Props {

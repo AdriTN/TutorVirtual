@@ -1,4 +1,4 @@
-import styles from "../pages/Study.module.css";
+import styles from "./ExerciseCard.module.css";
 
 interface Props {
   enunciado: string;

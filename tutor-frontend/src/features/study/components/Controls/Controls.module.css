@@ -1,0 +1,28 @@
+.controls{
+    display:flex;
+    gap:1rem;
+    align-items:flex-start;
+    margin-bottom:2rem;
+  }
+  
+  .input{
+    flex:1;
+    padding:.75rem 1rem;
+    font-size:1rem;
+    border:2px solid #e2e8f0;
+    border-radius:8px;
+  }
+  
+  .btn{
+    padding:.6rem 1.2rem;
+    background:#006d77;
+    color:#fff;
+    border:none;
+    border-radius:28px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  .btn:hover{background:#004d54}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  
