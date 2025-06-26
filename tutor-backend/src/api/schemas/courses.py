@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+from typing import List, Optional
 
 
 # ---------- Salida ----------
@@ -45,3 +46,12 @@ class CourseIn(BaseModel):
             }
         }
     )
+
+class CourseUpdate(BaseModel):
+    title: Optional[str] = Field(None, max_length=255)
+    description: Optional[str] = None
+    subject_ids: Optional[List[int]] = None
+
+
+class SubjectDetach(BaseModel):
+    subject_ids: List[int]

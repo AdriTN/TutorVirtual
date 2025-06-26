@@ -93,3 +93,9 @@
   opacity:.55;
   cursor:not-allowed;
 }
+
+.managePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}

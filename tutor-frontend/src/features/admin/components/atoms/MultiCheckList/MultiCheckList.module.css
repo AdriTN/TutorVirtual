@@ -1,0 +1,76 @@
+/* ------------------- Caja externa ------------------- */
+.box{
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-md);
+    background:var(--color-surface);
+    overflow:hidden;                 /* recorta bordes */
+    display:flex; flex-direction:column;
+  }
+  
+  /* ------------------- Cabecera ----------------------- */
+  .header{
+    margin:0;
+    padding:.55rem .9rem;
+    font-size:.87rem;
+    font-weight:600;
+    color:var(--color-primary);
+    border-bottom:1px solid var(--color-border);
+    background:var(--color-surface-hover);
+  }
+  
+  /* ------------------- Lista desplazable -------------- */
+  .list{
+    list-style:none;
+    margin:0; padding:.25rem 0;
+    overflow-y:auto;
+  }
+  .list li + li{ border-top:1px solid var(--color-border); }
+  
+  /* ------------------- Ítem ---------------------------- */
+  .item{
+    display:flex; align-items:center; gap:.55rem;
+    padding:.55rem .9rem;
+    cursor:pointer; user-select:none;
+    transition:background .15s;
+  }
+  .item:hover{ background:var(--color-surface-hover); }
+  
+  /* --- checkbox oculto --- */
+  .item input{
+    position:absolute; opacity:0; pointer-events:none;
+  }
+  
+  /* --- checkmark circular --- */
+  .checkmark{
+    width:1.1rem;
+    height:1.1rem;
+    border:2px solid var(--color-border);
+    border-radius:50%;
+    display:inline-block;
+    flex-shrink:0;
+    position:relative;
+    transition:background .15s,border-color .15s;
+  }
+  
+  /* --- texto --- */
+  .label{ font-size:.87rem; }
+  
+  /* --- estado checked --- */
+  .item input:checked + .checkmark{
+    background:var(--color-primary);
+    border-color:var(--color-primary);
+  }
+  .item input:checked + .checkmark::after{
+    content:"";
+    position:absolute; inset:0;
+    background: url("data:image/svg+xml,%3Csvg width='12' height='10' viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 2' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/80% no-repeat;
+  }
+  
+  /* ------------------- vacío --------------------------- */
+  .empty{
+    padding:.7rem .9rem;
+    font-size:.85rem;
+    color:var(--color-text-muted);
+    text-align:center;
+  }
+  

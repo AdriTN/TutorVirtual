@@ -78,5 +78,5 @@ def test_list_all_themes(client, db_session):
     resp = client.get("/api/themes")
     assert resp.status_code == HTTP_200_OK
 
-    names = {item["name"] for item in resp.json()}
+    names = {item["title"] for item in resp.json()}
     assert names == {"Edad Media", "Edad Moderna"}

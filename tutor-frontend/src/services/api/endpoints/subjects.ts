@@ -1,20 +1,62 @@
 import { api } from "../backend";
 import { Subject, Theme } from "@/types";
 
-/* ------- subjects ------------------------------------------------------- */
-export const getAllSubjects = () => api.get<Subject[]>("/api/subjects/subjects").then(r => r.data);
-export const enrollSubject   = (id: number) => api.post(`/api/subjects/${id}/enroll`);
-export const unenrolSubject = (id: number) => api.delete(`/api/subjects/${id}/unenroll`);
+const BASE = "/api/subjects";
 
-export const adminCreateSubject = (name: string, description = "") =>
-  api.post("/api/subjects/nueva", { name, description });
+/* ------------------------------------------------------------------ */
+/*  Subjects (público / alumno)                                       */
+/* ------------------------------------------------------------------ */
+export const getAllSubjects = () =>
+  api.get<Subject[]>(`${BASE}/all`).then(r => r.data);
 
-export const adminAddSubjectToCourse    = (courseId: number, subjId: number) =>
-  api.post(`/api/subjects/${courseId}/subjects`, { subject_id: subjId });
+export const enrollSubject = (id: number) =>
+  api.post(`${BASE}/${id}/enroll`);
 
-export const adminRemoveSubjectFromCourse = (courseId: number, subjId: number) =>
-  api.delete(`/api/subjects/${courseId}/subjects/${subjId}`);
+export const unenrollSubject = (id: number) =>
+  api.delete(`${BASE}/${id}/unenroll`);
 
-/* ------- themes (vía subject) ------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  Themes de una asignatura                                          */
+/* ------------------------------------------------------------------ */
 export const getThemesBySubject = (subjectId: number) =>
-  api.get<Theme[]>(`/api/subjects/${subjectId}/themes`).then(r => r.data);
+  api
+    .get<Theme[]>(`${BASE}/${subjectId}/themes`)
+    .then(r => r.data);
+
+/* ------------------------------------------------------------------ */
+/*  Administración de asignaturas                                     */
+/* ------------------------------------------------------------------ */
+export const adminCreateSubject = (name: string, description = "") =>
+  api.post(`${BASE}/create`, { name, description });
+
+export const adminAddSubjectToCourse = (courseId: number, subjectId: number) =>
+  api.post(`${BASE}/courses/${courseId}/subjects/add`, {
+    subject_id: subjectId,
+  });
+
+export const adminRemoveSubjectFromCourse = (
+  courseId: number,
+  subjectId: number
+) =>
+  api.delete(
+    `${BASE}/courses/${courseId}/subjects/${subjectId}/remove`
+  );
+
+/* editar (name / description) */
+export const adminUpdateSubject = (
+  subjectId: number,
+  payload: { name?: string; description?: string }
+) => api.put(`${BASE}/${subjectId}/update`, payload);
+
+/* eliminar */
+export const adminDeleteSubject = (subjectId: number) =>
+  api.delete(`${BASE}/${subjectId}/delete`);
+
+/* desvincular o eliminar varios temas de una asignatura */
+export const adminDetachThemesFromSubject = (
+  subjectId: number,
+  themeIds: number[]
+) =>
+  api.delete(`${BASE}/${subjectId}/themes/detach`, {
+    data: { theme_ids: themeIds },
+  });

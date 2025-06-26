@@ -1,0 +1,8 @@
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);
+    display:flex;align-items:center;justify-content:center;z-index:1200}
+  .box{background:var(--color-surface);padding:1.7rem 2rem;border-radius:var(--radius-md);
+    max-width:340px;width:100%;box-shadow:var(--shadow-elevated)}
+  .actions{display:flex;justify-content:flex-end;gap:.7rem;margin-top:1.3rem}
+  .actions button{padding:.5rem 1rem;border-radius:var(--radius-md);cursor:pointer}
+  .danger{background:#e53935;color:#fff;border:none}
+  .danger:hover{background:#c62828}
