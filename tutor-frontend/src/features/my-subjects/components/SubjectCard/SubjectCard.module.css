@@ -9,6 +9,7 @@
     background:var(--color-surface);
     border-radius:var(--radius-lg);
     box-shadow:var(--shadow-elevated);
+    border:3px solid rgba(0, 0, 0, 0.35);
     transition:transform var(--ease-fast),box-shadow var(--ease-fast);
   }
   .card:hover{
@@ -23,7 +24,7 @@
   }
   .desc{
     font-size:.9rem;line-height:1.35;
-    color:var(--color-text-muted);
+    color:var(--color-text);
     flex:1;
   }
   
@@ -31,7 +32,7 @@
   .themes{display:flex;flex-wrap:wrap;gap:.3rem}
   .badge{
     font-size:.72rem;
-    background:var(--color-accent);color:#fff;
+    background:var(--color-accent);color:var(--color-text-black);
     padding:4px 9px;border-radius:12px;
   }
   

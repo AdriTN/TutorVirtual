@@ -58,8 +58,7 @@
   /* ----- Primary (añadir) ----- */
   .body button:not(.remove){
     background:var(--color-primary);
-    border:1px solid var(--color-primary);
-    color:#fff;
+    color:var(--color-text-);
   }
   .body button:not(.remove):hover,
   .body button:not(.remove):focus-visible{

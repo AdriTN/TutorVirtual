@@ -26,8 +26,8 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--step-bg);
-  border: 3px solid var(--step-bg);
+  background: var(--color-text-muted);
+  border: 3px solid var(--color-bg-muted);
   color: #000;
   font: 700 0.9rem/34px system-ui, sans-serif;
   display: inline-block;
@@ -38,11 +38,11 @@
   margin-top: .6rem;
   font: 600 0.8rem/1.1 var(--font-sans, system-ui);
   text-transform: uppercase;
-  color: var(--step-track);
+  color: var(--color-bg);
 }
 
-.done .circle { color: var(--step-green); }
-.done .label  { color: var(--step-green); }
+.done .circle { color: var(--color-green); }
+.done .label  { color: var(--color-green); }
 
 /* línea horizontal derecha -------------------------------------------- */
 .step:not(:last-child)::after {
@@ -52,10 +52,10 @@
   left: calc(50% + 17px);            /* borde derecho */
   width: calc(100% - 34px);          /* hasta siguiente círculo */
   height: 3px;
-  background: var(--step-track);
+  background: var(--color-bg-muted);
   z-index: -1;
 }
 
 .done:not(:last-child)::after {
-  background: var(--step-green);
+  background: var(--color-green);
 }

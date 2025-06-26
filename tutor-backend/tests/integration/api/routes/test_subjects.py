@@ -20,11 +20,11 @@ API = "/api/subjects"        # prefijo común
 
 # ───────────────────────── helpers ──────────────────────────
 def _mk_subject(client, name: str, *, desc: str | None = None):
-    """POST /api/subjects/nueva (description es obligatoria)."""
+    """POST /api/subjects/create (description es obligatoria)."""
     if desc is None:                     # proveemos una por defecto
         desc = f"{name} desc"
     body = {"name": name, "description": desc}
-    return client.post(f"{API}/nueva", json=body)
+    return client.post(f"{API}/create", json=body)
 
 
 def _enroll(client, subj_id: int):
@@ -60,7 +60,7 @@ def test_list_subjects(client):
     """✔ GET /subjects devuelve todos los registros."""
     _mk_subject(client, "Art", desc="Historia del arte")
     _mk_subject(client, "History", desc="Historia universal")
-    resp = client.get(f"{API}/subjects")
+    resp = client.get(f"{API}/all")
     assert resp.status_code == 200
     names = {s["name"] for s in resp.json()}
     assert names == {"Art", "History"}

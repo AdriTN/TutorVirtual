@@ -79,13 +79,9 @@ const Dashboard: React.FC = () => {
 
         {/* Recomendaciones + Stats (place-holders) */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Recomendaciones</h2>
-          <div className={styles.recoCard}>
-            <h3>Ejemplo de recomendación</h3>
-            <p>
-              🎯 Completa el módulo <strong>“Funciones Cuadráticas”</strong> para
-              fortalecer tu base antes del examen.
-            </p>
+          <h2 className={styles.sectionTitle}>Estadísticas</h2>
+          <div className={styles.statsBox}>
+            <p>Recomendaciones de progreso próximamente 🎯</p>
           </div>
         </section>
 

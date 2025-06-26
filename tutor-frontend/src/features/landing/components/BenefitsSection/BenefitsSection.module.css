@@ -67,7 +67,7 @@
     text-align:center;
     font-size:1.4rem;
     font-weight:700;
-    color:var(--color-text);
+    color:var(--color-text-black);
     margin-bottom:var(--space-md);
   }
   
@@ -75,7 +75,7 @@
     font-size:1rem;
     line-height:1.4;
     text-align:start;
-    color:var(--color-text-muted);
+    color:var(--color-text-black);
   }
   
   .imageContainer{
@@ -94,7 +94,7 @@
     width:12px;height:12px;
     margin:0 6px;
     border-radius:50%;
-    background:var(--color-surface);
+    background:var(--color-text-muted);
     cursor:pointer;
     transition:box-shadow var(--ease-fast),opacity var(--ease-fast);
   }
@@ -103,6 +103,39 @@
     background:var(--color-accent);
     box-shadow:0 0 10px 2px var(--color-accent);
   }
+
+  /* ---------- FLECHAS (un solo botón, dos variantes) ---------- */
+.arrow {
+  width: 50px;
+  height: 50px;
+  border: none;
+  background: var(--color-bg-inverted);        /* color visible */
+  cursor: pointer;
+  transition: transform var(--ease-fast);
+  /* usar la misma máscara para todos los navegadores */
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+/* Flecha ← */
+.arrowLeft {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 6L9 12L15 18'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 6L9 12L15 18'/%3E%3C/svg%3E");
+}
+
+/* Flecha →  (mismo SVG girado 180°) */
+.arrowRight {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' transform='rotate(180)'%3E%3Cpath d='M15 6L9 12L15 18'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' transform='rotate(180)'%3E%3Cpath d='M15 6L9 12L15 18'/%3E%3C/svg%3E");
+}
+
+.arrow:hover {
+  transform: scale(1.1);
+}
   
   /* Responsive */
   @media (max-width:768px){
