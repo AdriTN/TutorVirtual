@@ -46,7 +46,7 @@ def test_theme_columns_definition():
     fk = list(tbl.c.subject_id.foreign_keys)[0]
     assert fk.column.table.name == "subjects"
     assert fk.column.name == "id"
-    assert tbl.c.subject_id.nullable is False
+    assert tbl.c.subject_id.nullable is True
 
 
 def test_theme_relationships():

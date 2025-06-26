@@ -2,17 +2,18 @@
     background:var(--color-surface);
     border-radius:var(--radius-lg);
     box-shadow:var(--shadow-elevated);
-    padding:2rem 1.8rem;                /*  + aire */
+    padding:2rem 1.8rem;
     display:flex;flex-direction:column;gap:1.1rem;
+    border:3px solid rgba(0, 0, 0, 0.35);
     transition:transform var(--ease-fast),box-shadow var(--ease-fast);
   }
   .card:hover{transform:translateY(-8px);box-shadow:0 16px 34px rgba(0,0,0,.08)}
   
   .title{font-size:1.15rem;font-weight:600;color:var(--color-primary)}
-  .desc {font-size:.95rem;line-height:1.4;color:var(--color-text-muted);flex:1}
+  .desc {font-size:.95rem;line-height:1.4;color:var(--color-text);flex:1}
   
   .badge{
-    font-size:.75rem;background:var(--color-accent);color:#fff;
+    font-size:.75rem;background:var(--color-accent);color:var(--color-text);
     padding:4px 10px;border-radius:12px;margin-right:4px;margin-top:4px;
   }
   

@@ -28,7 +28,7 @@
   font-size:1.2rem;font-weight:700;
   border:none;border-radius:25%;
   background:transparent;
-  color:var(--color-accent);
+  color:var(--color-bg-inverted);
   cursor:pointer;
   transition:background var(--ease-fast),transform var(--ease-fast);
 }

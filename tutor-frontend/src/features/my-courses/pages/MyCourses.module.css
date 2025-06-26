@@ -63,13 +63,13 @@
   padding-bottom:7px;padding-right:15px;
   letter-spacing:4px;font-size:14px;
   text-transform:uppercase;
-  color:var(--color-accent);
+  color:var(--color-bg-inverted);
   position:relative;
 }
 .cta svg{
   transform:translateX(-8px);
   transition:all .3s ease;
-  fill:var(--color-accent);
+  fill:var(--color-bg-inverted);
 }
 .cta span::after{
   content:"";position:absolute;left:0;bottom:0;
