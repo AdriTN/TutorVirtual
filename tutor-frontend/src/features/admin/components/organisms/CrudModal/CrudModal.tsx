@@ -1,44 +1,45 @@
-// src/features/admin/components/CrudModal/CrudModal.tsx
 import { memo, useEffect, useRef } from "react";
 import styles from "./CrudModal.module.css";
 
-interface CrudModalProps {
+interface Props {
   open: boolean;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-function CrudModal({ open, title, onClose, children }: CrudModalProps) {
+function CrudModal({ open, title, onClose, children }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
+  const focused = useRef(false);          // ⬅️ sólo una vez por apertura
 
-  /* Foco al primer campo SOLO cuando el modal se abre */
   useEffect(() => {
-    if (!open) return;
+    if (!open) { focused.current = false; return; }
 
-    const firstFocusable = boxRef.current?.querySelector<HTMLElement>(
-      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
-    );
-    firstFocusable?.focus();
+    /* foco al primer elemento interactivo */
+    if (!focused.current) {
+      focused.current = true;
+      boxRef.current?.querySelector<HTMLElement>(
+        "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
+      )?.focus();
+    }
 
+    /* ESC para cerrar & bloquear scroll fondo */
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    const { overflow } = document.body.style;      // guarda estado previo
+    const { overflow } = document.body.style;
 
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
 
     return () => {
-      window.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
     };
   }, [open, onClose]);
 
-  /* Si el modal está cerrado, no renderizamos nada */
   if (!open) return null;
 
   return (
     <div
-      data-testid="modal"            /* ← opcional para tests / debug */
       className={styles.overlay}
       role="dialog"
       aria-modal="true"
@@ -48,7 +49,6 @@ function CrudModal({ open, title, onClose, children }: CrudModalProps) {
         <header className={styles.header}>
           <h3>{title}</h3>
           <button
-            type="button"
             className={styles.close}
             aria-label="Cerrar"
             onClick={onClose}
@@ -62,6 +62,5 @@ function CrudModal({ open, title, onClose, children }: CrudModalProps) {
     </div>
   );
 }
-
 
 export default memo(CrudModal);
