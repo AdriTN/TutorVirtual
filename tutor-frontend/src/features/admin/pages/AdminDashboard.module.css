@@ -1,101 +1,145 @@
-/* ==========================================================================
-   Layout & UI helpers – paleta académica global
-   ==========================================================================*/
+/* AdminDashboard.module.css */
 
 /* ---------- Page wrapper (footer fijo) ---------- */
-.page{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  background:var(--color-bg);
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
 }
-.main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---------- Contenedor central ---------- */
-.container{
-  max-width:1240px;
-  margin:3rem auto 5rem;          /* + aire */
-  padding:0 var(--space-lg);
-  color:var(--color-text);
+.container {
+  max-width: 1240px;
+  margin: 3rem auto 5rem;
+  padding: 0 var(--space-lg);
+  color: var(--color-text);
 }
 
 /* ---------- Grids ---------- */
-.grid{
-  display:grid;
-  gap:2rem;                       /* + aire */
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+.grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
-.gridWide{
-  display:grid;
-  gap:2rem;
-  grid-template-columns:repeat(auto-fill,minmax(380px,1fr));
+.gridWide {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
 }
 
 /* ---------- Tabs wrapper ---------- */
-.tabs{
-  display:flex;
-  gap:.6rem;
+.tabs {
+  display: flex;
+  gap: .6rem;
   margin-left: 15px;
-  margin-bottom:var(--space-lg);
+  margin-bottom: var(--space-lg);
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ---------- Formulario vertical ---------- */
-.vForm{
-  display:flex;
-  flex-direction:column;
-  gap:var(--space-sm);
+.vForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 /* ---------- Action buttons ---------- */
-.actions{
-  display:flex;
-  gap:.9rem;                      /* separa botones */
-  justify-content:flex-end;
+.actions {
+  display: flex;
+  gap: .9rem;                     /* separa botones */
+  justify-content: flex-end;
 }
-
-.actions button{
-  padding:.6rem 1.2rem;
-  font-size:.9rem;
-  font-weight:500;
-  border-radius:var(--radius-md);
-  cursor:pointer;
-  transition:background var(--ease-fast),box-shadow var(--ease-fast);
+.actions button {
+  padding: .6rem 1.2rem;
+  font-size: .9rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--ease-fast), box-shadow var(--ease-fast);
 }
-
-/* ——— Button estilo “secundario” ——— */
-.actions button:first-child{
-  background:var(--color-surface);
-  border:1px solid var(--color-border);
-  color:var(--color-text);
+/* botón secundario */
+.actions button:first-child {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
 }
-.actions button:first-child:hover{
-  background:var(--color-surface-hover);
+.actions button:first-child:hover {
+  background: var(--color-surface-hover);
 }
-
-/* ——— Button estilo “primario” ——— */
-.actions button:last-child{
-  background:var(--color-primary);
-  border:1px solid var(--color-primary);
-  color:#fff;
+/* botón primario */
+.actions button:last-child {
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: #fff;
 }
 .actions button:last-child:hover,
-.actions button:last-child:focus-visible{
-  background:var(--color-primary-hover);
-  box-shadow:0 2px 8px rgba(0,0,0,.12);
+.actions button:last-child:focus-visible {
+  background: var(--color-primary-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
 }
-
 /* estado disabled */
-.actions button:disabled{
-  opacity:.55;
-  cursor:not-allowed;
+.actions button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
 }
 
+/* ---------- Panel de gestión (“managePanel”) ---------- */
 .managePanel {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+/* Aseguramos que cada card llene el contenedor */
+.managePanel > * {
+  width: 100%;
+}
+/* en pantallas ≥768px pasa a filas y wrap */
+@media (min-width: 768px) {
+  .managePanel {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- Table wrapper para scroll ---------- */
+.tableWrapper {
+  overflow-x: auto;
+}
+
+/* ---------- Responsive Breakpoints ---------- */
+@media (max-width: 1024px) {
+  /* gridWide con min-width más pequeño */
+  .gridWide {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  /* grids a una columna */
+  .grid,
+  .gridWide {
+    grid-template-columns: 1fr;
+  }
+  /* centrar y espaciado de tabs */
+  .tabs {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  /* padding más compacto */
+  .container {
+    padding: 0 var(--space-md);
+  }
+  /* reducir gap en formularios verticales */
+  .vForm {
+    gap: var(--space-xs);
+  }
 }
