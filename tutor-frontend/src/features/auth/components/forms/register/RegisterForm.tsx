@@ -1,6 +1,7 @@
 import { useState }       from "react";
 import { Link, useNavigate }    from "react-router-dom";
 import { api }            from "@services/api/backend";
+import { useNotifications } from "@hooks/useNotifications";
 import styles             from "./RegisterForm.module.css";
 
 interface Props {
@@ -16,12 +17,19 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { notifyError, notifySuccess } = useNotifications();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (pwd !== pwd2)  { alert("Las contraseñas no coinciden"); return; }
-    if (!agreed)       { alert("Debes aceptar los términos");  return; }
+    if (pwd !== pwd2)  { 
+      notifyError("Las contraseñas no coinciden"); 
+      return; 
+    }
+    if (!agreed)       { 
+      notifyError("Debes aceptar los términos y condiciones");  
+      return; 
+    }
 
     try {
       setLoading(true);
@@ -31,10 +39,8 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
         password: pwd,
         confirmPassword: pwd2,
       });
+      notifySuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
       navigate("/login", { replace: true });
-    } catch (err) {
-      console.error("Register error:", err);
-      alert("Error en el registro");
     } finally {
       setLoading(false);
     }

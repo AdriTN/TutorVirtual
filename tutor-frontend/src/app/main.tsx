@@ -23,16 +23,30 @@ const queryClient = new QueryClient({
 /* ────────────── Google OAuth guard ──────────────── */
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 if (!googleClientId) {
-  console.error("[startup] Falta VITE_GOOGLE_CLIENT_ID en las variables de entorno");
+  // Este error es crítico para el funcionamiento de Google Login.
+  // Podríamos lanzar una excepción o mostrar un mensaje muy visible.
+  // Por ahora, mantenemos el console.error, ya que una notificación Toast podría no ser
+  // visible si el resto de la app no puede inicializar.
+  console.error(
+    "[CRITICAL STARTUP ERROR] Falta VITE_GOOGLE_CLIENT_ID en las variables de entorno. "+
+    "El inicio de sesión con Google no funcionará."
+  );
 }
 
 /* ────────────── Render raíz ─────────────────────── */
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <GoogleOAuthProvider clientId={googleClientId ?? ""}>
-        <App />
-      </GoogleOAuthProvider>
-    </QueryClientProvider>
-  </React.StrictMode>,
-);
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <GoogleOAuthProvider clientId={googleClientId ?? ""}>
+          <App />
+        </GoogleOAuthProvider>
+      </QueryClientProvider>
+    </React.StrictMode>,
+  );
+} else {
+  console.error(
+    "[CRITICAL STARTUP ERROR] No se encontró el elemento raíz con ID 'root'. La aplicación no puede iniciarse."
+  );
+}

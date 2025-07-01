@@ -12,12 +12,8 @@ const LoginForm: React.FC = () => {
   const mutation = useLoginMutation();
 
   const onSubmit = async (data: FormValues) => {
-    try {
-      const tokens = await mutation.mutateAsync(data);
-      login(tokens.access_token, tokens.refresh_token);
-    } catch (err) {
-      alert("Credenciales incorrectas");
-    }
+    const tokens = await mutation.mutateAsync(data);
+    login(tokens.access_token, tokens.refresh_token);
   };
 
   return (

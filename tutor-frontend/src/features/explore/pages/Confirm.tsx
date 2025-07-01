@@ -3,6 +3,7 @@ import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import NavBar        from "@components/organisms/NavBar/NavBar";
 import Footer        from "@components/organisms/Footer/Footer";
 import StepIndicator from "@components/molecules/StepIndicator";
+import { useNotifications } from "@hooks/useNotifications";
 
 import { useCourse }        from "../hooks/useCourse";
 import { useEnrollSubject } from "../hooks/useEnrollSubject";
@@ -18,18 +19,15 @@ export default function ConfirmPage() {
   const { data: course } = useCourse(courseId);
   const enroll           = useEnrollSubject();
   const nav              = useNavigate();
+  const { notifySuccess } = useNotifications();
 
   if (!course) return null;
   const subject = course.subjects.find(s => s.id === subjectId);
 
   const confirm = async () => {
-    try {
-      await enroll.mutateAsync({ subjectId, courseId });
-      nav("/dashboard", { replace: true });
-    } catch (err) {
-      console.error("Error al inscribir al estudiante:", err);
-      alert("Ocurrió un error al intentar inscribir al estudiante. Por favor, inténtalo de nuevo más tarde.");
-    }
+    await enroll.mutateAsync({ subjectId, courseId });
+    notifySuccess(`Te has inscrito correctamente en ${subject ? subject.name : 'la asignatura'} del curso ${course.title}.`);
+    nav("/dashboard", { replace: true });
   };
 
   return (

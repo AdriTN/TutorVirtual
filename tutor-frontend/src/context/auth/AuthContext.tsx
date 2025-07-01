@@ -8,6 +8,7 @@ import {
 import { jwtDecode } from 'jwt-decode';
 import type { JwtPayload, AuthContextValue } from './auth.types';
 import { logoutUser as apiLogoutUser } from '@/services/api/endpoints/auth';
+import { useNotifications } from "@hooks/useNotifications"; // Importar hook
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -16,7 +17,10 @@ const isAdminFrom = (token: string): boolean => {
   try {
     return Boolean(jwtDecode<JwtPayload>(token).is_admin);
   } catch {
-    return false;
+    // Si el token es inválido/corrupto, jwtDecode lanzará un error.
+    // Esto será manejado en PrivateRoute o donde se use el token.
+    // Aquí, si no se puede decodificar, asumimos que no es admin.
+      return false;
   }
 };
 
@@ -25,14 +29,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [isAdmin, setIsAdmin]             = useState(false);
   const [loading, setLoading]             = useState(true);
+  const { notifySuccess, notifyInfo } = useNotifications();
 
   /* -------- carga inicial -------- */
   useEffect(() => {
     const storedAccess  = getAccessToken();
     const storedRefresh = getRefreshToken();
     if (storedAccess && storedRefresh) {
-      setAccessTokenState(storedAccess);
-      setIsAdmin(isAdminFrom(storedAccess));
+      try {
+        setIsAdmin(isAdminFrom(storedAccess));
+        setAccessTokenState(storedAccess);
+      } catch (e) {
+        console.warn("Invalid stored access token on startup, clearing tokens.", e)
+        clearTokens();
+      }
     }
     setLoading(false);
   }, []);
@@ -43,40 +53,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRefreshToken(refresh);
     setAccessTokenState(access);
     setIsAdmin(isAdminFrom(access));
-  }, []);
+    notifySuccess("Sesión iniciada correctamente.");
+  }, [notifySuccess]);
 
-  const logout = useCallback(async () => { // Convertir a async para el await
-    const refreshToken = getRefreshToken(); // Obtener el token de refresco antes de limpiarlo
+  const logout = useCallback(async () => {
+    const refreshToken = getRefreshToken(); 
     
-    // Intentar el logout en el backend, pero no bloquear el logout del cliente si falla
     if (refreshToken) {
-      try {
-        await apiLogoutUser(refreshToken);
-        console.info("Successfully logged out from backend");
-      } catch (error) {
-        console.error("Failed to logout from backend:", error);
-        // Continuar con el logout del cliente de todas formas
-      }
+      await apiLogoutUser(refreshToken);
     }
 
-    clearTokens(); // Limpiar tokens de localStorage
-    setAccessTokenState(null); // Limpiar estado de token de acceso
-    setIsAdmin(false); // Resetear estado de admin
-    // La redirección se manejará en el componente que llama a logout
-  }, []);
+    clearTokens(); 
+    setAccessTokenState(null); 
+    setIsAdmin(false); 
+    notifyInfo("Has cerrado tu sesión.");
+  }, [notifyInfo]);
 
   const tryRefreshToken = useCallback(async () => {
-    const ok = await refreshAccessToken();
-    if (!ok) {
-      logout();
-      return false;
+    try {
+      const ok = await refreshAccessToken();
+      if (!ok) {
+        // Si refreshAccessToken devuelve false, es probable que el refresh token haya expirado o sea inválido.
+        // El interceptor de API (si el error vino de una llamada API) o PrivateRoute (si es proactivo)
+        // ya debería haber llamado a notifyError y gestionado el logout.
+        // Llamar a logout aquí asegura que el estado local se limpie.
+        await logout();
+        return false;
+      }
+      const newAccess = getAccessToken();
+      if (newAccess) {
+        setAccessTokenState(newAccess);
+        setIsAdmin(isAdminFrom(newAccess));
+      }
+      return true;
+    } catch (error) {
+        // Esto podría capturar errores si refreshAccessToken mismo lanza una excepción inesperada
+        // (aunque está diseñado para devolver boolean).
+        console.error("Unexpected error during token refresh:", error);
+        await logout();
+        return false;
     }
-    const newAccess = getAccessToken();
-    if (newAccess) {
-      setAccessTokenState(newAccess);
-      setIsAdmin(isAdminFrom(newAccess));
-    }
-    return true;
   }, [logout]);
 
   /* -------- memo value -------- */
