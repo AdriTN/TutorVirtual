@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import Table, MetaData, UniqueConstraint
 
 from src.database.base import Base
-from src.models.associations import user_courses, user_subjects, course_subjects
+from src.models.associations import user_courses, user_enrollments, course_subjects
 
 @pytest.fixture(scope="module")
 def metadata() -> MetaData:
@@ -18,11 +18,11 @@ def metadata() -> MetaData:
         [("user_id", "course_id")]
     ),
     (
-        user_subjects, 
-        "user_subjects",
-        ["user_id", "subject_id"],
-        [("user_id", "users.id"), ("subject_id", "subjects.id")],
-        [("user_id", "subject_id")]
+        user_enrollments, 
+        "user_enrollments",
+        ["user_id", "subject_id", "course_id"],
+        [("user_id", "users.id"), ("subject_id", "subjects.id"), ("course_id", "courses.id")],
+        [("user_id", "subject_id", "course_id")]
     ),
     (
         course_subjects, 
