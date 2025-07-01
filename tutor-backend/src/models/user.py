@@ -7,6 +7,7 @@ from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, f
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.base import Base
+from src.models.associations import user_courses, user_enrollments
 
 
 class User(Base):
@@ -22,8 +23,26 @@ class User(Base):
     refresh_tokens:  Mapped[List["RefreshToken"]]        = relationship(back_populates="user", cascade="all, delete-orphan")
     respuestas:      Mapped[List["UserResponse"]]        = relationship(back_populates="user", cascade="all, delete-orphan")
     progress:        Mapped[List["UserThemeProgress"]]   = relationship(cascade="all, delete-orphan")
-    courses:         Mapped[List["Course"]]              = relationship(secondary="user_courses", back_populates="students", lazy="selectin",)
-    subjects:        Mapped[List["Subject"]]             = relationship(secondary="user_subjects", back_populates="users", lazy="selectin",)
+    
+    courses: Mapped[List["Course"]] = relationship(
+        secondary=user_courses, 
+        back_populates="students", 
+        lazy="selectin"
+    )
+    
+    enrolled_subjects: Mapped[List["Subject"]] = relationship(
+        secondary=user_enrollments,
+        back_populates="enrolled_users",
+        viewonly=True,
+        lazy="selectin"
+    )
+
+    enrolled_in_courses: Mapped[List["Course"]] = relationship(
+        secondary=user_enrollments,
+        back_populates="enrolled_students",
+        viewonly=True,
+        lazy="selectin"
+    )
 
     __table_args__ = (
         CheckConstraint("length(username) >= 3", name="chk_username_minlen"),
