@@ -2,6 +2,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { api } from "@services/api/backend";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@context/auth";
+import { useNotifications } from "@hooks/useNotifications";
 import styles from "./MyGoogleButton.module.css";
 
 interface MyGoogleButtonProps {
@@ -11,6 +12,7 @@ interface MyGoogleButtonProps {
 const MyGoogleButton: React.FC<MyGoogleButtonProps> = ({}) => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { notifyError } = useNotifications();
 
   const googleLogin = useGoogleLogin({
     flow: "auth-code",
@@ -21,11 +23,13 @@ const MyGoogleButton: React.FC<MyGoogleButtonProps> = ({}) => {
         login(data.access_token, data.refresh_token);
         navigate("/dashboard");
       } catch (err) {
-        console.error("Error al hacer login con Google:", err);
-        alert("No se pudo iniciar sesión con Google");
+          notifyError("No se pudo iniciar sesión con Google. Inténtalo de nuevo.");
       }
     },
-    onError: err => console.error("Google login error:", err),
+    onError: err => {
+        console.error("Google login flow error:", err);
+        notifyError("Error con el inicio de sesión de Google. Por favor, revisa la consola o inténtalo más tarde.");
+    },
   });
 
   return (

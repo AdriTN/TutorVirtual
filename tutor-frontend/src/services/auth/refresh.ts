@@ -5,10 +5,7 @@ import {
   setRefreshToken,
 } from "./tokens";
 
-/**  
- * Refresca el access-token usando el refresh almacenado.  
- * Devuelve `true` si se pudo refrescar, `false` en caso contrario.
- */
+
 export const refreshAccessToken = async (): Promise<boolean> => {
   const refresh = getRefreshToken();
   if (!refresh) return false;
@@ -21,7 +18,6 @@ export const refreshAccessToken = async (): Promise<boolean> => {
 
     return true;
   } catch (err) {
-    console.error("refreshAccessToken:", err);
     return false;
   }
 };

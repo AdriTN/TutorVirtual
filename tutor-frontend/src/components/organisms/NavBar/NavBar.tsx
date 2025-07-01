@@ -6,6 +6,7 @@ import React, {
 import { useAuth } from "@context/auth/AuthContext";
 import Sidebar     from "@components/organisms/Sidebar/Sidebar";
 import { api }     from "@services/api/backend/client";
+import { useNotifications } from "@hooks/useNotifications";
 
 import styles from "./Navbar.module.css";
 
@@ -17,6 +18,7 @@ interface UserData {
 
 const Navbar: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { notifyError } = useNotifications();
 
   /** -------- estado -------- */
   const [userData,    setUserData]    = useState<UserData | null>(null);
@@ -39,14 +41,13 @@ const Navbar: React.FC = () => {
         const { data } = await api.get<UserData>("/api/users/me");
         setUserData(data);
       } catch (err) {
-        console.error("Error al obtener datos del usuario:", err);
       } finally {
         setLoadingUser(false);
       }
     };
 
     fetchUser();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, notifyError]);
 
   /** -------- body class cuando el sidebar está abierto ------- */
   useEffect(() => {
