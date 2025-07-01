@@ -1,5 +1,5 @@
 """
-Rutas de asignaturas (sin colisiones)
+Rutas de asignaturas
 ------------------------------------
 Todas las URL empiezan ahora por un prefijo claro:
 
@@ -11,12 +11,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
 from src.database.session import get_db
+from sqlalchemy import select, and_
+
+from sqlalchemy import delete
+
 from src.api.dependencies.auth import jwt_required, admin_required
-from src.api.schemas.subjects import SubjectUpdate, ThemeDetach, SubjectEnrollData
+from src.api.schemas.subjects import SubjectUpdate, ThemeDetach, SubjectEnrollData, SubjectUnenrollData
 from src.models.user import User
 from src.models.subject import Subject
 from src.models.course import Course
 from src.models.theme import Theme
+from src.models.associations import user_enrollments
 
 router = APIRouter()
 
@@ -117,36 +122,64 @@ def enroll_subject(
     payload: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
 ):
+    user_id = payload["user_id"]
     user: User = (
         db.query(User)
-        .options(joinedload(User.subjects), joinedload(User.courses))
-        .get(payload["user_id"])
+        .options(joinedload(User.courses)) 
+        .get(user_id)
     )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
     subject: Subject = db.query(Subject).get(subject_id)
-    
     if not subject:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura no encontrada")
 
     course: Course = (
         db.query(Course)
-        .options(joinedload(Course.subjects)) # Cargar las asignaturas del curso para la verificación
+        .options(joinedload(Course.subjects))
         .get(enroll_data.course_id)
     )
     if not course:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Curso no encontrado")
 
-    # Verificar que la asignatura realmente pertenece al curso especificado
     if subject not in course.subjects:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La asignatura no pertenece al curso especificado"
         )
 
-    # Matricular en la asignatura si no lo está ya
-    if subject not in user.subjects:
-        user.subjects.append(subject)
+    existing_enrollment = db.execute(
+        select(user_enrollments).where(
+            and_(
+                user_enrollments.c.user_id == user_id,
+                user_enrollments.c.subject_id == subject_id,
+                user_enrollments.c.course_id == enroll_data.course_id,
+            )
+        )
+    ).first()
 
-    # Matricular en el curso si no lo está ya
+    if existing_enrollment:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya estás matriculado en esta asignatura para este curso."
+        )
+
+    try:
+        db.execute(
+            user_enrollments.insert().values(
+                user_id=user_id,
+                subject_id=subject_id,
+                course_id=enroll_data.course_id,
+            )
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear la matrícula: {e}"
+        )
+
     if course not in user.courses:
         user.courses.append(course)
     
@@ -160,29 +193,58 @@ def enroll_subject(
 )
 def unenroll_subject(
     subject_id: int,
+    unenroll_data: SubjectUnenrollData,
     payload: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
 ):
+    user_id = payload["user_id"]
+    course_id = unenroll_data.course_id
+
     user: User = (
         db.query(User)
-        .options(joinedload(User.subjects), joinedload(User.courses))
-        .get(payload["user_id"])
+        .options(joinedload(User.courses))
+        .get(user_id)
     )
-    subject: Subject = (
-        db.query(Subject)
-        .options(joinedload(Subject.courses))
-        .get(subject_id)
-    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+    subject: Subject = db.query(Subject).get(subject_id)
     if not subject:
-        raise HTTPException(404, "Asignatura no encontrada")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura no encontrada")
+    
+    course: Course = db.query(Course).get(course_id)
+    if not course:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Curso no encontrado")
 
-    if subject in user.subjects:
-        user.subjects.remove(subject)
+    delete_stmt = (
+        delete(user_enrollments)
+        .where(
+            and_(
+                user_enrollments.c.user_id == user_id,
+                user_enrollments.c.subject_id == subject_id,
+                user_enrollments.c.course_id == course_id,
+            )
+        )
+    )
+    result = db.execute(delete_stmt)
 
-    for course in subject.courses:
-        still_has = any(sub for sub in course.subjects if sub in user.subjects)
-        if not still_has and course in user.courses:
-            user.courses.remove(course)
+    if result.rowcount == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Matrícula no encontrada para esta asignatura y curso."
+        )
+        
+    remaining_enrollments_in_course = db.execute(
+        select(user_enrollments.c.subject_id).where(
+            and_(
+                user_enrollments.c.user_id == user_id,
+                user_enrollments.c.course_id == course_id,
+            )
+        )
+    ).first()
+
+    if not remaining_enrollments_in_course and course in user.courses:
+        user.courses.remove(course)
 
     db.commit()
 
@@ -212,7 +274,7 @@ def list_themes(subject_id: int, db: Session = Depends(get_db)):
 @router.delete(
     "/{subject_id}/themes/detach",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(admin_required)],    # ← añade auth si procede
+    dependencies=[Depends(admin_required)],
 )
 def detach_themes(
     subject_id: int,
