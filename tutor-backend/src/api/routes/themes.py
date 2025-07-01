@@ -50,7 +50,7 @@ def list_all(db: Session = Depends(get_db)):
         for t in themes
     ]
 
-@router.put("/{theme_id}", response_model=dict)
+@router.put("/{theme_id}", response_model=dict, dependencies=[Depends(admin_required)])
 def update_theme(theme_id: int, body: ThemeUpdate, db: Session = Depends(get_db)):
     theme: Theme | None = db.query(Theme).get(theme_id)
     if not theme:
@@ -80,7 +80,7 @@ def update_theme(theme_id: int, body: ThemeUpdate, db: Session = Depends(get_db)
     }
 
 
-@router.delete("/{theme_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{theme_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(admin_required)])
 def delete_theme(theme_id: int, db: Session = Depends(get_db)):
     theme = db.query(Theme).get(theme_id)
     if not theme:
