@@ -76,21 +76,6 @@ const Dashboard: React.FC = () => {
             </ul>
           )}
         </section>
-
-        {/* Recomendaciones + Stats (place-holders) */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Estadísticas</h2>
-          <div className={styles.statsBox}>
-            <p>Recomendaciones de progreso próximamente 🎯</p>
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Estadísticas</h2>
-          <div className={styles.statsBox}>
-            <p>Gráfica de progreso próximamente 📈</p>
-          </div>
-        </section>
       </main>
 
       <Footer />
