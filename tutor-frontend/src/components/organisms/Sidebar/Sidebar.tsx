@@ -12,8 +12,10 @@ import {
   FiBarChart2,
   FiCalendar,
   FiShield,
+  FiLogOut, // Importar el icono de logout
 } from "react-icons/fi";
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
 
 import { useAuth } from "@context/auth/AuthContext";
 import styles     from "./Sidebar.module.css";
@@ -25,22 +27,34 @@ interface Props {
 }
 
 const Sidebar = ({ isOpen, onClose, openerRef }: Props) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, logout } = useAuth(); // Obtener logout del contexto
+  const navigate = useNavigate(); // Hook para la navegación
+
+  const handleLogout = async () => {
+    onClose(); // Cerrar el sidebar
+    await logout(); // Llama a la función de logout del contexto (que ahora es async)
+    navigate("/login"); // Redirigir a la página de login
+  };
 
   /* ---------- 1. Lista de enlaces ---------- */
-  const items = useMemo(
+  const menuItems = useMemo(
     () => [
-      { to: "/dashboard",  icon: FiHome,           label: "Dashboard" },
-      { to: "/my-courses", icon: FiBookOpen,       label: "Mis cursos" },
-      { to: "/stats",      icon: FiBarChart2,      label: "Estadísticas" },
-      { to: "/courses",    icon: FaMagnifyingGlass,label: "Explorar" },
-      { to: "/calendar",   icon: FiCalendar,       label: "Calendario" },
+      { key: "dashboard", to: "/dashboard",  icon: FiHome,           label: "Dashboard" },
+      { key: "my-courses", to: "/my-courses", icon: FiBookOpen,       label: "Mis cursos" },
+      { key: "stats", to: "/stats",      icon: FiBarChart2,      label: "Estadísticas" },
+      { key: "explore", to: "/courses",    icon: FaMagnifyingGlass,label: "Explorar" },
+      // { to: "/calendar",   icon: FiCalendar,       label: "Calendario" }, // Calendario parece no implementado
       ...(isAdmin
-        ? [{ to: "/admin", icon: FiShield, label: "Panel admin" }]
+        ? [{ key: "admin", to: "/admin", icon: FiShield, label: "Panel admin" }]
         : []),
     ],
     [isAdmin],
   );
+
+  const bottomMenuItems = useMemo(() => [
+    { key: "logout", icon: FiLogOut, label: "Cerrar Sesión", action: handleLogout }
+  ], [handleLogout]);
+
 
   /* ---------- 2. Gestión de foco ---------- */
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
@@ -85,11 +99,11 @@ const Sidebar = ({ isOpen, onClose, openerRef }: Props) => {
 
       <nav className={styles.nav} aria-label="Menú principal">
         <ul className={styles.menu}>
-          {items.map(({ to, icon: Icon, label }, idx) => (
-            <li key={to} className={styles.menuItem}>
+          {menuItems.map(({ key, to, icon: Icon, label }, idx) => (
+            <li key={key} className={styles.menuItem}>
               <NavLink
                 ref={idx === 0 ? firstLinkRef : undefined}
-                to={to}
+                to={to!} // to puede ser undefined si es un botón de acción, pero NavLink lo requiere
                 className={({ isActive }) =>
                   `${styles.menuLink} ${isActive ? styles.active : ""}`
                 }
@@ -98,6 +112,21 @@ const Sidebar = ({ isOpen, onClose, openerRef }: Props) => {
                 <Icon className={styles.menuIcon} />
                 {label}
               </NavLink>
+            </li>
+          ))}
+        </ul>
+        {/* Sección inferior para el botón de logout */}
+        <ul className={`${styles.menu} ${styles.bottomMenu}`}>
+          {bottomMenuItems.map(({ key, icon: Icon, label, action }) => (
+            <li key={key} className={styles.menuItem}>
+              <button
+                type="button"
+                className={styles.menuLink} // Reutilizar estilo de enlace para consistencia
+                onClick={action}
+              >
+                <Icon className={styles.menuIcon} />
+                {label}
+              </button>
             </li>
           ))}
         </ul>

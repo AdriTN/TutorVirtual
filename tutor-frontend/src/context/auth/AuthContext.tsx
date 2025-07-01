@@ -7,6 +7,7 @@ import {
 } from '@/services/auth';
 import { jwtDecode } from 'jwt-decode';
 import type { JwtPayload, AuthContextValue } from './auth.types';
+import { logoutUser as apiLogoutUser } from '@/services/api/endpoints/auth';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -44,10 +45,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAdmin(isAdminFrom(access));
   }, []);
 
-  const logout = useCallback(() => {
-    clearTokens();
-    setAccessTokenState(null);
-    setIsAdmin(false);
+  const logout = useCallback(async () => { // Convertir a async para el await
+    const refreshToken = getRefreshToken(); // Obtener el token de refresco antes de limpiarlo
+    
+    // Intentar el logout en el backend, pero no bloquear el logout del cliente si falla
+    if (refreshToken) {
+      try {
+        await apiLogoutUser(refreshToken);
+        console.info("Successfully logged out from backend");
+      } catch (error) {
+        console.error("Failed to logout from backend:", error);
+        // Continuar con el logout del cliente de todas formas
+      }
+    }
+
+    clearTokens(); // Limpiar tokens de localStorage
+    setAccessTokenState(null); // Limpiar estado de token de acceso
+    setIsAdmin(false); // Resetear estado de admin
+    // La redirección se manejará en el componente que llama a logout
   }, []);
 
   const tryRefreshToken = useCallback(async () => {

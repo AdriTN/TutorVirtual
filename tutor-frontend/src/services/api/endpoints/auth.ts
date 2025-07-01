@@ -20,5 +20,8 @@ export const registerUser = async (body: RegisterIn) =>
 export const loginUser = async (email: string, password: string) =>
   api.post<TokenPair>("/api/auth/login", { email, password }).then(r => r.data);
 
-export const googleLogin = (token: string) =>
-  api.post<TokenPair>("/api/auth/google", { token }).then(r => r.data);
+export const googleLogin = (code: string) => // El backend espera 'code', no 'token' para Google
+  api.post<TokenPair>("/api/auth/google", { code }).then(r => r.data);
+
+export const logoutUser = async (refreshToken: string) =>
+  api.post("/api/auth/logout", { refresh_token: refreshToken });
