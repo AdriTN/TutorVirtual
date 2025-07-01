@@ -3,7 +3,7 @@ import { Course } from "@/types";
 
 /* CRUD + queries --------------------------------------------------------- */
 export const fetchCourses = () =>
-  api.get<Course[]>("/api/courses/courses").then((r) => r.data);
+  api.get<Course[]>("/api/courses/all").then((r) => r.data);
 
 export const fetchCourse = (id: number) =>
   api.get<Course>(`/api/courses/${id}`).then((r) => r.data);
