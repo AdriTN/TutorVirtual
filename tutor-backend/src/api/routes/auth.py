@@ -5,7 +5,6 @@ import string
 from src.core.config import get_settings
 
 from src.api.schemas.auth import GoogleCode
-from src.api.schemas.google import GoogleToken
 from src.models.user import UserProvider
 from sqlalchemy.exc import IntegrityError
 
@@ -93,55 +92,59 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
         "grant_type": "authorization_code",
     }
     
-    print(f"Backend: Intentando intercambiar código con Google. URL: {google_token_url}, Data: {request_data}")
+    # Eliminados prints de depuración. Considerar usar logging.
+    # print(f"Backend: Intentando intercambiar código con Google. URL: {google_token_url}, Data: {request_data}")
 
     try:
         token_resp = requests.post(
             google_token_url,
             data=request_data,
-            timeout=10, # Aumentado timeout por si acaso
+            timeout=10, 
         )
     except requests.exceptions.RequestException as req_err:
-        print(f"Backend: Error de conexión al intentar contactar a Google: {req_err}")
+        # print(f"Backend: Error de conexión al intentar contactar a Google: {req_err}") # Eliminado
+        # Considerar loggear req_err para información detallada en el servidor
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            f"Error de conexión al servicio de Google: {req_err}")
+                            f"Error de conexión al servicio de Google.") # Mensaje más genérico para el cliente
 
-    print(f"Backend: Respuesta de Google. Status: {token_resp.status_code}, Body: {token_resp.text}")
+    # print(f"Backend: Respuesta de Google. Status: {token_resp.status_code}, Body: {token_resp.text}") # Eliminado
     
     if token_resp.status_code != 200:
-        # Devolvemos el error exacto de Google para diagnóstico
-        error_detail = {"message": "Error al intercambiar código con Google.", "google_response": token_resp.text}
+        error_detail = {"message": "Error al intercambiar código con Google.", "google_response_status": token_resp.status_code}
         try:
-            # Intenta parsear el error de Google si es JSON
-            error_detail["google_response_json"] = token_resp.json()
+            google_error_payload = token_resp.json()
+            error_detail["google_error"] = google_error_payload.get("error")
+            error_detail["google_error_description"] = google_error_payload.get("error_description")
         except ValueError:
-            pass # No era JSON, se queda con el texto plano
+            error_detail["google_response_text"] = token_resp.text # Incluir texto si no es JSON
         
-        print(f"Backend: Error de Google. Detalle: {error_detail}")
+        # print(f"Backend: Error de Google. Detalle: {error_detail}") # Eliminado
+        # Considerar loggear error_detail
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
 
     tokens = token_resp.json()
-    print(f"Backend: Tokens recibidos de Google: {tokens}")
+    # print(f"Backend: Tokens recibidos de Google: {tokens}") # Eliminado
 
     # 2. Verificar id_token y extraer identidad
     id_token_to_verify = tokens.get("id_token")
     if not id_token_to_verify:
-        print("Backend: Error - No se encontró 'id_token' en la respuesta de Google.")
+        # print("Backend: Error - No se encontró 'id_token' en la respuesta de Google.") # Eliminado
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 
-                            detail="No se recibió 'id_token' de Google.")
+                            detail="Respuesta de Google no incluyó 'id_token'.")
     
     try:
-        print(f"Backend: Verificando id_token (primeros 20 chars): {id_token_to_verify[:20]}...")
+        # print(f"Backend: Verificando id_token (primeros 20 chars): {id_token_to_verify[:20]}...") # Eliminado
         idinfo = google_id_token.verify_oauth2_token(
             id_token_to_verify,
             google_requests.Request(),
-            settings.google_client_id, # Audiencia esperada
-            clock_skew_in_seconds=2   # Aumentar margen de reloj permitido
+            settings.google_client_id, 
+            clock_skew_in_seconds=5 # Aumentado ligeramente el margen de reloj
         )
-        print(f"Backend: id_token verificado. Email: {idinfo.get('email')}")
+        # print(f"Backend: id_token verificado. Email: {idinfo.get('email')}") # Eliminado
     except ValueError as e:
-        print(f"Backend: Error al verificar id_token: {e}")
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"id_token inválido o no verificado: {e}")
+        # print(f"Backend: Error al verificar id_token: {e}") # Eliminado
+        # Considerar loggear e
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"id_token inválido o no verificado.") # Mensaje más genérico
 
     sub = idinfo.get("sub")
     email = idinfo["email"]
