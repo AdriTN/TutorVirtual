@@ -12,8 +12,8 @@ export const getAllSubjects = () =>
 export const enrollSubject = (subjectId: number, courseId: number) =>
   api.post(`${BASE}/${subjectId}/enroll`, { course_id: courseId });
 
-export const unenrollSubject = (id: number) =>
-  api.delete(`${BASE}/${id}/unenroll`);
+export const unenrollSubject = (subjectId: number, courseId: number) =>
+  api.delete(`${BASE}/${subjectId}/unenroll`, { data: { course_id: courseId } });
 
 /* ------------------------------------------------------------------ */
 /*  Themes de una asignatura                                          */
