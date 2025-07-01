@@ -4,6 +4,7 @@ import {
   refreshAccessToken,
   clearTokens,
 } from "@services/auth";
+import { useNotifications } from "@hooks/useNotifications";
 
 /* ------------------------------------------------------------------ */
 /* 1) Instancia base ------------------------------------------------- */
@@ -25,30 +26,53 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 });
 
 /* ------------------------------------------------------------------ */
-/* 3) Response interceptor → refresh token automático ---------------- */
+/* 3) Response interceptor → refresh token automático y manejo de errores */
 /* ------------------------------------------------------------------ */
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
-    if (!error.response) return Promise.reject(error);
+    const { notifyError } = useNotifications();
 
-    const { status } = error.response;
-    const original   = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    if (!error.response) {
+      notifyError("Error de red o el servidor no responde.");
+      return Promise.reject(error);
+    }
 
-    // 401 → intentamos refresh una sola vez
+    const { status, data } = error.response;
+    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
     if (status === 401 && !original._retry) {
       original._retry = true;
 
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        original.headers.set('Authorization', `Bearer ${getAccessToken()}`);
-        return api(original);
+      try {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          original.headers.set('Authorization', `Bearer ${getAccessToken()}`);
+          return api(original);
+        }
+      } catch (refreshError) {
+        clearTokens();
+        notifyError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+        window.location.replace("/login");
+        return Promise.reject(error);
       }
 
-      /* refresh falló → sesión expirada */
       clearTokens();
+      notifyError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
       window.location.replace("/login");
+      return Promise.reject(error);
     }
+
+    let errorMessage = "Ocurrió un error inesperado.";
+    if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+      errorMessage = data.message;
+    } else if (typeof data === 'string' && data.length > 0) {
+      errorMessage = data;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    notifyError(errorMessage);
 
     return Promise.reject(error);
   },
