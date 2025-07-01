@@ -9,3 +9,6 @@ class SubjectUpdate(BaseModel):
 
 class ThemeDetach(BaseModel):
     theme_ids: List[int]
+    
+class SubjectEnrollData(BaseModel):
+    course_id: int

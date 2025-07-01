@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from src.database.session import get_db
 from src.api.dependencies.auth import jwt_required, admin_required
-from src.api.schemas.subjects import SubjectUpdate, ThemeDetach
+from src.api.schemas.subjects import SubjectUpdate, ThemeDetach, SubjectEnrollData
 from src.models.user import User
 from src.models.subject import Subject
 from src.models.course import Course
@@ -113,6 +113,7 @@ def delete_subject(subject_id: int, db: Session = Depends(get_db)):
 )
 def enroll_subject(
     subject_id: int,
+    enroll_data: SubjectEnrollData,
     payload: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
 ):
@@ -121,20 +122,35 @@ def enroll_subject(
         .options(joinedload(User.subjects), joinedload(User.courses))
         .get(payload["user_id"])
     )
-    subject: Subject = (
-        db.query(Subject)
-        .options(joinedload(Subject.courses))
-        .get(subject_id)
-    )
+    subject: Subject = db.query(Subject).get(subject_id)
+    
     if not subject:
-        raise HTTPException(404, "Asignatura no encontrada")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura no encontrada")
 
+    course: Course = (
+        db.query(Course)
+        .options(joinedload(Course.subjects)) # Cargar las asignaturas del curso para la verificación
+        .get(enroll_data.course_id)
+    )
+    if not course:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Curso no encontrado")
+
+    # Verificar que la asignatura realmente pertenece al curso especificado
+    if subject not in course.subjects:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La asignatura no pertenece al curso especificado"
+        )
+
+    # Matricular en la asignatura si no lo está ya
     if subject not in user.subjects:
         user.subjects.append(subject)
-        for course in subject.courses:
-            if course not in user.courses:
-                user.courses.append(course)
-        db.commit()
+
+    # Matricular en el curso si no lo está ya
+    if course not in user.courses:
+        user.courses.append(course)
+    
+    db.commit()
 
 
 @router.delete(

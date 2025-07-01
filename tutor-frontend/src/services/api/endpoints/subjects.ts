@@ -9,8 +9,8 @@ const BASE = "/api/subjects";
 export const getAllSubjects = () =>
   api.get<Subject[]>(`${BASE}/all`).then(r => r.data);
 
-export const enrollSubject = (id: number) =>
-  api.post(`${BASE}/${id}/enroll`);
+export const enrollSubject = (subjectId: number, courseId: number) =>
+  api.post(`${BASE}/${subjectId}/enroll`, { course_id: courseId });
 
 export const unenrollSubject = (id: number) =>
   api.delete(`${BASE}/${id}/unenroll`);

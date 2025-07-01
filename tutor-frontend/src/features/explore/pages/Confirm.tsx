@@ -24,7 +24,7 @@ export default function ConfirmPage() {
 
   const confirm = async () => {
     try {
-      await enroll.mutateAsync(subjectId);
+      await enroll.mutateAsync({ subjectId, courseId });
       nav("/dashboard", { replace: true });
     } catch (err) {
       console.error("Error al inscribir al estudiante:", err);
