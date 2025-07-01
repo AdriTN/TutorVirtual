@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     pool_size:       PositiveInt   = 10
 
     # ── Auth ─────────────────────────────────────────────────
-    jwt_secret:      str           = Field("test-secret-key-must-be-32chars-long!!", env="JWT_SECRET", min_length=32)
+    jwt_secret:      str           = Field(min_length=32, env="JWT_SECRET")
     jwt_algorithm:   str           = "HS256"
     jwt_access_minutes: PositiveInt = 30
     jwt_refresh_days:   PositiveInt = 3
