@@ -1,110 +1,153 @@
 import {
-  createContext, useContext, useEffect, useState, useCallback, useMemo,
+  createContext, useContext, useEffect, useState, useCallback, useMemo, useRef,
 } from 'react';
 import {
   getAccessToken, setAccessToken, getRefreshToken, setRefreshToken,
   refreshAccessToken, clearTokens,
 } from '@/services/auth';
 import { jwtDecode } from 'jwt-decode';
-import type { JwtPayload, AuthContextValue } from './auth.types';
+import type { JwtPayload, AuthContextValue, UserData } from './auth.types'; // Import UserData
+// Correctly import getUserMe from the new users endpoint file
 import { logoutUser as apiLogoutUser } from '@/services/api/endpoints/auth';
-import { useNotifications } from "@hooks/useNotifications"; // Importar hook
+import { getUserMe } from '@/services/api/endpoints/users';
+import { useNotifications } from "@hooks/useNotifications";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /* ---------- utils ------------------------------------------------------- */
-const isAdminFrom = (token: string): boolean => {
+const isAdminFromToken = (token: string): boolean => {
   try {
     return Boolean(jwtDecode<JwtPayload>(token).is_admin);
   } catch {
-    // Si el token es inválido/corrupto, jwtDecode lanzará un error.
-    // Esto será manejado en PrivateRoute o donde se use el token.
-    // Aquí, si no se puede decodificar, asumimos que no es admin.
-      return false;
+    return false;
   }
 };
 
 /* ------------------------------------------------------------------------ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin]             = useState(false);
-  const [loading, setLoading]             = useState(true);
-  const { notifySuccess, notifyInfo } = useNotifications();
+  const [user, setUser]                    = useState<UserData | null>(null);
+  const [isAdmin, setIsAdmin]              = useState(false);
+  const [loading, setLoading]              = useState(true);
+  const notifications = useNotifications();
 
-  /* -------- carga inicial -------- */
+  const notifySuccessRef = useRef(notifications.notifySuccess);
+  const notifyInfoRef = useRef(notifications.notifyInfo);
+  const notifyErrorRef = useRef(notifications.notifyError);
+
   useEffect(() => {
-    const storedAccess  = getAccessToken();
+    notifySuccessRef.current = notifications.notifySuccess;
+    notifyInfoRef.current = notifications.notifyInfo;
+    notifyErrorRef.current = notifications.notifyError;
+  }, [notifications.notifySuccess, notifications.notifyInfo, notifications.notifyError]);
+
+  const fetchAndSetUser = useCallback(async (token: string) => {
+    if (!token) {
+      setUser(null);
+      setIsAdmin(false);
+      return;
+    }
+    try {
+      const userData = await getUserMe();
+      setUser(userData);
+      setIsAdmin(isAdminFromToken(token));
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      notifyErrorRef.current("No se pudieron cargar los datos del usuario.");
+      setUser(null);
+      setIsAdmin(false);
+    }
+  }, []);
+
+  const initializeAuth = useCallback(async () => {
+    const storedAccess = getAccessToken();
     const storedRefresh = getRefreshToken();
     if (storedAccess && storedRefresh) {
       try {
-        setIsAdmin(isAdminFrom(storedAccess));
+        jwtDecode<JwtPayload>(storedAccess);
         setAccessTokenState(storedAccess);
+        await fetchAndSetUser(storedAccess);
       } catch (e) {
-        console.warn("Invalid stored access token on startup, clearing tokens.", e)
+        console.warn("Invalid stored access token on startup, clearing tokens.", e);
         clearTokens();
+        setUser(null);
+        setIsAdmin(false);
       }
     }
     setLoading(false);
-  }, []);
+  }, [fetchAndSetUser]);
+
+  /* -------- carga inicial -------- */
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   /* -------- login / logout / refresh -------- */
-  const login = useCallback((access: string, refresh: string) => {
+  const login = useCallback(async (access: string, refresh: string) => {
     setAccessToken(access);
     setRefreshToken(refresh);
     setAccessTokenState(access);
-    setIsAdmin(isAdminFrom(access));
-    notifySuccess("Sesión iniciada correctamente.");
-  }, [notifySuccess]);
+    setLoading(true);
+    await fetchAndSetUser(access);
+    setLoading(false);
+    notifySuccessRef.current("Sesión iniciada correctamente.");
+  }, [fetchAndSetUser]);
 
   const logout = useCallback(async () => {
-    const refreshToken = getRefreshToken(); 
-    
-    if (refreshToken) {
-      await apiLogoutUser(refreshToken);
+    const currentRefreshToken = getRefreshToken();
+    if (currentRefreshToken) {
+      try {
+        await apiLogoutUser(currentRefreshToken);
+      } catch (error) {
+        console.error("Logout API call failed:", error);
+      }
     }
-
-    clearTokens(); 
-    setAccessTokenState(null); 
-    setIsAdmin(false); 
-    notifyInfo("Has cerrado tu sesión.");
-  }, [notifyInfo]);
+    clearTokens();
+    setAccessTokenState(null);
+    setUser(null);
+    setIsAdmin(false);
+    notifyInfoRef.current("Has cerrado tu sesión.");
+  }, []);
 
   const tryRefreshToken = useCallback(async () => {
+    setLoading(true);
     try {
       const ok = await refreshAccessToken();
       if (!ok) {
-        // Si refreshAccessToken devuelve false, es probable que el refresh token haya expirado o sea inválido.
-        // El interceptor de API (si el error vino de una llamada API) o PrivateRoute (si es proactivo)
-        // ya debería haber llamado a notifyError y gestionado el logout.
-        // Llamar a logout aquí asegura que el estado local se limpie.
         await logout();
+        setLoading(false);
         return false;
       }
       const newAccess = getAccessToken();
       if (newAccess) {
         setAccessTokenState(newAccess);
-        setIsAdmin(isAdminFrom(newAccess));
+        await fetchAndSetUser(newAccess);
+      } else {
+        await logout();
+        setLoading(false);
+        return false;
       }
+      setLoading(false);
       return true;
     } catch (error) {
-        // Esto podría capturar errores si refreshAccessToken mismo lanza una excepción inesperada
-        // (aunque está diseñado para devolver boolean).
-        console.error("Unexpected error during token refresh:", error);
-        await logout();
-        return false;
+      console.error("Unexpected error during token refresh:", error);
+      await logout();
+      setLoading(false);
+      return false;
     }
-  }, [logout]);
+  }, [fetchAndSetUser, logout]);
 
   /* -------- memo value -------- */
   const value = useMemo<AuthContextValue>(() => ({
-    isAuthenticated: Boolean(accessToken),
+    isAuthenticated: Boolean(accessToken && user),
     isAdmin,
     accessToken,
+    user,
     loading,
     login,
     logout,
     tryRefreshToken,
-  }), [accessToken, isAdmin, loading, login, logout, tryRefreshToken]);
+  }), [accessToken, user, isAdmin, loading, login, logout, tryRefreshToken]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

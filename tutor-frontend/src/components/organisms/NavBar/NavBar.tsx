@@ -5,49 +5,19 @@ import React, {
 } from "react";
 import { useAuth } from "@context/auth/AuthContext";
 import Sidebar     from "@components/organisms/Sidebar/Sidebar";
-import { api }     from "@services/api/backend/client";
-import { useNotifications } from "@hooks/useNotifications";
 
 import styles from "./Navbar.module.css";
 
-interface UserData {
-  id:    number;
-  username:  string;
-  email: string;
-}
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  const { notifyError } = useNotifications();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
 
   /** -------- estado -------- */
-  const [userData,    setUserData]    = useState<UserData | null>(null);
-  const [loadingUser, setLoadingUser] = useState(isAuthenticated);
+  // userData and loadingUser states are removed
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /** -------- ref del botón hamburguesa (opener) -------- */
   const openerRef = useRef<HTMLButtonElement | null>(null);
-
-  /** -------- cargar datos de usuario si hay sesión -------- */
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setUserData(null);
-      setLoadingUser(false);
-      return;
-    }
-
-    const fetchUser = async () => {
-      try {
-        const { data } = await api.get<UserData>("/api/users/me");
-        setUserData(data);
-      } catch (err) {
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchUser();
-  }, [isAuthenticated, notifyError]);
 
   /** -------- body class cuando el sidebar está abierto ------- */
   useEffect(() => {
@@ -57,12 +27,12 @@ const Navbar: React.FC = () => {
 
 
   /* ---------- loader ---------- */
-  if (loadingUser) {
-    return <div>Cargando datos del usuario…</div>;
+  if (authLoading) {
+    return <nav className={styles.nav}><div>Cargando...</div></nav>; 
   }
 
   /* ---------- NAVBAR PÚBLICO ---------- */
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return (
       <nav className={styles.nav}>
         <div className={styles.logo}>
@@ -103,7 +73,7 @@ const Navbar: React.FC = () => {
 
         <div className={styles.userSection}>
           <span className={styles.welcome}>
-            ¡Hola, {userData?.username ?? "Usuario"}!
+            ¡Hola, {user?.username ?? "Usuario"}! 
           </span>
           <img
             src="/default-avatar.jpg"
