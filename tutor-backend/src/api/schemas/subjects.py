@@ -12,3 +12,6 @@ class ThemeDetach(BaseModel):
     
 class SubjectEnrollData(BaseModel):
     course_id: int
+
+class SubjectUnenrollData(BaseModel):
+    course_id: int
