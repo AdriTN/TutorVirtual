@@ -14,6 +14,7 @@ from src.database.session import get_db
 from sqlalchemy import select, and_
 
 from sqlalchemy import delete
+from sqlalchemy.orm import selectinload
 
 from src.api.dependencies.auth import jwt_required, admin_required
 from src.api.schemas.subjects import SubjectUpdate, ThemeDetach, SubjectEnrollData, SubjectUnenrollData
@@ -57,6 +58,7 @@ def create_subject(data: dict, db: Session = Depends(get_db)):
 @router.get("/all", status_code=status.HTTP_200_OK)
 def list_subjects(db: Session = Depends(get_db)):
     """Lista completa de asignaturas + sus temas."""
+    subjects_with_themes = db.query(Subject).options(selectinload(Subject.themes)).all()
     return [
         {
             "id": s.id,
@@ -67,7 +69,7 @@ def list_subjects(db: Session = Depends(get_db)):
                 for t in s.themes
             ],
         }
-        for s in db.query(Subject).all()
+        for s in subjects_with_themes
     ]
 
 
