@@ -1,3 +1,4 @@
+import structlog
 from src.api.schemas.answer import AnswerOut, AnswerIn
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -9,6 +10,7 @@ from src.models import Exercise
 from src.services.exercise_service import register_user_answer
 
 router = APIRouter()
+logger = structlog.get_logger(__name__)
 
 
 @router.post("", response_model=AnswerOut, status_code=201,
@@ -17,9 +19,19 @@ def answer(body:AnswerIn,
            payload:dict = Depends(jwt_required),
            db:Session  = Depends(get_db)):
     user_id = payload["user_id"]
+    logger.info(
+        "Procesando respuesta de usuario",
+        user_id=user_id,
+        exercise_id=body.ejercicio_id,
+        answer=body.answer,
+        time_taken_seconds=body.tiempo_seg,
+    )
+
     ej = db.query(Exercise).get(body.ejercicio_id)
     if not ej:
-        raise HTTPException(404,"Ejercicio no encontrado")
+        logger.warn("Ejercicio no encontrado al procesar respuesta", exercise_id=body.ejercicio_id, user_id=user_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ejercicio no encontrado")
 
     ok = register_user_answer(user_id, ej, body.answer, body.tiempo_seg, db)
+    logger.info("Respuesta registrada", user_id=user_id, exercise_id=ej.id, is_correct=ok)
     return AnswerOut(correcto=ok)

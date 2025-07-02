@@ -222,13 +222,11 @@ def generate_password(longitud=12):
     if longitud < 8:
         raise ValueError("La longitud mínima de la contraseña debe ser 8.")
 
-    # Categorías de caracteres
     minusculas = string.ascii_lowercase
     mayusculas = string.ascii_uppercase
     digitos = string.digits
     especiales = string.punctuation
 
-    # Forzar al menos un carácter de cada tipo
     password = [
         random.choice(minusculas),
         random.choice(mayusculas),
@@ -236,12 +234,10 @@ def generate_password(longitud=12):
         random.choice(especiales),
     ]
 
-    # Rellenar el resto con cualquier carácter
     todos = minusculas + mayusculas + digitos + especiales
     for _ in range(longitud - 4):
         password.append(random.choice(todos))
 
-    # Mezclar para no dejar patrones predecibles
     random.shuffle(password)
 
     return "".join(password)
@@ -249,7 +245,10 @@ def generate_password(longitud=12):
 
 @router.post("/logout",
              summary="Invalidate a refresh token",
-)
+             responses={
+                 204: {"description": "Token invalidado correctamente"},
+                 404: {"description": "Token no encontrado"},
+             })
 def logout(
     payload: LogoutIn,
     user: dict = Depends(jwt_required),
@@ -259,12 +258,14 @@ def logout(
     """
     Elimina de la base de datos el *refresh token* indicado.
     """
+    logger.info("Intento de logout", user_id=user["user_id"], refresh_token_prefix=payload.refresh_token[:8] + "...")
     token_row = (
         db.query(RefreshToken)
         .filter_by(token=payload.refresh_token, user_id=user["user_id"])
         .one_or_none()
     )
     if token_row is None:
+        logger.warn("Token de refresco no encontrado durante logout", user_id=user["user_id"], refresh_token_prefix=payload.refresh_token[:8] + "...")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Token no encontrado",
@@ -272,6 +273,7 @@ def logout(
 
     db.delete(token_row)
     db.commit()
+    logger.info("Logout exitoso, token invalidado", user_id=user["user_id"], refresh_token_id=token_row.id)
 
 
 @router.post(
@@ -290,6 +292,7 @@ def register_user(
     2. Hashea contraseña con `bcrypt`.
     3. Devuelve DTO sin exponer el hash.
     """
+    logger.info("Intento de registro de nuevo usuario", username=body.username, email=body.email)
 
     dup = (
         db.query(User)
@@ -318,6 +321,7 @@ def register_user(
         ) from None
 
     db.refresh(new_user)
+    logger.info("Usuario registrado exitosamente", user_id=new_user.id, username=new_user.username, email=new_user.email)
 
     return RegisterOut.model_validate(
         {
