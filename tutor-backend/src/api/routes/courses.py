@@ -7,9 +7,11 @@ from src.models import Course, Subject, User
 from src.api.schemas.courses import CourseIn, CourseOut, CourseUpdate, SubjectDetach, SubjectOut, ThemeOut
 from src.models.associations import user_enrollments
 from sqlalchemy import delete
+import structlog
 
 
 router = APIRouter()
+logger = structlog.get_logger(__name__)
 
 # ---------- Helpers ----------
 def _subject_to_schema(subject: Subject, enrolled_subject_ids_for_user: set[int]) -> SubjectOut:
@@ -59,7 +61,9 @@ def _load_user_with_enrollments(user_id: int, db: Session) -> User | None:
     dependencies=[Depends(admin_required)],
 )
 def create_course(body: CourseIn, db: Session = Depends(get_db)):
+    logger.info("Intentando crear curso", title=body.title, description=body.description, subject_ids=body.subject_ids)
     if db.query(Course).filter(Course.title == body.title).first():
+        logger.warn("Conflicto: Ya existe un curso con el mismo título", title=body.title)
         raise HTTPException(status.HTTP_409_CONFLICT, "Curso duplicado")
 
     course = Course(title=body.title, description=body.description)
@@ -72,14 +76,17 @@ def create_course(body: CourseIn, db: Session = Depends(get_db)):
     db.add(course)
     db.commit()
     db.refresh(course)
+    logger.info("Curso creado exitosamente", course_id=course.id, title=course.title)
     return _course_to_schema(course, None)
 
 
 @router.get("/my", response_model=list[CourseOut])
 def my_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
     user_id = payload["user_id"]
+    logger.info("Obteniendo cursos para el usuario (my courses)", user_id=user_id)
     user_with_enrollments = _load_user_with_enrollments(user_id, db)
     if not user_with_enrollments:
+         logger.warn("Usuario no encontrado al obtener 'my courses'", user_id=user_id)
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     
     user_for_courses_relation = db.query(User).options(
@@ -89,14 +96,17 @@ def my_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_
     ).get(user_id)
 
     if not user_for_courses_relation:
+         logger.warn("Usuario no encontrado al cargar la relación de cursos para 'my courses'", user_id=user_id)
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado al cargar cursos.")
 
+    logger.info("Cursos del usuario obtenidos", user_id=user_id, count=len(user_for_courses_relation.courses))
     return [_course_to_schema(c, user_with_enrollments) for c in user_for_courses_relation.courses]
 
 
 @router.get("/all", response_model=list[CourseOut])
 def list_all_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
     user_id = payload["user_id"]
+    logger.info("Obteniendo todos los cursos (list all courses)", user_id=user_id)
     user_with_enrollments = _load_user_with_enrollments(user_id, db)
 
     courses = (
@@ -106,6 +116,7 @@ def list_all_courses(payload: dict = Depends(jwt_required), db: Session = Depend
         )
         .all()
     )
+    logger.info("Todos los cursos obtenidos", count=len(courses))
     return [_course_to_schema(c, user_with_enrollments) for c in courses]
 
 @router.delete(
@@ -119,31 +130,41 @@ def unenroll_course(
     db: Session = Depends(get_db),
 ):
     user_id = payload["user_id"]
+    logger.info("Intentando desmatricular usuario de curso", user_id=user_id, course_id=course_id)
     user: User = db.query(User).options(joinedload(User.courses)).get(user_id)
     if not user:
+        logger.warn("Usuario no encontrado al intentar desmatricular", user_id=user_id, course_id=course_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 
     course: Course = db.query(Course).get(course_id)
     if not course:
+        logger.warn("Curso no encontrado al intentar desmatricular", user_id=user_id, course_id=course_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Curso no encontrado")
 
-    db.execute(
+    deleted_rows = db.execute(
         delete(user_enrollments).where(
             user_enrollments.c.user_id == user_id,
             user_enrollments.c.course_id == course_id,
         )
-    )
+    ).rowcount
+    logger.info("Eliminadas matrículas de la tabla de asociación", deleted_count=deleted_rows, user_id=user_id, course_id=course_id)
 
     if course in user.courses:
         user.courses.remove(course)
+        logger.info("Curso eliminado de la relación user.courses", user_id=user_id, course_id=course_id)
+    else:
+        logger.info("Curso no estaba en la relación user.courses, solo en tabla de asociación", user_id=user_id, course_id=course_id)
+
 
     db.commit()
+    logger.info("Usuario desmatriculado de curso exitosamente", user_id=user_id, course_id=course_id)
 
 @router.get("/{course_id}", response_model=CourseOut)
 def get_course(
     course_id: int, payload: dict = Depends(jwt_required), db: Session = Depends(get_db)
 ):
     user_id = payload["user_id"]
+    logger.info("Obteniendo detalles del curso", course_id=course_id, user_id=user_id)
     user_with_enrollments = _load_user_with_enrollments(user_id, db)
 
 
@@ -153,34 +174,41 @@ def get_course(
         .get(course_id)
     )
     if not course:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        logger.warn("Curso no encontrado", course_id=course_id, user_id=user_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Curso no encontrado")
 
+    logger.info("Detalles del curso obtenidos", course_id=course.id, title=course.title)
     return _course_to_schema(course, user_with_enrollments)
 
-@router.put("/{course_id}", response_model=dict)
+@router.put("/{course_id}", response_model=dict, dependencies=[Depends(admin_required)])
 def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_db)):
+    logger.info("Intentando actualizar curso", course_id=course_id, update_data=body.model_dump(exclude_none=True))
     course: Course | None = (
         db.query(Course).options(joinedload(Course.subjects)).get(course_id)
     )
     if not course:
-        raise HTTPException(404, "Curso no encontrado")
+        logger.warn("Curso no encontrado al intentar actualizar", course_id=course_id)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Curso no encontrado")
 
     # ── título/descr ─────────────────────────────────────────
     if body.title:
         dup = db.query(Course).filter(Course.title == body.title, Course.id != course_id).first()
         if dup:
-            raise HTTPException(409, "Ya existe otro curso con ese título")
+            logger.warn("Conflicto: Ya existe otro curso con el nuevo título", new_title=body.title, existing_course_id=dup.id)
+            raise HTTPException(status.HTTP_409_CONFLICT, "Ya existe otro curso con ese título")
         course.title = body.title
     if body.description is not None:
         course.description = body.description
 
     # ── reemplazar asignaturas ───────────────────────────────
     if body.subject_ids is not None:
+        logger.info("Actualizando asignaturas del curso", course_id=course_id, new_subject_ids=body.subject_ids)
         subjects = db.query(Subject).filter(Subject.id.in_(body.subject_ids)).all()
         course.subjects = subjects
 
     db.commit()
     db.refresh(course)
+    logger.info("Curso actualizado exitosamente", course_id=course.id, title=course.title)
     return {
         "id": course.id,
         "title": course.title,
@@ -188,27 +216,39 @@ def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_
         "subject_ids": [s.id for s in course.subjects],
     }
 
-@router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(admin_required)])
 def delete_course(course_id: int, db: Session = Depends(get_db)):
+    logger.info("Intentando eliminar curso", course_id=course_id)
     course = db.query(Course).get(course_id)
     if not course:
-        raise HTTPException(404, "Curso no encontrado")
+        logger.warn("Curso no encontrado al intentar eliminar", course_id=course_id)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Curso no encontrado")
     db.delete(course)
     db.commit()
+    logger.info("Curso eliminado exitosamente", course_id=course_id)
 
-@router.delete("/{course_id}/subjects", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{course_id}/subjects", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(admin_required)])
 def detach_subjects(
     course_id: int, body: SubjectDetach, db: Session = Depends(get_db)
 ):
+    logger.info("Intentando desvincular asignaturas del curso", course_id=course_id, subject_ids_to_detach=body.subject_ids)
     course: Course | None = (
         db.query(Course).options(joinedload(Course.subjects)).get(course_id)
     )
     if not course:
-        raise HTTPException(404, "Curso no encontrado")
+        logger.warn("Curso no encontrado al intentar desvincular asignaturas", course_id=course_id)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Curso no encontrado")
 
+    detached_count = 0
     for sid in body.subject_ids:
         subj = db.query(Subject).get(sid)
         if subj and subj in course.subjects:
             course.subjects.remove(subj)
+            detached_count +=1
+            logger.debug("Asignatura desvinculada", course_id=course_id, subject_id=sid)
 
-    db.commit()
+    if detached_count > 0:
+        db.commit()
+        logger.info("Asignaturas desvinculadas exitosamente", course_id=course_id, count=detached_count, requested_count=len(body.subject_ids))
+    else:
+        logger.info("No se desvincularon asignaturas (ninguna encontrada o ya desvinculada)", course_id=course_id, requested_ids=body.subject_ids)

@@ -30,6 +30,7 @@ def ask_ollama(
     _: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
 ):
+    logger.info("Recibida solicitud POST en /api/ai/request", request_data=req.dict(exclude_none=True))
     logger.info("Solicitud a Ollama iniciada", model=req.model, num_prompt_parts=len(req.prompt) if req.prompt else 0)
     try:
         raw = generate_with_ollama(req.dict())
