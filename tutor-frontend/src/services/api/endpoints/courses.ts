@@ -15,8 +15,11 @@ export const unenrollCourse = (courseId: number) =>
   api.delete(`/api/courses/${courseId}/unenroll`);
 
 /* ---------- Administración ---------- */
-export const adminCreateCourse = (title: string, description?: string) =>
-  api.post("/api/courses", { title, description });
+export const adminCreateCourse = (payload: {
+  title: string;
+  description?: string;
+  subject_ids?: number[];
+}) => api.post("/api/courses", payload);
 
 /* editar (title / description / subject_ids opcional) */
 export const adminUpdateCourse = (

@@ -62,12 +62,13 @@ export function useAdminData() {
   /* ───── estado local para formularios de creación/edición ───── */
   // Común para varios formularios
   const [cTitle, setCTitle] = useState(""); const [cDesc, setCDesc] = useState("");
+  const [cSubjectIds, setCSubjectIds] = useState<number[]>([]); // Para creación de curso
   const [sName, setSName] = useState(""); const [sDesc, setSDesc] = useState("");
   const [tSubj, setTSubj] = useState(""); const [tTitle, setTTitle] = useState("");
   const [tDesc, setTDesc] = useState("");
 
   const resetFormStates = () => {
-    setCTitle(""); setCDesc("");
+    setCTitle(""); setCDesc(""); setCSubjectIds([]);
     setSName(""); setSDesc("");
     setTSubj(""); setTTitle(""); setTDesc("");
   };
@@ -112,7 +113,7 @@ export function useAdminData() {
 
   // CREATE
   const createCourse = useMutation({
-    mutationFn: () => adminCreateCourse(cTitle, cDesc),
+    mutationFn: () => adminCreateCourse({ title: cTitle, description: cDesc, subject_ids: cSubjectIds }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["courses/all"], exact: true });
       closeCreateModal();
@@ -328,7 +329,7 @@ export function useAdminData() {
     confirmDeleteModalState, openConfirmDeleteModal, closeConfirmDeleteModal,
 
     // Estado de formularios (controlado por el hook)
-    cTitle, setCTitle, cDesc, setCDesc,
+    cTitle, setCTitle, cDesc, setCDesc, cSubjectIds, setCSubjectIds,
     sName, setSName, sDesc, setSDesc,
     tSubj, setTSubj, tTitle, setTTitle, tDesc, setTDesc,
     resetFormStates,

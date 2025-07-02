@@ -12,10 +12,10 @@ from src.core.config import get_settings
 # ────────────────────────────────────────────────────────────────────────────────
 _settings = get_settings()
 
-from sqlalchemy import create_engine
-from ..core.config import get_settings
+# from sqlalchemy import create_engine # No es necesaria aquí, ya está importada globalmente
+# from ..core.config import get_settings # No es necesaria aquí, _settings ya está definido
 
-_settings = get_settings()
+# _settings = get_settings() # Redundante
 
 def get_engine(db_url: str | None = None, pool_size: int | None = None):
     """

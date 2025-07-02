@@ -19,7 +19,7 @@ def create_exercise_from_ai(data: dict, tema, db: Session) -> Exercise:
         theme_id    = tema.id,
     )
     db.add(ej)
-    db.commit()
+    # db.commit() # Commit será manejado por la sesión de FastAPI get_db
     db.refresh(ej)
     return ej
 
@@ -61,5 +61,5 @@ def register_user_answer(
         prog.completed += 1
         prog.correct   += 1 if correcto else 0
 
-    db.commit()
+    # db.commit() # Commit será manejado por la sesión de FastAPI get_db
     return correcto

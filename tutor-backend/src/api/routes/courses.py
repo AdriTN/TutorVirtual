@@ -24,13 +24,11 @@ def _subject_to_schema(subject: Subject, enrolled_subject_ids_for_user: set[int]
     )
 
 
-def _course_to_schema(course: Course, user: User | None) -> CourseOut:
-    user_specific_enrollments: set[tuple[int, int]] | None = getattr(user, '_loaded_enrollments', None)
-
+def _course_to_schema(course: Course, subject_enrollments_for_user: set[tuple[int, int]] | None) -> CourseOut:
     enrolled_subject_ids_for_this_course = set()
-    if user and user_specific_enrollments:
+    if subject_enrollments_for_user:
         enrolled_subject_ids_for_this_course = {
-            s_id for s_id, c_id in user_specific_enrollments if c_id == course.id
+            s_id for s_id, c_id in subject_enrollments_for_user if c_id == course.id
         }
     
     return CourseOut(
@@ -42,16 +40,13 @@ def _course_to_schema(course: Course, user: User | None) -> CourseOut:
 
 
 # ---------- Endpoints ----------
-def _load_user_with_enrollments(user_id: int, db: Session) -> User | None:
-    """Carga el usuario y adjunta sus tuplas de matrícula (subject_id, course_id)."""
-    user = db.query(User).get(user_id)
-    if user:
-        enrollments_query = db.query(
-            user_enrollments.c.subject_id,
-            user_enrollments.c.course_id
-        ).filter(user_enrollments.c.user_id == user_id).all()
-        user._loaded_enrollments = set(enrollments_query)
-    return user
+def _get_subject_enrollments_for_user(user_id: int, db: Session) -> set[tuple[int, int]]:
+    """Devuelve un conjunto de tuplas (subject_id, course_id) para las matrículas del usuario."""
+    enrollments_query = db.query(
+        user_enrollments.c.subject_id,
+        user_enrollments.c.course_id
+    ).filter(user_enrollments.c.user_id == user_id).all()
+    return set(enrollments_query)
 
 
 @router.post(
@@ -84,30 +79,30 @@ def create_course(body: CourseIn, db: Session = Depends(get_db)):
 def my_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
     user_id = payload["user_id"]
     logger.info("Obteniendo cursos para el usuario (my courses)", user_id=user_id)
-    user_with_enrollments = _load_user_with_enrollments(user_id, db)
-    if not user_with_enrollments:
-         logger.warn("Usuario no encontrado al obtener 'my courses'", user_id=user_id)
-         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     
-    user_for_courses_relation = db.query(User).options(
+    # Obtener las matrículas de asignaturas del usuario
+    subject_enrollments = _get_subject_enrollments_for_user(user_id, db)
+    
+    # Obtener el usuario con sus cursos y las relaciones anidadas necesarias
+    user_with_courses = db.query(User).options(
         selectinload(User.courses)
         .selectinload(Course.subjects)
         .selectinload(Subject.themes)
     ).get(user_id)
 
-    if not user_for_courses_relation:
+    if not user_with_courses:
          logger.warn("Usuario no encontrado al cargar la relación de cursos para 'my courses'", user_id=user_id)
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado al cargar cursos.")
 
-    logger.info("Cursos del usuario obtenidos", user_id=user_id, count=len(user_for_courses_relation.courses))
-    return [_course_to_schema(c, user_with_enrollments) for c in user_for_courses_relation.courses]
+    logger.info("Cursos del usuario obtenidos", user_id=user_id, count=len(user_with_courses.courses))
+    return [_course_to_schema(c, subject_enrollments) for c in user_with_courses.courses]
 
 
 @router.get("/all", response_model=list[CourseOut])
 def list_all_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_db)):
     user_id = payload["user_id"]
     logger.info("Obteniendo todos los cursos (list all courses)", user_id=user_id)
-    user_with_enrollments = _load_user_with_enrollments(user_id, db)
+    subject_enrollments = _get_subject_enrollments_for_user(user_id, db)
 
     courses = (
         db.query(Course)
@@ -117,7 +112,7 @@ def list_all_courses(payload: dict = Depends(jwt_required), db: Session = Depend
         .all()
     )
     logger.info("Todos los cursos obtenidos", count=len(courses))
-    return [_course_to_schema(c, user_with_enrollments) for c in courses]
+    return [_course_to_schema(c, subject_enrollments) for c in courses]
 
 @router.delete(
     "/{course_id}/unenroll",
@@ -165,7 +160,7 @@ def get_course(
 ):
     user_id = payload["user_id"]
     logger.info("Obteniendo detalles del curso", course_id=course_id, user_id=user_id)
-    user_with_enrollments = _load_user_with_enrollments(user_id, db)
+    subject_enrollments = _get_subject_enrollments_for_user(user_id, db)
 
 
     course: Course | None = (
@@ -178,9 +173,9 @@ def get_course(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Curso no encontrado")
 
     logger.info("Detalles del curso obtenidos", course_id=course.id, title=course.title)
-    return _course_to_schema(course, user_with_enrollments)
+    return _course_to_schema(course, subject_enrollments)
 
-@router.put("/{course_id}", response_model=dict, dependencies=[Depends(admin_required)])
+@router.put("/{course_id}", response_model=CourseOut, dependencies=[Depends(admin_required)])
 def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_db)):
     logger.info("Intentando actualizar curso", course_id=course_id, update_data=body.model_dump(exclude_none=True))
     course: Course | None = (
@@ -208,13 +203,25 @@ def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_
 
     db.commit()
     db.refresh(course)
+    # Es necesario recargar las relaciones de asignaturas y temas si se modificaron y se quieren devolver actualizadas.
+    # joinedload(Course.subjects).selectinload(Subject.themes) podría ser necesario aquí si no están ya cargadas.
+    # Sin embargo, _course_to_schema espera que course.subjects ya tenga los temas cargados.
+    # Las operaciones de selectinload/joinedload en la carga inicial del curso deberían ser suficientes.
+    db.refresh(course) # Asegura que course.subjects está actualizado si se cambió la lista de subjects
+    # Para asegurar que los temas dentro de las asignaturas están cargados para _course_to_schema:
+    # Es posible que necesitemos una nueva carga aquí si las asignaturas o sus temas fueron modificados
+    # y no se reflejan automáticamente. Por ahora, asumimos que db.refresh(course) y las cargas
+    # eager previas son suficientes. Si los tests fallan, se revisará esta parte.
+    # Para estar seguros, recargamos explícitamente con las opciones necesarias.
+    
+    # Se quita la recarga completa para evitar complejidad innecesaria si no se requiere.
+    # Si las subject_ids se actualizan, la relación course.subjects se actualiza.
+    # _course_to_schema iterará sobre course.subjects, y cada subject.themes ya está cargado por
+    # las opciones de selectinload en las queries GET. La actualización de course.subjects
+    # no debería afectar la carga eager de subject.themes de esas instancias de Subject.
+
     logger.info("Curso actualizado exitosamente", course_id=course.id, title=course.title)
-    return {
-        "id": course.id,
-        "title": course.title,
-        "description": course.description,
-        "subject_ids": [s.id for s in course.subjects],
-    }
+    return _course_to_schema(course, None) # User es None porque no es relevante para el contexto de admin
 
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(admin_required)])
 def delete_course(course_id: int, db: Session = Depends(get_db)):

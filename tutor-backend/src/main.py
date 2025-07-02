@@ -42,13 +42,31 @@ def _configure_database(settings) -> None:
 
 
 def _configure_cors(app: FastAPI, settings) -> None:
-    origins = [
-        f"http://localhost:{settings.port}",
-        "http://localhost:5173",
-    ]
+    # Convertir HttpUrl a string para la lista de orígenes
+    configured_origins = [str(url).rstrip('/') for url in settings.cors_origins] # rstrip para quitar / extras de HttpUrl
+
+    if configured_origins:
+        allow_origins_list = configured_origins
+    else:
+        # Fallback a localhost si no hay nada configurado (para desarrollo local)
+        # El puerto 5173 es el puerto por defecto del frontend Vite
+        # El settings.port es el puerto del backend
+        allow_origins_list = [
+            # f"http://localhost:{settings.port}", # Origen del propio backend (generalmente no necesario para CORS de un SPA)
+            "http://localhost:5173",          # Origen común para el frontend de desarrollo
+        ]
+        # Si settings.port es diferente de 5173 Y el frontend se sirve desde el mismo puerto que el backend (poco común)
+        # if settings.port != 5173:
+        #    allow_origins_list.append(f"http://localhost:{settings.port}")
+        
+        # Es más probable que el frontend se sirva en un puerto estándar de desarrollo como 3000, 8080, etc.
+        # Si se sabe, se puede añadir aquí como fallback adicional o mejor, configurar en .env
+        # Ejemplo: allow_origins_list.append("http://localhost:3000")
+
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins     = origins,
+        allow_origins     = allow_origins_list,
         allow_credentials = True,
         allow_methods     = ["*"],
         allow_headers     = ["*"],

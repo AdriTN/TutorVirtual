@@ -14,7 +14,7 @@ export function AdminModals({ adminData, subjectOpts }: AdminModalsProps) {
     editModalState, closeEditModal,
     confirmDeleteModalState, closeConfirmDeleteModal, handleDeleteConfirm,
 
-    cTitle, setCTitle, cDesc, setCDesc,
+    cTitle, setCTitle, cDesc, setCDesc, cSubjectIds, setCSubjectIds,
     sName, setSName, sDesc, setSDesc,
     tSubj, setTSubj, tTitle, setTTitle, tDesc, setTDesc,
 
@@ -32,6 +32,33 @@ export function AdminModals({ adminData, subjectOpts }: AdminModalsProps) {
           value={cTitle} onChange={e => setCTitle(e.target.value)} placeholder="Título" />
         <textarea
           value={cDesc} onChange={e => setCDesc(e.target.value)} placeholder="Descripción" />
+        
+        {/* Selector de Asignaturas */}
+        <div className={styles.fieldGroup} style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Asignaturas:</label>
+          <div className={styles.checkboxGroup} style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '0.5rem' }}>
+            {subjectOpts.map(opt => (
+              <div key={opt.id} className={styles.checkboxItem} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.25rem' }}>
+                <input
+                  type="checkbox"
+                  id={`create-course-subj-${opt.id}`}
+                  value={opt.id}
+                  checked={cSubjectIds.includes(opt.id)}
+                  onChange={() => {
+                    setCSubjectIds(prevIds =>
+                      prevIds.includes(opt.id)
+                        ? prevIds.filter(id => id !== opt.id)
+                        : [...prevIds, opt.id]
+                    );
+                  }}
+                  style={{ marginRight: '0.5rem' }}
+                />
+                <label htmlFor={`create-course-subj-${opt.id}`}>{opt.label}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className={styles.actions}>
           <button onClick={closeCreateModal}>Cancelar</button>
           <button disabled={!cTitle.trim() || createCourse.isPending}

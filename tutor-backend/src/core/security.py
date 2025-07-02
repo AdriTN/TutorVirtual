@@ -43,7 +43,6 @@ def create_access_token(user_id: int, is_admin: bool) -> str:
         "is_admin": is_admin,
         "exp": _expiry(cfg.jwt_access_minutes),
     }
-    # Usamos el algoritmo fijo para que coincida con Algorithm
     return jwt.encode(payload, cfg.jwt_secret, algorithm=cfg.jwt_algorithm)
 
 

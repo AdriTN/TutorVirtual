@@ -48,9 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     try {
-      const userData = await getUserMe();
+      const userData = await getUserMe(); // UserData should now include is_admin
       setUser(userData);
-      setIsAdmin(isAdminFromToken(token));
+      setIsAdmin(userData.is_admin); // Use is_admin from API response
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       notifyErrorRef.current("No se pudieron cargar los datos del usuario.");
