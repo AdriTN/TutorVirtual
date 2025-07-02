@@ -1,4 +1,4 @@
-from src.api.schemas.themes import ThemeUpdate
+from src.api.schemas.themes import ThemeUpdate, ThemeCreate
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
@@ -10,23 +10,23 @@ router = APIRouter()
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, dependencies=[Depends(admin_required)])
-def create_theme(body: dict, db: Session = Depends(get_db)):
-    if db.query(Theme).filter(Theme.name == body["name"]).first():
+def create_theme(body: ThemeCreate, db: Session = Depends(get_db)):
+    if db.query(Theme).filter(Theme.name == body.name).first():
         raise HTTPException(status.HTTP_409_CONFLICT, "Duplicado")
 
-    subj = db.query(Subject).get(body["subject_id"])
+    subj = db.query(Subject).get(body.subject_id)
     if not subj:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Subject no encontrado")
 
     tema = Theme(
-        name=body["name"],
-        description=body.get("descripcion"),
+        name=body.name,
+        description=body.description,
         subject_id=subj.id,
     )
     db.add(tema)
     db.commit()
     db.refresh(tema)
-    return {"id": tema.id, "name": tema.name}
+    return {"id": tema.id, "name": tema.name, "description": tema.description}
 
 
 @router.get("", summary="Lista pública de temas")
