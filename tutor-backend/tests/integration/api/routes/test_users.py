@@ -4,6 +4,7 @@ Tests para el router de usuarios:   /api/users/*
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
 from src.models import User
@@ -72,3 +73,35 @@ def test_promote_user_ok(client, db_session):
 def test_promote_user_404(client):
     r = client.post("/api/users/999/promote")
     assert r.status_code == HTTP_404_NOT_FOUND
+
+
+# ───────── POST /api/users/{id}/demote ───────────────────────────────
+def test_demote_user_ok(client, db_session):
+    uid = _insert_user(db_session, uname="bob", email="b@x.com", is_admin=True)
+
+    r = client.post(f"/api/users/{uid}/demote")
+
+    assert r.status_code == HTTP_200_OK
+    assert db_session.query(User).get(uid).is_admin is False
+
+
+def test_demote_user_already_not_admin(client, db_session):
+    uid = _insert_user(db_session, uname="bob", email="b@x.com", is_admin=False)
+
+    r = client.post(f"/api/users/{uid}/demote")
+
+    assert r.status_code == HTTP_200_OK
+    assert r.json()["detail"] == "El usuario no es administrador"
+    assert db_session.query(User).get(uid).is_admin is False
+
+
+def test_demote_user_404(client):
+    r = client.post("/api/users/999/demote")
+    assert r.status_code == HTTP_404_NOT_FOUND
+
+
+def test_demote_user_unauthorized(client, db_session, non_admin_client):
+    uid = _insert_user(db_session, uname="bob", email="b@x.com", is_admin=True)
+    # client fixture has admin role, non_admin_client fixture does not
+    r = non_admin_client.post(f"/api/users/{uid}/demote")
+    assert r.status_code == HTTP_403_FORBIDDEN
