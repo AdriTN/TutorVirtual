@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from datetime import datetime, timedelta, timezone
 import random
 import string
 
 from src.core.config import get_settings
 
-from src.api.schemas.auth import GoogleCode
+from src.api.schemas.auth import GoogleCode, RegisterIn, RegisterOut
 from src.models.user import UserProvider
 from sqlalchemy.exc import IntegrityError
 
 from src.api.schemas.authlog import LoginIn, RefreshIn, TokenOut
+from src.api.schemas.authlogout import LogoutIn
+from src.api.dependencies.auth import jwt_required
 from fastapi import APIRouter, Depends, HTTPException, status
 import requests
 from google.oauth2 import id_token as google_id_token
@@ -237,3 +241,88 @@ def generate_password(longitud=12):
     random.shuffle(password)
 
     return "".join(password)
+
+
+@router.post("/logout",
+             status_code=status.HTTP_204_NO_CONTENT,
+             summary="Invalidate a refresh token",
+             responses={
+                 204: {"description": "Token invalidado correctamente"},
+                 404: {"description": "Token no encontrado"},
+             })
+def logout(
+    payload: LogoutIn,
+    user: dict = Depends(jwt_required),
+    *,
+    db: Session = Depends(get_db),
+) -> None:
+    """
+    Elimina de la base de datos el *refresh token* indicado.
+    """
+    token_row = (
+        db.query(RefreshToken)
+        .filter_by(token=payload.refresh_token, user_id=user["user_id"])
+        .one_or_none()
+    )
+    if token_row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Token no encontrado",
+        )
+
+    db.delete(token_row)
+    db.commit()
+
+
+@router.post(
+    "/register",
+    response_model=RegisterOut,
+    status_code=status.HTTP_201_CREATED,
+)
+def register_user(
+    body: RegisterIn,
+    db: Session = Depends(get_db),
+) -> RegisterOut:
+    """
+    Alta de usuario *self-service*.
+
+    1. Comprueba duplicados (username, e-mail).
+    2. Hashea contraseña con `bcrypt`.
+    3. Devuelve DTO sin exponer el hash.
+    """
+
+    dup = (
+        db.query(User)
+        .filter((User.username == body.username) | (User.email == body.email))
+        .first()
+    )
+    if dup:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe un usuario con ese nombre o e-mail",
+        )
+
+    new_user = User(
+        username=body.username,
+        email=body.email,
+        password=hash_password(body.password),
+    )
+    db.add(new_user)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Usuario duplicado",
+        ) from None
+
+    db.refresh(new_user)
+
+    return RegisterOut.model_validate(
+        {
+            "id": new_user.id,
+            "username": new_user.username,
+            "email": new_user.email,
+        }
+    )
