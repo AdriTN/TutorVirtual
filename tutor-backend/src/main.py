@@ -4,6 +4,7 @@ Punto de entrada FastAPI + application-factory.
 > uvicorn src.main:create_app --factory --reload
 """
 from pathlib import Path
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,6 +16,7 @@ from src.database.session  import get_engine
 
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
+logger = structlog.get_logger(__name__)
 
 
 # ────────────────────────────────────────────────────────────
@@ -56,22 +58,30 @@ def _configure_cors(app: FastAPI, settings) -> None:
 # ────────────────────────────────────────────────────────────
 def create_app() -> FastAPI:            # ← exported factory
     setup_logging()
+    logger.info("Logging configurado.")
     settings = get_settings()
+    logger.info("Configuración cargada.", settings=settings)
 
     _configure_database(settings)
+    logger.info("Base de datos configurada.")
 
     app = FastAPI(
         title   = settings.api_title,
         version = settings.api_version,
     )
+    logger.info("Aplicación FastAPI creada.", title=settings.api_title, version=settings.api_version)
 
     _configure_cors(app, settings)
+    logger.info("CORS configurado.")
 
     # Rutas ------------------------------------------------------------------
     app.include_router(api_router, prefix="/api")
+    logger.info("Rutas de API incluidas con prefijo /api.")
 
     @app.get("/", tags=["health"])
     def health():
+        logger.debug("Health check endpoint llamado.")
         return {"status": "ok"}
 
+    logger.info("Aplicación creada y lista.")
     return app
