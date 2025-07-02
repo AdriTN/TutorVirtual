@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 import random
 import string
 
+import structlog
+
 from src.core.config import get_settings
 
 from src.api.schemas.auth import GoogleCode, RegisterIn, RegisterOut
@@ -30,7 +32,7 @@ from src.models import User, RefreshToken
 from src.core.security import hash_password
 
 router = APIRouter()
-
+logger = structlog.get_logger(__name__)
 settings = get_settings()
 
 
@@ -41,10 +43,12 @@ def login(data: LoginIn, db: Session = Depends(get_db)) -> TokenOut:
         db.query(User).filter(User.email == data.email.lower()).first()
     )
     if not user or not verify_password(data.password, user.password):
+        logger.warn("Intento de login fallido", email=data.email.lower())
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Credenciales inválidas")
 
     access_token = create_access_token(user.id, user.is_admin)
     refresh_token = _store_refresh(user, db)
+    logger.info("Usuario ha iniciado sesión", user_id=user.id, email=user.email)
 
     return TokenOut(access_token=access_token, refresh_token=refresh_token)
 
@@ -55,6 +59,7 @@ def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
         db.query(RefreshToken).filter_by(token=data.refresh_token).first()
     )
     if not stored:
+        logger.error("Intento de refrescar token inválido", refresh_token=data.refresh_token)
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Token inválido")
 
     # ── token caducado ────────────────────────────────────────────────────
@@ -63,6 +68,7 @@ def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
         exp = exp.replace(tzinfo=timezone.utc)
 
     if exp < datetime.now(timezone.utc):
+        logger.error("Intento de refrescar token expirado", refresh_token=data.refresh_token, user_id=stored.user_id, expired_at=exp.isoformat())
         db.execute(delete(RefreshToken).where(RefreshToken.id == stored.id))
         db.commit()
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Token expirado")
@@ -78,6 +84,7 @@ def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
             db.rollback()
 
     user: User = db.get(User, stored.user_id)
+    logger.info("Token refrescado", user_id=user.id)
 
     return TokenOut(
         access_token=create_access_token(user.id, user.is_admin),
@@ -96,8 +103,7 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
         "grant_type": "authorization_code",
     }
     
-    # Eliminados prints de depuración. Considerar usar logging.
-    # print(f"Backend: Intentando intercambiar código con Google. URL: {google_token_url}, Data: {request_data}")
+    logger.info("Intentando intercambiar código con Google", url=google_token_url)
 
     try:
         token_resp = requests.post(
@@ -106,12 +112,11 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
             timeout=10, 
         )
     except requests.exceptions.RequestException as req_err:
-        # print(f"Backend: Error de conexión al intentar contactar a Google: {req_err}") # Eliminado
-        # Considerar loggear req_err para información detallada en el servidor
+        logger.error("Error de conexión al contactar a Google", exc_info=req_err, url=google_token_url)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            f"Error de conexión al servicio de Google.") # Mensaje más genérico para el cliente
+                            f"Error de conexión al servicio de Google.")
 
-    # print(f"Backend: Respuesta de Google. Status: {token_resp.status_code}, Body: {token_resp.text}") # Eliminado
+    logger.info("Respuesta de Google recibida", status_code=token_resp.status_code, response_text=token_resp.text)
     
     if token_resp.status_code != 200:
         error_detail = {"message": "Error al intercambiar código con Google.", "google_response_status": token_resp.status_code}
@@ -120,35 +125,33 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
             error_detail["google_error"] = google_error_payload.get("error")
             error_detail["google_error_description"] = google_error_payload.get("error_description")
         except ValueError:
-            error_detail["google_response_text"] = token_resp.text # Incluir texto si no es JSON
+            error_detail["google_response_text"] = token_resp.text
         
-        # print(f"Backend: Error de Google. Detalle: {error_detail}") # Eliminado
-        # Considerar loggear error_detail
+        logger.error("Error de Google al intercambiar código", detail=error_detail)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_detail)
 
     tokens = token_resp.json()
-    # print(f"Backend: Tokens recibidos de Google: {tokens}") # Eliminado
+    logger.info("Tokens recibidos de Google", token_keys=list(tokens.keys())) # No loguear tokens directamente por seguridad
 
     # 2. Verificar id_token y extraer identidad
     id_token_to_verify = tokens.get("id_token")
     if not id_token_to_verify:
-        # print("Backend: Error - No se encontró 'id_token' en la respuesta de Google.") # Eliminado
+        logger.error("No se encontró 'id_token' en la respuesta de Google", google_response_keys=list(tokens.keys()))
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 
                             detail="Respuesta de Google no incluyó 'id_token'.")
     
+    logger.info("Verificando id_token")
     try:
-        # print(f"Backend: Verificando id_token (primeros 20 chars): {id_token_to_verify[:20]}...") # Eliminado
         idinfo = google_id_token.verify_oauth2_token(
             id_token_to_verify,
             google_requests.Request(),
             settings.google_client_id, 
-            clock_skew_in_seconds=5 # Aumentado ligeramente el margen de reloj
+            clock_skew_in_seconds=5 
         )
-        # print(f"Backend: id_token verificado. Email: {idinfo.get('email')}") # Eliminado
+        logger.info("id_token verificado", email=idinfo.get('email'), google_user_id=idinfo.get('sub'))
     except ValueError as e:
-        # print(f"Backend: Error al verificar id_token: {e}") # Eliminado
-        # Considerar loggear e
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"id_token inválido o no verificado.") # Mensaje más genérico
+        logger.error("Error al verificar id_token", exc_info=e)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"id_token inválido o no verificado.")
 
     sub = idinfo.get("sub")
     email = idinfo["email"]
@@ -160,6 +163,7 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
 
     if provider:
         user = db.get(User, provider.user_id)
+        logger.info("Usuario existente ha iniciado sesión con Google", user_id=user.id, email=user.email, google_user_id=sub)
     else:
         username = email.split("@")[0]
         # evita colisiones de usernames
@@ -176,6 +180,7 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
                             provider="google",
                             provider_user_id=sub))
         db.commit()
+        logger.info("Nuevo usuario registrado con Google", user_id=user.id, email=user.email, username=user.username, google_user_id=sub)
 
     # 4. Emitir tokens
     access  = create_access_token(user.id, user.is_admin)
@@ -186,7 +191,6 @@ def google_login(payload: GoogleCode, db: Session = Depends(get_db)) -> TokenOut
     db.commit()
 
     return TokenOut(access_token=access, refresh_token=refresh)
-
 
 # ──────────── helpers ────────────
 def _expiry(*, days: int = 0, minutes: int = 0):
