@@ -34,4 +34,11 @@ def answer(body:AnswerIn,
 
     ok = register_user_answer(user_id, ej, body.answer, body.tiempo_seg, db)
     logger.info("Respuesta registrada", user_id=user_id, exercise_id=ej.id, is_correct=ok)
-    return AnswerOut(correcto=ok)
+
+    response_data = {"correcto": ok}
+    if not ok:
+        response_data["correct_answer"] = ej.answer
+    if ej.explanation:
+        response_data["explanation"] = ej.explanation
+
+    return AnswerOut(**response_data)
