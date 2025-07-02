@@ -41,3 +41,5 @@ class AnswerOut(BaseModel):
     """Respuesta HTTP"""
 
     correcto: bool
+    correct_answer: str | None = None
+    explanation: str | None = None
