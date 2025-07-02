@@ -20,6 +20,7 @@ def create_exercise_from_ai(data: dict, tema, db: Session) -> Exercise:
     )
     db.add(ej)
     # db.commit() # Commit será manejado por la sesión de FastAPI get_db
+    db.flush()
     db.refresh(ej)
     return ej
 
