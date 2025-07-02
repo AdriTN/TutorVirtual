@@ -8,6 +8,7 @@ from starlette.status import (
     HTTP_409_CONFLICT,
     HTTP_404_NOT_FOUND,
     HTTP_200_OK,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from src.models import Subject, Theme
@@ -35,8 +36,13 @@ def test_create_theme_ok(client, db_session):
     assert resp.status_code == HTTP_201_CREATED
     data = resp.json()
     assert data["name"] == "Fracciones"
+    assert data["description"] == "Operaciones básicas"
+    assert "id" in data
 
-    assert db_session.query(Theme).filter_by(id=data["id"]).count() == 1
+    theme_in_db = db_session.query(Theme).filter_by(id=data["id"]).first()
+    assert theme_in_db is not None
+    assert theme_in_db.name == "Fracciones"
+    assert theme_in_db.description == "Operaciones básicas"
 
 
 def test_create_theme_duplicate_name(client, db_session):
@@ -60,6 +66,51 @@ def test_create_theme_subject_not_found(client):
     resp = client.post("/api/themes", json={"name": "Óptica", "subject_id": 999})
     assert resp.status_code == HTTP_404_NOT_FOUND
     assert resp.json() == {"detail": "Subject no encontrado"}
+
+
+def test_create_theme_missing_name(client, db_session):
+    """
+    ✔ Falta name → 422 UNPROCESSABLE ENTITY.
+    """
+    subj = _make_subject(db_session)
+    resp = client.post("/api/themes", json={"descripcion": "Sin nombre", "subject_id": subj.id})
+    assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    # Pydantic v2 style error
+    assert resp.json()["detail"][0]["type"] == "missing"
+    assert resp.json()["detail"][0]["loc"] == ["body", "name"]
+
+
+def test_create_theme_missing_subject_id(client):
+    """
+    ✔ Falta subject_id → 422 UNPROCESSABLE ENTITY.
+    """
+    resp = client.post("/api/themes", json={"name": "Tema Huérfano"})
+    assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert resp.json()["detail"][0]["type"] == "missing"
+    assert resp.json()["detail"][0]["loc"] == ["body", "subject_id"]
+
+
+def test_create_theme_invalid_subject_id_type(client):
+    """
+    ✔ subject_id con tipo incorrecto → 422 UNPROCESSABLE ENTITY.
+    """
+    resp = client.post("/api/themes", json={"name": "Tema Inválido", "subject_id": "no-un-numero"})
+    assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert resp.json()["detail"][0]["type"] == "int_parsing"
+    assert resp.json()["detail"][0]["loc"] == ["body", "subject_id"]
+
+
+def test_create_theme_name_too_long(client, db_session):
+    """
+    ✔ name demasiado largo → 422 UNPROCESSABLE ENTITY.
+    """
+    subj = _make_subject(db_session)
+    long_name = "a" * 256
+    resp = client.post("/api/themes", json={"name": long_name, "subject_id": subj.id})
+    assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert resp.json()["detail"][0]["type"] == "string_too_long"
+    assert resp.json()["detail"][0]["loc"] == ["body", "name"]
+    assert resp.json()["detail"][0]["ctx"]["max_length"] == 255
 
 
 def test_list_all_themes(client, db_session):
