@@ -28,14 +28,44 @@ def test_exercise_not_found(client):
     assert resp.json()["detail"] == "Ejercicio no encontrado"
 
 
-@pytest.mark.parametrize("service_return,expected", [
-    (True,  True),
-    (False, False),
-])
-def test_answer_created(client, db_session, monkeypatch,
-                        service_return, expected):
+@pytest.mark.parametrize(
+    "service_return, exercise_data, expected_response",
+    [
+        # Caso 1: Respuesta correcta, sin explicación
+        (
+            True,
+            {"answer": "4"},
+            {"correcto": True, "correct_answer": None, "explanation": None},
+        ),
+        # Caso 2: Respuesta incorrecta, sin explicación
+        (
+            False,
+            {"answer": "4"},
+            {"correcto": False, "correct_answer": "4", "explanation": None},
+        ),
+        # Caso 3: Respuesta correcta, con explicación
+        (
+            True,
+            {"answer": "4", "explanation": "Porque 2+2=4"},
+            {"correcto": True, "correct_answer": None, "explanation": "Porque 2+2=4"},
+        ),
+        # Caso 4: Respuesta incorrecta, con explicación
+        (
+            False,
+            {"answer": "4", "explanation": "Porque 2+2=4"},
+            {
+                "correcto": False,
+                "correct_answer": "4",
+                "explanation": "Porque 2+2=4",
+            },
+        ),
+    ],
+)
+def test_answer_created(
+    client, db_session, monkeypatch, service_return, exercise_data, expected_response
+):
     # 1) Creamos un ejercicio válido
-    ej = insert_exercise(db_session)
+    ej = insert_exercise(db_session, **exercise_data)
 
     # 2) Mockeamos register_user_answer para controlar la lógica de negocio
     monkeypatch.setattr(
@@ -44,8 +74,8 @@ def test_answer_created(client, db_session, monkeypatch,
         lambda *args, **kw: service_return,
     )
 
-    body = {"ejercicio_id": ej.id, "answer": "4", "tiempo_seg": 8}
+    body = {"ejercicio_id": ej.id, "answer": "user_answer", "tiempo_seg": 8}
     resp = client.post("/api/answer", json=body)
 
     assert resp.status_code == 201
-    assert resp.json() == {"correcto": expected}
+    assert resp.json() == expected_response
