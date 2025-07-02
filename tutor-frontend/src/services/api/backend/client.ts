@@ -46,7 +46,18 @@ api.interceptors.response.use(
       try {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
-          original.headers.set('Authorization', `Bearer ${getAccessToken()}`);
+          const newAccessToken = getAccessToken();
+          console.log('Token para reintento:', newAccessToken); // <-- LOG DE DEBUG
+          if (newAccessToken) {
+            original.headers.set('Authorization', `Bearer ${newAccessToken}`);
+          } else {
+            console.error('¡El nuevo token de acceso es nulo después del refresh!');
+            // Considerar logout si no se puede obtener el nuevo token
+            clearTokens();
+            showErrorNotification("Error crítico al refrescar sesión. Inicia sesión.");
+            window.location.replace("/login");
+            return Promise.reject(error);
+          }
           return api(original);
         }
       } catch (refreshError) {

@@ -9,6 +9,7 @@ from src.models.theme import Theme
 from src.models.exercise import Exercise
 from src.models.user_response import UserResponse
 from src.models.user_theme_progress import UserThemeProgress
+from src.models.chat import ChatConversation, ChatMessage
 
 from logging.config import fileConfig
 

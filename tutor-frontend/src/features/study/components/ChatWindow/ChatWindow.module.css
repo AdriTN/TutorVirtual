@@ -1,0 +1,127 @@
+.chatWindow {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    max-height: 500px; /* Altura máxima para la ventana de chat */
+    overflow: hidden; /* Para que el scroll interno funcione */
+  }
+  
+  .chatTitle {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.2em;
+    color: #333;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
+  
+  .messagesContainer {
+    flex-grow: 1;
+    overflow-y: auto; /* Scroll para los mensajes */
+    padding: 8px;
+    background-color: #fff;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    min-height: 150px; /* Altura mínima para ver algo incluso vacío */
+  }
+  
+  .message {
+    padding: 8px 12px;
+    border-radius: 15px;
+    margin-bottom: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+  
+  .userMessage {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-end;
+    margin-left: auto; /* Alinea a la derecha */
+    border-bottom-right-radius: 5px;
+  }
+  
+  .aiMessage {
+    background-color: #e9ecef;
+    color: #333;
+    align-self: flex-start;
+    margin-right: auto; /* Alinea a la izquierda */
+    border-bottom-left-radius: 5px;
+  }
+  
+  .messageText {
+    margin: 0;
+    font-size: 0.95em;
+    line-height: 1.4;
+  }
+  
+  .timestamp {
+    display: block;
+    font-size: 0.75em;
+    color: #aaa; /* Color más claro para el timestamp en mensajes AI */
+    margin-top: 4px;
+    text-align: right;
+  }
+  
+  .userMessage .timestamp {
+    color: #e0e0e0; /* Color claro para timestamp en mensajes de usuario */
+  }
+  
+  
+  .inputForm {
+    display: flex;
+    margin-top: auto; /* Empuja el formulario hacia abajo */
+  }
+  
+  .inputField {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    font-size: 1em;
+  }
+  
+  .inputField:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  
+  .sendButton {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 1em;
+  }
+  
+  .sendButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .sendButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .errorMessage {
+    color: #dc3545;
+    font-size: 0.9em;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .emptyChatMessage {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    font-style: italic;
+  }
+  

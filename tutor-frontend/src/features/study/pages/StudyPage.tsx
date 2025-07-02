@@ -6,20 +6,35 @@ import Footer        from "@/components/organisms/Footer/Footer";
 import HeaderBar     from "../components/HeaderBar/HeaderBar";
 import ExerciseCard  from "../components/ExerciseCard/ExerciseCard";
 import Controls      from "../components/Controls/Controls";
+import ChatWindow    from "../components/ChatWindow/ChatWindow"; // Importar ChatWindow
 
 import { useExercise } from "../hooks/useExercise";
+import { useChat }     from "../hooks/useChat"; // Importar useChat
 import { fetchCourse, fetchThemes } from "@services/api";
+import { useAuth } from "@/context/auth"; // Para obtener el ID del usuario actual
 
 import styles from "./study.module.css";
 
 export default function StudyPage() {
   const { courseId, subjectId } = useParams<{ courseId: string; subjectId: string }>();
   const nav = useNavigate();
+  const { user } = useAuth(); // Obtener información del usuario, incluido el ID
 
   const {
-    exercise, loading, error,
+    exercise, loading: exerciseLoading, error: exerciseError,
     checked, isCorrect, generate, check,
   } = useExercise();
+
+  // Hook para el chat
+  // Asumimos que exercise.id existe cuando hay un ejercicio
+  const {
+    messages: chatMessages,
+    isLoading: chatLoading,
+    error: chatError,
+    sendMessage: sendChatMessage,
+    loadInitialConversation, // Para recargar si es necesario
+  } = useChat({ exerciseId: exercise?.id || null, currentUserId: user?.id || null });
+
 
   /* ---------- estado local ---------- */
   const [course, setCourse]   = useState<any>(null);
@@ -99,35 +114,45 @@ export default function StudyPage() {
               <button
                 className={styles.generateBtn}
                 onClick={onGenerate}
-                disabled={loading}
+                disabled={exerciseLoading}
               >
-                {loading ? "Generando…" : "Generar pregunta"}
+                {exerciseLoading ? "Generando…" : "Generar pregunta"}
               </button>
             )}
           </div>
 
-          {/* error backend */}
-          {error && <p className={styles.statusError}>{error}</p>}
+          {/* error backend de ejercicio */}
+          {exerciseError && <p className={styles.statusError}>{exerciseError}</p>}
 
-          {/* ejercicio actual */}
+          {/* ejercicio actual y chat */}
           {exercise && (
-            <>
-              <ExerciseCard
-                enunciado={exercise.enunciado}
-                explanation={exercise.explicacion}
-                checked={checked}
-                isCorrect={isCorrect}
-              />
-
-              <Controls
-                userAnswer={answer}
-                onAnswerChange={setAnswer}
-                onCheck={() => check(answer)}
-                onNext={onGenerate}
-                loading={loading}
-                checked={checked}
-              />
-            </>
+            <div className={styles.studyArea}>
+              <div className={styles.exerciseAndControls}>
+                <ExerciseCard
+                  enunciado={exercise.enunciado}
+                  explanation={exercise.explicacion}
+                  checked={checked}
+                  isCorrect={isCorrect}
+                />
+                <Controls
+                  userAnswer={answer}
+                  onAnswerChange={setAnswer}
+                  onCheck={() => check(answer)}
+                  onNext={onGenerate}
+                  loading={exerciseLoading}
+                  checked={checked}
+                />
+              </div>
+              <div className={styles.chatArea}>
+                <ChatWindow
+                  messages={chatMessages}
+                  onSendMessage={sendChatMessage}
+                  isLoading={chatLoading}
+                  chatError={chatError}
+                  currentUserId={user?.id || null}
+                />
+              </div>
+            </div>
           )}
         </main>
       )}

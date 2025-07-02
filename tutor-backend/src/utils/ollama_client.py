@@ -20,8 +20,8 @@ def generate_with_ollama(payload: dict, request: Request | None = None) -> dict:
     log = logger.bind(request_id=req_id)
 
     with httpx.Client(
-        timeout=httpx.Timeout(120, connect=10),
-        limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
+        timeout=httpx.Timeout(240, connect=20),
+        limits=httpx.Limits(max_connections=20, max_keepalive_connections=15),
     ) as client:
         for attempt in range(1, 4):
             try:
@@ -34,5 +34,16 @@ def generate_with_ollama(payload: dict, request: Request | None = None) -> dict:
                 if attempt == 3:
                     raise
             except httpx.HTTPStatusError as exc:
-                log.error("ollama_error", status=exc.response.status_code)
+                error_body = None
+                try:
+                    error_body = exc.response.json() # Intenta parsear como JSON
+                except ValueError: # Si el cuerpo no es JSON válido
+                    error_body = exc.response.text # Toma el texto plano
+                
+                log.error(
+                    "ollama_error", 
+                    status=exc.response.status_code,
+                    ollama_url=str(exc.request.url),
+                    ollama_response_body=error_body # Loguea el cuerpo de la respuesta
+                )
                 raise
