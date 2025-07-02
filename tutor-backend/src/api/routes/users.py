@@ -78,3 +78,24 @@ def promote(
     db.commit()
     logger.info("Usuario promovido a admin exitosamente (admin)", target_user_id=user_id, admin_user_id=admin_user_id)
     return {"detail": "Promocionado a admin"}
+
+
+@router.post("/{user_id}/demote", response_model=dict)
+def demote(
+    user_id: int, payload: dict = Depends(admin_required), db: Session = Depends(get_db)
+):
+    admin_user_id = payload["user_id"]
+    logger.info("Intentando revocar admin a usuario (admin)", target_user_id=user_id, admin_user_id=admin_user_id)
+    user: User | None = db.query(User).get(user_id)
+    if not user:
+        logger.warn("Usuario no encontrado al intentar revocar admin (admin)", target_user_id=user_id, admin_user_id=admin_user_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario a revocar admin no encontrado")
+
+    if not user.is_admin:
+        logger.info("Usuario no es admin, no se requiere acción (admin)", target_user_id=user_id, admin_user_id=admin_user_id)
+        return {"detail": "El usuario no es administrador"}
+
+    user.is_admin = False
+    db.commit()
+    logger.info("Admin revocado a usuario exitosamente (admin)", target_user_id=user_id, admin_user_id=admin_user_id)
+    return {"detail": "Revocado admin"}
