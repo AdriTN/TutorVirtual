@@ -106,13 +106,22 @@ def test_user_relationships():
     assert cr.back_populates == "students"
     assert cr.uselist is True
 
-    # subjects (many-to-many)
-    sb = rels["subjects"]
+    # enrolled_subjects (many-to-many, viewonly)
+    sb = rels["enrolled_subjects"]
     from src.models.subject import Subject
     assert sb.mapper.class_ is Subject
-    assert sb.secondary.name == "user_subjects"
-    assert sb.back_populates == "users"
+    assert sb.secondary.name == "user_enrollments" # Tabla de asociación correcta
+    assert sb.viewonly is True                     # Es viewonly
+    assert sb.back_populates is None               # No tiene back_populates directo
     assert sb.uselist is True
+
+    # enrolled_in_courses (many-to-many, viewonly)
+    # Esta relación ya estaba bien definida en el User model y tiene su propia sección de test si es necesario,
+    # o se puede verificar aquí si se desea. Por ahora, me centro en corregir la de 'subjects'.
+    # Si 'enrolled_in_courses' también necesita verificación detallada aquí, se puede añadir.
+    # Por el traceback, el problema original era solo con 'subjects'.
+    # La relación 'enrolled_in_courses' ya está en el modelo User y usa 'user_enrollments'.
+    # Suponiendo que está bien, no la modifico aquí a menos que el traceback indique un problema con ella.
 
 
 def test_userprovider_table_and_columns():

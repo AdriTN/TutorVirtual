@@ -26,7 +26,6 @@ class Subject(Base):
     # Usuarios matriculados en esta asignatura (a través de un curso específico)
     enrolled_users: Mapped[List["User"]] = relationship(
         secondary=user_enrollments,
-        back_populates="enrolled_subjects",
         viewonly=True,
         lazy="selectin"
     )

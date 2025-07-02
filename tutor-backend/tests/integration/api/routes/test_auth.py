@@ -8,6 +8,7 @@ from starlette import status # Para los códigos de estado HTTP
 import src.api.routes.auth as auth_module
 from src.models import User, RefreshToken, UserProvider # Añadido UserProvider
 from src.core.security import hash_password
+from unittest.mock import ANY # Import ANY
 
 
 # ------------- helpers ----------------
@@ -179,7 +180,7 @@ def test_google_login_new_user(
     mock_requests_post.assert_called_once()
     mock_verify_id_token.assert_called_once_with(
         MOCK_GOOGLE_ID_TOKEN,
-        auth_module.google_requests.Request(),
+        ANY, # Usar ANY para el objeto Request
         auth_module.settings.google_client_id,
         clock_skew_in_seconds=5
     )

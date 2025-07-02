@@ -6,11 +6,27 @@ from src.models import Theme
 import src.api.routes.ai as ai_module
 
 
-def insert_theme(db_session, name="Números naturales", description="Tema de prueba"):
+from src.models import Subject # Importar Subject
+
+def insert_subject_for_ai(db_session, name="Matemáticas IA", description="Asignatura para IA tests"):
+    subject = db_session.query(Subject).filter_by(name=name).first()
+    if not subject:
+        subject = Subject(name=name, description=description)
+        db_session.add(subject)
+        db_session.commit()
+        db_session.refresh(subject)
+    return subject
+
+def insert_theme(db_session, name="Números naturales", description="Tema de prueba", subject_id=None):
     """
     Crea un Theme en la BBDD de prueba.
+    Si subject_id no se proporciona, crea/usa una asignatura por defecto.
     """
-    tema = Theme(name=name, description=description, subject_id=1)
+    if subject_id is None:
+        default_subject = insert_subject_for_ai(db_session)
+        subject_id = default_subject.id
+        
+    tema = Theme(name=name, description=description, subject_id=subject_id)
     db_session.add(tema)
     db_session.commit()
     db_session.refresh(tema)
@@ -66,7 +82,7 @@ def test_theme_not_found(client, monkeypatch):
         "messages": [{"role": "user", "content": "hola"}]
     })
     assert resp.status_code == 404
-    assert resp.json()["detail"] == "Tema no encontrado"
+    assert resp.json()["detail"] == f"Tema '{data.get('tema', 'N/A')}' no encontrado"
 
 
 def test_success_path(client, db_session, monkeypatch):

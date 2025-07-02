@@ -90,3 +90,47 @@ def test_register_answer_updates_progress(numeros_naturales_theme, db_session):
     prog = db_session.query(UserThemeProgress).get((99, numeros_naturales_theme.id))
     assert prog.completed == 1
     assert prog.correct   == 1
+
+    # Registramos segunda respuesta, esta vez incorrecta, para el mismo tema (otro ejercicio)
+    ej2 = create_exercise_from_ai({
+        "enunciado": "Otro ejercicio",
+        "tipo": "respuesta corta",
+        "dificultad": "media",
+        "respuesta": "correcta2",
+        "explicacion": "",
+    }, numeros_naturales_theme, db_session)
+
+    ok_incorrect = register_user_answer(
+        user_id=99,
+        ej=ej2,
+        answer="incorrecta", # Respuesta incorrecta
+        time_sec=5,
+        db=db_session,
+    )
+    assert ok_incorrect is False
+
+    prog_updated = db_session.query(UserThemeProgress).get((99, numeros_naturales_theme.id))
+    assert prog_updated.completed == 2 # Se incrementa
+    assert prog_updated.correct   == 1 # No se incrementa por respuesta incorrecta
+
+    # Registramos tercera respuesta, correcta, para el mismo tema (otro ejercicio)
+    ej3 = create_exercise_from_ai({
+        "enunciado": "Tercer ejercicio",
+        "tipo": "respuesta corta",
+        "dificultad": "alta",
+        "respuesta": "correcta3",
+        "explicacion": "",
+    }, numeros_naturales_theme, db_session)
+    
+    ok_correct_again = register_user_answer(
+        user_id=99,
+        ej=ej3,
+        answer="correcta3", # Respuesta correcta
+        time_sec=10,
+        db=db_session,
+    )
+    assert ok_correct_again is True
+
+    prog_final = db_session.query(UserThemeProgress).get((99, numeros_naturales_theme.id))
+    assert prog_final.completed == 3 # Se incrementa
+    assert prog_final.correct   == 2 # Se incrementa por respuesta correcta

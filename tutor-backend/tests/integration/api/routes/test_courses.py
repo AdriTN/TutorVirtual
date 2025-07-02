@@ -125,31 +125,40 @@ def sample_data(db_session: Session):
     db_session.execute(course_subjects.insert().values(course_id=course2.id, subject_id=subject_A.id))
     db_session.execute(course_subjects.insert().values(course_id=course3.id, subject_id=subject_B.id))
     
-    # Matricular al usuario en subject_A DENTRO de course1
-    db_session.execute(
-        user_enrollments.insert().values(
-            user_id=user.id,
-            subject_id=subject_A.id,
-            course_id=course1.id
-        )
-    )
-    # Añadir course1 a user.courses para que aparezca en /my
-    db_session.execute(user_courses.insert().values(user_id=user.id, course_id=course1.id))
-    
     db_session.commit()
     # Recargar las relaciones de los cursos después de añadirles asignaturas manualmente
-    db_session.refresh(course1)
-    db_session.refresh(course2)
-    db_session.refresh(course3)
+    db_session.refresh(course1) # course1 ahora tiene subject_A
+    db_session.refresh(course2) # course2 ahora tiene subject_A
+    db_session.refresh(course3) # course3 ahora tiene subject_B
     
     return user, course1, course2, course3, subject_A, subject_B
 
 
-def test_list_courses_enrolled_flag(client, db_session, sample_data, monkeypatch):
+def test_list_courses_enrolled_flag(client: TestClient, db_session: Session, sample_data, monkeypatch):
     user, course1, course2, course3, subject_A, subject_B = sample_data
-    _as_user(monkeypatch, user) # Esto asegura que jwt_required pasa y se usa el user_id correcto
+    
+    # Simular que el usuario 'user' (creado en sample_data) está haciendo la petición
+    _as_user(monkeypatch, user)
 
-    r = client.get("/api/courses/all") 
+    # Matricular al usuario en subject_A DENTRO de course1 usando el endpoint de subjects
+    # Necesitamos que el client esté autenticado como el usuario que se matricula.
+    # El fixture 'client' por defecto es admin, así que para este paso,
+    # si _as_user no afecta al client globalmente, necesitaríamos un client específico o
+    # asegurar que el user de sample_data es el user_id=1 que usa _as_user.
+    # Asumamos que user.id es el que _as_user va a mockear.
+    
+    # Antes de matricular, el usuario no debería estar en user.courses directamente.
+    # La matriculación en una asignatura de un curso debería añadirlo.
+    
+    # Crear un usuario específico para este test para evitar conflictos con el user_id=1 por defecto del client
+    test_specific_user = insert_user(db_session, email="specific_user@example.com", username="specific_user_courses")
+    _as_user(monkeypatch, test_specific_user) # Ahora el cliente opera como test_specific_user
+
+    # Matricular test_specific_user en subject_A (del course1)
+    enroll_resp = client.post(f"/api/subjects/{subject_A.id}/enroll", json={"course_id": course1.id})
+    assert enroll_resp.status_code == 204 # 204 No Content para matriculación exitosa
+
+    r = client.get("/api/courses/all")
     assert r.status_code == 200
     payload = r.json()
     
@@ -173,26 +182,72 @@ def test_list_courses_enrolled_flag(client, db_session, sample_data, monkeypatch
     assert subj_B_in_C3["enrolled"] is False
 
 
-def test_my_courses_returns_only_enrolled(client, db_session, sample_data, monkeypatch):
-    # sample_data ahora matricula al user solo en course1 (via user_courses)
-    user, course1, *_ = sample_data
-    _as_user(monkeypatch, user)
+def test_my_courses_returns_only_enrolled(client: TestClient, db_session: Session, sample_data, monkeypatch):
+    user_from_fixture, course1, course2, course3, subject_A, subject_B = sample_data
+    
+    # Crear un usuario específico para este test
+    test_user = insert_user(db_session, email="mycourses_user@example.com", username="mycourses_user")
+    _as_user(monkeypatch, test_user) # Autenticar como este usuario
+
+    # Matricular al test_user en subject_A (que está en course1)
+    enroll_resp1 = client.post(f"/api/subjects/{subject_A.id}/enroll", json={"course_id": course1.id})
+    assert enroll_resp1.status_code == 204
+
+    # Matricular al test_user en subject_B (que está en course3)
+    enroll_resp3 = client.post(f"/api/subjects/{subject_B.id}/enroll", json={"course_id": course3.id})
+    assert enroll_resp3.status_code == 204
+    
+    # El usuario ahora debería estar matriculado en course1 y course3
 
     r = client.get("/api/courses/my")
     assert r.status_code == 200
     data = r.json()
-    assert len(data) == 1
-    assert data[0]["id"] == course1.id
+    
+    assert len(data) == 2
+    course_ids_in_response = {c["id"] for c in data}
+    assert course_ids_in_response == {course1.id, course3.id}
+
+    # Verificar que course2 no está en la lista de "my courses"
+    assert course2.id not in course_ids_in_response
+
+    # Adicionalmente, verificar el estado 'enrolled' dentro de 'my courses'
+    my_course1_data = next(c for c in data if c["id"] == course1.id)
+    my_subject_A_in_course1 = next(s for s in my_course1_data["subjects"] if s["id"] == subject_A.id)
+    assert my_subject_A_in_course1["enrolled"] is True
+    
+    my_course3_data = next(c for c in data if c["id"] == course3.id)
+    my_subject_B_in_course3 = next(s for s in my_course3_data["subjects"] if s["id"] == subject_B.id)
+    assert my_subject_B_in_course3["enrolled"] is True
 
 
 # ---------- GET /api/courses/{id} ----------
-def test_get_course_ok(client, db_session, sample_data, monkeypatch):
-    user, course1, *_ = sample_data
-    _as_user(monkeypatch, user)
+def test_get_course_ok(client: TestClient, db_session: Session, sample_data, monkeypatch):
+    # El user_id de la autenticación no debería afectar qué curso se puede ver,
+    # pero sí afecta el flag 'enrolled' dentro de la respuesta.
+    user_generic, course1, course2, _, subject_A, _ = sample_data # user_generic no se usa para auth aquí
+    
+    test_specific_user_get = insert_user(db_session, email="specific_user_get@example.com", username="specific_user_get")
+    _as_user(monkeypatch, test_specific_user_get) # Autenticar como este usuario
+
+    # Matricular a este usuario en subject_A de course1 para probar el flag 'enrolled'
+    enroll_resp = client.post(f"/api/subjects/{subject_A.id}/enroll", json={"course_id": course1.id})
+    assert enroll_resp.status_code == 204
 
     r = client.get(f"/api/courses/{course1.id}")
     assert r.status_code == 200
-    assert r.json()["title"] == "C1"
+    course_data = r.json()
+    assert course_data["title"] == course1.title # El título original de sample_data
+
+    # Verificar el flag 'enrolled' para subject_A dentro de course1
+    subject_A_data = next(s for s in course_data["subjects"] if s["id"] == subject_A.id)
+    assert subject_A_data["enrolled"] is True
+
+    # Verificar que para course2 (donde no está matriculado), el flag es false
+    r_course2 = client.get(f"/api/courses/{course2.id}") # course2 también tiene subject_A
+    assert r_course2.status_code == 200
+    course2_data = r_course2.json()
+    subject_A_in_course2_data = next(s for s in course2_data["subjects"] if s["id"] == subject_A.id)
+    assert subject_A_in_course2_data["enrolled"] is False
 
 
 def test_get_course_not_found(client, db_session, sample_data, monkeypatch):

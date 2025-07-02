@@ -9,9 +9,20 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_200_OK,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_204_NO_CONTENT,
 )
 
 from src.models import Subject, Theme
+from sqlalchemy.orm import Session
+from fastapi.testclient import TestClient
+
+# Helper para crear un tema directamente en la BD para los tests de PUT/DELETE
+def _create_theme_direct_db(db_session: Session, name: str, subject_id: int, description: str | None = "Test Desc") -> Theme:
+    theme = Theme(name=name, description=description, subject_id=subject_id)
+    db_session.add(theme)
+    db_session.commit()
+    db_session.refresh(theme)
+    return theme
 
 
 # ───────────────── helpers ──────────────────────────────
@@ -30,7 +41,7 @@ def test_create_theme_ok(client, db_session):
     """
     subj = _make_subject(db_session)
 
-    body = {"name": "Fracciones", "descripcion": "Operaciones básicas", "subject_id": subj.id}
+    body = {"name": "Fracciones", "description": "Operaciones básicas", "subject_id": subj.id} # Corregido aquí
     resp = client.post("/api/themes", json=body)
 
     assert resp.status_code == HTTP_201_CREATED
@@ -56,7 +67,7 @@ def test_create_theme_duplicate_name(client, db_session):
     resp = client.post("/api/themes", json={"name": "Geometría", "subject_id": subj.id})
 
     assert resp.status_code == HTTP_409_CONFLICT
-    assert resp.json() == {"detail": "Duplicado"}
+    assert resp.json() == {"detail": "Duplicado: Ya existe un tema con ese nombre"} # Corregido aquí
 
 
 def test_create_theme_subject_not_found(client):
@@ -65,7 +76,7 @@ def test_create_theme_subject_not_found(client):
     """
     resp = client.post("/api/themes", json={"name": "Óptica", "subject_id": 999})
     assert resp.status_code == HTTP_404_NOT_FOUND
-    assert resp.json() == {"detail": "Subject no encontrado"}
+    assert resp.json() == {"detail": "Asignatura con ID 999 no encontrada"} # Corregido aquí
 
 
 def test_create_theme_missing_name(client, db_session):
@@ -131,3 +142,110 @@ def test_list_all_themes(client, db_session):
 
     names = {item["title"] for item in resp.json()}
     assert names == {"Edad Media", "Edad Moderna"}
+
+
+# ───────────────── PUT /api/themes/{theme_id} ────────────────────────────────
+def test_update_theme_ok(client: TestClient, db_session: Session):
+    """
+    ✔ Actualiza nombre, descripción y subject_id de un tema existente.
+    """
+    subject1 = _make_subject(db_session, name="Matemáticas")
+    subject2 = _make_subject(db_session, name="Física")
+    theme = _create_theme_direct_db(db_session, name="Algebra", subject_id=subject1.id, description="Desc Original")
+
+    update_data = {
+        "name": "Algebra Lineal",
+        "description": "Nueva Descripción",
+        "subject_id": subject2.id,
+    }
+    resp = client.put(f"/api/themes/{theme.id}", json=update_data)
+
+    assert resp.status_code == HTTP_200_OK
+    data = resp.json()
+    assert data["name"] == "Algebra Lineal"
+    assert data["description"] == "Nueva Descripción"
+    assert data["subject_id"] == subject2.id
+
+    db_session.refresh(theme)
+    assert theme.name == "Algebra Lineal"
+    assert theme.description == "Nueva Descripción"
+    assert theme.subject_id == subject2.id
+
+
+def test_update_theme_partial(client: TestClient, db_session: Session):
+    """
+    ✔ Actualiza solo algunos campos de un tema.
+    """
+    subject1 = _make_subject(db_session, name="Química")
+    theme = _create_theme_direct_db(db_session, name="Orgánica", subject_id=subject1.id, description="Desc Antigua")
+
+    update_data = {"name": "Química Orgánica"}
+    resp = client.put(f"/api/themes/{theme.id}", json=update_data)
+
+    assert resp.status_code == HTTP_200_OK
+    data = resp.json()
+    assert data["name"] == "Química Orgánica"
+    assert data["description"] == "Desc Antigua" # No debe cambiar
+    assert data["subject_id"] == subject1.id    # No debe cambiar
+
+    db_session.refresh(theme)
+    assert theme.name == "Química Orgánica"
+    assert theme.description == "Desc Antigua"
+
+
+def test_update_theme_not_found(client: TestClient):
+    """
+    ✔ Devuelve 404 si el tema a actualizar no existe.
+    """
+    resp = client.put("/api/themes/999", json={"name": "Inexistente"})
+    assert resp.status_code == HTTP_404_NOT_FOUND
+    assert resp.json()["detail"] == "Tema no encontrado"
+
+
+def test_update_theme_duplicate_name(client: TestClient, db_session: Session):
+    """
+    ✔ Devuelve 409 si el nuevo nombre del tema ya existe en otro tema.
+    """
+    subject1 = _make_subject(db_session, name="Lengua")
+    _create_theme_direct_db(db_session, name="Sintaxis", subject_id=subject1.id)
+    theme_to_update = _create_theme_direct_db(db_session, name="Ortografía", subject_id=subject1.id)
+
+    resp = client.put(f"/api/themes/{theme_to_update.id}", json={"name": "Sintaxis"})
+    assert resp.status_code == HTTP_409_CONFLICT
+    assert resp.json()["detail"] == "Ya existe otro tema con ese nombre"
+
+
+def test_update_theme_target_subject_not_found(client: TestClient, db_session: Session):
+    """
+    ✔ Devuelve 404 si el subject_id al que se quiere mover el tema no existe.
+    """
+    subject1 = _make_subject(db_session, name="Biología")
+    theme = _create_theme_direct_db(db_session, name="Célula", subject_id=subject1.id)
+
+    resp = client.put(f"/api/themes/{theme.id}", json={"subject_id": 999}) # subject_id 999 no existe
+    assert resp.status_code == HTTP_404_NOT_FOUND
+    assert resp.json()["detail"] == "Asignatura destino con ID 999 no encontrada"
+
+
+# ───────────────── DELETE /api/themes/{theme_id} ─────────────────────────────
+def test_delete_theme_ok(client: TestClient, db_session: Session):
+    """
+    ✔ Elimina un tema existente y devuelve 204.
+    """
+    subject1 = _make_subject(db_session, name="Geografía")
+    theme = _create_theme_direct_db(db_session, name="Ríos", subject_id=subject1.id)
+
+    resp = client.delete(f"/api/themes/{theme.id}")
+    assert resp.status_code == HTTP_204_NO_CONTENT
+
+    deleted_theme = db_session.query(Theme).get(theme.id)
+    assert deleted_theme is None
+
+
+def test_delete_theme_not_found(client: TestClient):
+    """
+    ✔ Devuelve 404 si el tema a eliminar no existe.
+    """
+    resp = client.delete("/api/themes/999")
+    assert resp.status_code == HTTP_404_NOT_FOUND
+    assert resp.json()["detail"] == "Tema no encontrado"

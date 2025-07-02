@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from src.api.schemas.authlog import LoginIn, RefreshIn, TokenOut
 from src.api.schemas.authlogout import LogoutIn
 from src.api.dependencies.auth import jwt_required
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 import requests
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
@@ -254,7 +254,7 @@ def logout(
     user: dict = Depends(jwt_required),
     *,
     db: Session = Depends(get_db),
-) -> None:
+) -> Response:
     """
     Elimina de la base de datos el *refresh token* indicado.
     """
@@ -274,6 +274,7 @@ def logout(
     db.delete(token_row)
     db.commit()
     logger.info("Logout exitoso, token invalidado", user_id=user["user_id"], refresh_token_id=token_row.id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(
