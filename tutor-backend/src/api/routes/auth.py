@@ -248,12 +248,8 @@ def generate_password(longitud=12):
 
 
 @router.post("/logout",
-             status_code=status.HTTP_204_NO_CONTENT,
              summary="Invalidate a refresh token",
-             responses={
-                 204: {"description": "Token invalidado correctamente"},
-                 404: {"description": "Token no encontrado"},
-             })
+)
 def logout(
     payload: LogoutIn,
     user: dict = Depends(jwt_required),
