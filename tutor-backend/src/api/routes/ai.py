@@ -31,7 +31,7 @@ def ask_ollama(
     db: Session = Depends(get_db),
 ):
     logger.info("Recibida solicitud POST en /api/ai/request", request_data=req.dict(exclude_none=True))
-    logger.info("Solicitud a Ollama iniciada", model=req.model, num_prompt_parts=len(req.prompt) if req.prompt else 0)
+    logger.info("Solicitud a Ollama iniciada", model=req.model, num_messages=len(req.messages) if req.messages else 0)
     try:
         raw = generate_with_ollama(req.dict())
     except httpx.HTTPError as exc:

@@ -32,7 +32,6 @@ class User(Base):
     
     enrolled_subjects: Mapped[List["Subject"]] = relationship(
         secondary=user_enrollments,
-        back_populates="enrolled_users",
         viewonly=True,
         lazy="selectin"
     )

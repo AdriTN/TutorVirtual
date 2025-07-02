@@ -47,12 +47,14 @@ def test_list_users(client, db_session):
 
 # ───────── DELETE /api/users/{id} ────────────────────────────────────
 def test_delete_user_ok(client, db_session):
-    uid = _insert_user(db_session, uname="victim", email="v@x.com")
+    # Insertar un usuario dummy primero para asegurar que "victim" no sea id=1
+    _insert_user(db_session, uname="dummy_user_for_test_delete", email="dummy@delete.com")
+    uid_victim = _insert_user(db_session, uname="victim", email="v@x.com")
 
-    r = client.delete(f"/api/users/{uid}")
+    r = client.delete(f"/api/users/{uid_victim}")
 
     assert r.status_code == HTTP_204_NO_CONTENT
-    assert db_session.query(User).get(uid) is None
+    assert db_session.query(User).get(uid_victim) is None # Corregido aquí
 
 
 def test_delete_user_404(client):

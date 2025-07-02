@@ -117,6 +117,12 @@ def _fake_user():
     return {"user_id": 1, "is_admin": True}
 
 
+def _fake_non_admin_user():
+    # Using user_id = 2 for non-admin to differentiate from the default admin (user_id=1)
+    # Tests using this client might need to ensure user 2 exists in the DB.
+    return {"user_id": 2, "is_admin": False}
+
+
 @pytest.fixture
 def client(db_session: Session) -> TestClient:
     app = create_app()
@@ -129,9 +135,33 @@ def client(db_session: Session) -> TestClient:
         importlib.import_module("src.database.session").get_db
     ] = lambda: db_session
 
-    # autenticación simulada
+    # autenticación simulada para el cliente admin
     app.dependency_overrides[auth_src.jwt_required] = _fake_user
     app.dependency_overrides[auth_src.admin_required] = _fake_user
+
+    return TestClient(app)
+
+
+@pytest.fixture
+def non_admin_client(db_session: Session) -> TestClient:
+    app = create_app()
+
+    # inyectamos la sesión SQLite
+    app.dependency_overrides[get_db] = lambda: db_session
+    importlib.import_module("src.database.session").get_db
+    app.dependency_overrides[
+        importlib.import_module("src.database.session").get_db
+    ] = lambda: db_session
+
+    # autenticación simulada para el cliente no-admin
+    # admin_required should raise an exception if called by this client.
+    # For jwt_required, it provides the non_admin user details.
+    app.dependency_overrides[auth_src.jwt_required] = _fake_non_admin_user
+    
+    # For endpoints protected by admin_required, the actual admin_required dependency
+    # should be used, which will then fail as _fake_non_admin_user returns is_admin=False.
+    # No need to override admin_required to _fake_non_admin_user here, 
+    # as that would incorrectly satisfy the admin check.
 
     return TestClient(app)
 

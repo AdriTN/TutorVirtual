@@ -57,14 +57,15 @@ def test_subject_relationships():
     assert r_courses.back_populates == "subjects"
     assert r_courses.uselist is True
 
-    # 2) users: secondary=user_subjects, back_populates="subjects"
-    assert "users" in rels
-    r_users = rels["users"]
+        # 2) enrolled_users: secondary=user_enrollments, back_populates="enrolled_subjects", viewonly=True
+    assert "enrolled_users" in rels
+    r_users = rels["enrolled_users"]
     assert r_users.mapper.class_ is User
-    assert r_users.secondary.name == "user_subjects"
-    assert r_users.back_populates == "subjects"
+    assert r_users.secondary.name == "user_enrollments"
+    assert r_users.viewonly is True # Clave para estas relaciones
+    assert r_users.back_populates is None # No debe tener back_populates directo
     assert r_users.uselist is True
-
+        
     # 3) themes: back_populates="subject", debe incluir delete y delete-orphan
     assert "themes" in rels
     r_themes = rels["themes"]
