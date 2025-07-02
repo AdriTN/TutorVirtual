@@ -8,6 +8,8 @@ from typing import List, Optional
 class ThemeOut(BaseModel):
     id: int
     title: str
+    description: str | None
+    subject_id: int
 
     model_config = {"from_attributes": True}
 

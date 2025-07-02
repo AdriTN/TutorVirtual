@@ -4,7 +4,7 @@ import {
   refreshAccessToken,
   clearTokens,
 } from "@services/auth";
-import { useNotifications } from "@hooks/useNotifications";
+import { showErrorNotification } from "@hooks/useNotifications";
 
 /* ------------------------------------------------------------------ */
 /* 1) Instancia base ------------------------------------------------- */
@@ -31,10 +31,9 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
-    const { notifyError } = useNotifications();
 
     if (!error.response) {
-      notifyError("Error de red o el servidor no responde.");
+      showErrorNotification("Error de red o el servidor no responde.");
       return Promise.reject(error);
     }
 
@@ -52,27 +51,32 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         clearTokens();
-        notifyError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+        showErrorNotification("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
         window.location.replace("/login");
         return Promise.reject(error);
       }
 
       clearTokens();
-      notifyError("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+      showErrorNotification("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
       window.location.replace("/login");
       return Promise.reject(error);
     }
 
     let errorMessage = "Ocurrió un error inesperado.";
-    if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
-      errorMessage = data.message;
+    // Prioritize 'detail' from FastAPI, then 'message', then string data, then Axios error message
+    if (data && typeof data === 'object') {
+      if ('detail' in data && typeof data.detail === 'string' && data.detail.length > 0) {
+        errorMessage = data.detail;
+      } else if ('message' in data && typeof data.message === 'string' && data.message.length > 0) {
+        errorMessage = data.message;
+      }
     } else if (typeof data === 'string' && data.length > 0) {
       errorMessage = data;
-    } else if (error.message) {
+    } else if (error.message) { // Fallback to Axios error message
       errorMessage = error.message;
     }
     
-    notifyError(errorMessage);
+    showErrorNotification(errorMessage);
 
     return Promise.reject(error);
   },

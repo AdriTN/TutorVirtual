@@ -20,7 +20,7 @@ def _subject_to_schema(subject: Subject, enrolled_subject_ids_for_user: set[int]
         name=subject.name,
         description=subject.description,
         enrolled=subject.id in enrolled_subject_ids_for_user,
-        themes=[ThemeOut(id=t.id, title=t.name) for t in subject.themes],
+        themes=[ThemeOut(id=t.id, title=t.name, description=t.description, subject_id=t.subject_id) for t in subject.themes],
     )
 
 

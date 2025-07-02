@@ -14,36 +14,36 @@ const defaultOptions: NotificationOptions = {
   theme: "light",
 };
 
+export const showSuccessNotification = (message: string, options?: NotificationOptions): Id => {
+  return toast.success(message, { ...defaultOptions, ...options });
+};
+
+export const showErrorNotification = (message: string, options?: NotificationOptions): Id => {
+  return toast.error(message, { ...defaultOptions, ...options });
+};
+
+export const showInfoNotification = (message: string, options?: NotificationOptions): Id => {
+  return toast.info(message, { ...defaultOptions, ...options });
+};
+
+export const showWarningNotification = (message: string, options?: NotificationOptions): Id => {
+  return toast.warn(message, { ...defaultOptions, ...options });
+};
+
+export const dismissNotification = (toastId?: Id): void => {
+  if (toastId) {
+    toast.dismiss(toastId);
+  } else {
+    toast.dismiss();
+  }
+};
+
 export const useNotifications = () => {
-  const notifySuccess = (message: string, options?: NotificationOptions): Id => {
-    return toast.success(message, { ...defaultOptions, ...options });
-  };
-
-  const notifyError = (message: string, options?: NotificationOptions): Id => {
-    return toast.error(message, { ...defaultOptions, ...options });
-  };
-
-  const notifyInfo = (message: string, options?: NotificationOptions): Id => {
-    return toast.info(message, { ...defaultOptions, ...options });
-  };
-
-  const notifyWarning = (message: string, options?: NotificationOptions): Id => {
-    return toast.warn(message, { ...defaultOptions, ...options });
-  };
-
-  const dismiss = (toastId?: Id): void => {
-    if (toastId) {
-      toast.dismiss(toastId);
-    } else {
-      toast.dismiss();
-    }
-  };
-
   return {
-    notifySuccess,
-    notifyError,
-    notifyInfo,
-    notifyWarning,
-    dismiss,
+    notifySuccess: showSuccessNotification,
+    notifyError: showErrorNotification,
+    notifyInfo: showInfoNotification,
+    notifyWarning: showWarningNotification,
+    dismiss: dismissNotification,
   };
 };
