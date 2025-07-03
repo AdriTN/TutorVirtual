@@ -21,15 +21,15 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.add_column(
-        "ejercicios",
-        sa.Column("respuesta", sa.Text(), nullable=False, server_default="")
+        "exercises",  # Renamed from "ejercicios"
+        sa.Column("answer", sa.Text(), nullable=False)  # Renamed, removed server_default
     )
     op.add_column(
-        "ejercicios",
-        sa.Column("explicacion", sa.Text(), nullable=True)
+        "exercises",  # Renamed from "ejercicios"
+        sa.Column("explanation", sa.Text(), nullable=True)  # Renamed
     )
     op.add_column(
-        "ejercicios",
+        "exercises",  # Renamed from "ejercicios"
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -37,12 +37,13 @@ def upgrade() -> None:
             nullable=False,
         ),
     )
-    op.create_index("ix_ejercicio_tema", "ejercicios", ["tema_id"])
+    op.create_index("ix_exercises_theme_id", "exercises", ["theme_id"]) # Renamed index and column
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_column("ejercicios", "created_at")
-    op.drop_column("ejercicios", "explicacion")
-    op.drop_column("ejercicios", "respuesta")
+    op.drop_index("ix_exercises_theme_id", table_name="exercises") # Dropping renamed index
+    op.drop_column("exercises", "created_at")
+    op.drop_column("exercises", "explanation") # Renamed
+    op.drop_column("exercises", "answer")      # Renamed
     # ### end Alembic commands ###

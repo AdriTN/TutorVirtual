@@ -24,7 +24,7 @@ def upgrade():
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('exercise_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.ForeignKeyConstraint(['exercise_id'], ['ejercicios.id'], name='fk_chat_conversations_exercise_id'),
+        sa.ForeignKeyConstraint(['exercise_id'], ['exercises.id'], name='fk_chat_conversations_exercise_id'), # Target table changed
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='fk_chat_conversations_user_id'),
         sa.PrimaryKeyConstraint('id')
     )

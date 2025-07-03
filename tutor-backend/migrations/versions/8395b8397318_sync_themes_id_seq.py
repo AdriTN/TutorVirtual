@@ -21,11 +21,14 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade():
     op.execute(sa.text("""
         SELECT setval(
-            pg_get_serial_sequence('temas', 'id'),
-            (SELECT COALESCE(MAX(id),0)+1 FROM temas),
+            pg_get_serial_sequence('themes', 'id'),
+            (SELECT COALESCE(MAX(id),0)+1 FROM themes),
             false
         );
     """))
 
 def downgrade():
+    # This is a data synchronization step; a specific downgrade might not be meaningful
+    # or could involve resetting sequence to a previous state, which is complex.
+    # For now, pass is acceptable as it's hard to revert safely without more context.
     pass

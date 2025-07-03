@@ -20,60 +20,68 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # Crear la tabla de 'temas'
+    # Create the 'themes' table
     op.create_table(
-        'temas',
+        'themes',
         sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column('nombre', sa.String(length=255), nullable=False, unique=True),
-        sa.Column('descripcion', sa.Text(), nullable=True)
+        sa.Column('name', sa.String(length=255), nullable=False, unique=True, index=True),
+        sa.Column('description', sa.Text(), nullable=True)
+    )
+    op.create_index(op.f('ix_themes_name'), 'themes', ['name'], unique=True)
+
+    # Create the 'exercises' table
+    op.create_table(
+        'exercises',
+        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column('statement', sa.Text(), nullable=False),
+        sa.Column('type', sa.String(length=50), nullable=False),
+        sa.Column('difficulty', sa.String(length=50), nullable=False),
+        sa.Column('theme_id', sa.Integer(), sa.ForeignKey('themes.id', ondelete='CASCADE'), nullable=False)
     )
 
-    # Crear la tabla de 'ejercicios'
+    # Create the 'user_responses' table
     op.create_table(
-        'ejercicios',
+        'user_responses',
         sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column('enunciado', sa.Text(), nullable=False),
-        sa.Column('tipo', sa.String(length=50), nullable=False),  # suma, resta, multiplicación, etc.
-        sa.Column('dificultad', sa.String(length=50), nullable=False),  # fácil, intermedio, difícil
-        sa.Column('tema_id', sa.Integer(), sa.ForeignKey('temas.id', ondelete='CASCADE'), nullable=False)
-    )
-
-    # Crear la tabla de 'respuestas_usuarios'
-    op.create_table(
-        'respuestas_usuarios',
-        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column('respuesta', sa.Text(), nullable=False),
-        sa.Column('ejercicio_id', sa.Integer(), sa.ForeignKey('ejercicios.id', ondelete='CASCADE'), nullable=False),
+        sa.Column('answer', sa.Text(), nullable=False),
+        sa.Column('exercise_id', sa.Integer(), sa.ForeignKey('exercises.id', ondelete='CASCADE'), nullable=False),
         sa.Column('user_id', sa.Integer(), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
-        sa.Column('correcto', sa.Boolean(), nullable=False)  # Indica si la respuesta es correcta o no
+        sa.Column('correct', sa.Boolean(), nullable=False)
     )
 
-    # Crear relaciones en las tablas
-    op.create_foreign_key(
-        'fk_respuestas_usuarios_user',
-        'respuestas_usuarios', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE'
-    )
-    op.create_foreign_key(
-        'fk_respuestas_usuarios_ejercicio',
-        'respuestas_usuarios', 'ejercicios',
-        ['ejercicio_id'], ['id'], ondelete='CASCADE'
-    )
-    op.create_foreign_key(
-        'fk_ejercicios_tema',
-        'ejercicios', 'temas',
-        ['tema_id'], ['id'], ondelete='CASCADE'
-    )
+    # Create foreign keys (adjusting names)
+    # Note: SQLAlchemy's autogenerate often creates FKs directly in create_table.
+    # Explicit create_foreign_key calls here are fine if they match what models imply or for clarity.
+    # However, the ForeignKey() in Column definition already creates the constraint.
+    # These explicit calls might be redundant if the inline FKs are named or if Alembic generates names.
+    # For now, let's assume these explicit calls are for specific naming or ensuring they exist.
+    # The original migration had these explicit calls.
+    
+    # FK for user_responses.user_id is implicitly created by ForeignKey('users.id')
+    # op.create_foreign_key(
+    # 'fk_user_responses_user', # Renamed
+    # 'user_responses', 'users',
+    #     ['user_id'], ['id'], ondelete='CASCADE'
+    # )
+    # FK for user_responses.exercise_id is implicitly created by ForeignKey('exercises.id')
+    # op.create_foreign_key(
+    # 'fk_user_responses_exercise', # Renamed
+    # 'user_responses', 'exercises',
+    #     ['exercise_id'], ['id'], ondelete='CASCADE'
+    # )
+    # FK for exercises.theme_id is implicitly created by ForeignKey('themes.id')
+    # op.create_foreign_key(
+    # 'fk_exercises_theme', # Renamed
+    # 'exercises', 'themes',
+    #     ['theme_id'], ['id'], ondelete='CASCADE'
+    # )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    # Eliminar en orden inverso de creación y dependencia
-    # Las FKs explícitas creadas en upgrade() que no son parte de la definición de tabla
-    # se eliminan aquí si es necesario, o se confía en que se eliminen con las tablas.
-    # En este caso, las FKs fk_respuestas_usuarios_user, etc. se eliminan con las tablas.
-    
-    op.drop_table('respuestas_usuarios')
-    op.drop_table('ejercicios')
-    op.drop_table('temas')
+    # Drop in reverse order of creation
+    op.drop_table('user_responses')
+    op.drop_table('exercises')
+    op.drop_index(op.f('ix_themes_name'), table_name='themes')
+    op.drop_table('themes')
     # ### end Alembic commands ###

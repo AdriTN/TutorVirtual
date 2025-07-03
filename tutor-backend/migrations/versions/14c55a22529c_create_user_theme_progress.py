@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table(
         "user_theme_progress",
         sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("tema_id", sa.Integer(), nullable=False),
+        sa.Column("theme_id", sa.Integer(), nullable=False),  # Renamed from tema_id
         sa.Column("completed", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("correct", sa.Integer(), nullable=False, server_default="0"),
         sa.Column(
@@ -36,13 +36,12 @@ def upgrade() -> None:
             ["user_id"], ["users.id"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
-            ["tema_id"], ["temas.id"], ondelete="CASCADE"
+            ["theme_id"], ["themes.id"], ondelete="CASCADE"  # Renamed tema_id and temas.id
         ),
-        sa.PrimaryKeyConstraint("user_id", "tema_id"),
+        sa.PrimaryKeyConstraint("user_id", "theme_id"),  # Renamed tema_id
     )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     op.drop_table("user_theme_progress")
-    

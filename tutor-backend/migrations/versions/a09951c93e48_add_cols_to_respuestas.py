@@ -21,22 +21,22 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.add_column(
-        "respuestas_usuarios",
-        sa.Column("tiempo_seg", sa.Integer(), nullable=True)
+        "user_responses",  # Renamed
+        sa.Column("time_sec", sa.Integer(), nullable=True)  # Renamed
     )
     op.add_column(
-        "respuestas_usuarios",
+        "user_responses",  # Renamed
         sa.Column(
-            "respondida_en",
+            "created_at",  # Renamed
             sa.DateTime(timezone=True),
             server_default=sa.func.now(),
             nullable=False,
         ),
     )
     op.create_index(
-        "ix_resp_user_ejercicio",
-        "respuestas_usuarios",
-        ["user_id", "ejercicio_id"],
+        "uq_user_exercise",  # Renamed to match model's UniqueConstraint name
+        "user_responses",    # Renamed
+        ["user_id", "exercise_id"],  # Renamed column
         unique=True,
     )
 
@@ -44,7 +44,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     op.drop_index(
-        "ix_resp_user_ejercicio", table_name="respuestas_usuarios"
+        "uq_user_exercise", table_name="user_responses"  # Renamed
     )
-    op.drop_column("respuestas_usuarios", "respondida_en")
-    op.drop_column("respuestas_usuarios", "tiempo_seg")
+    op.drop_column("user_responses", "created_at")  # Renamed
+    op.drop_column("user_responses", "time_sec")    # Renamed

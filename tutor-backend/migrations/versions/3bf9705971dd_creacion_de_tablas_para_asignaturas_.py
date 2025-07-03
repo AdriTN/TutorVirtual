@@ -17,51 +17,49 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Añade subject_id a temas y crea las FKs que faltan"""
+    """Adds subject_id to themes table, matching the model (nullable=True, ondelete='CASCADE')"""
 
-    # ─── 1. temas.subject_id  ────────────────────────────────────────────────
+    # Add subject_id to themes table
     op.add_column(
-        "temas",
-        sa.Column("subject_id", sa.Integer(), nullable=False),
+        "themes",  # Renamed from "temas"
+        sa.Column("subject_id", sa.Integer(), nullable=True),  # Model: nullable=True
     )
     op.create_foreign_key(
-        "fk_temas_subject",
-        "temas",
-        "subjects",
-        ["subject_id"],
-        ["id"],
-        ondelete="CASCADE",
+        "fk_themes_subject_id",  # Renamed FK constraint
+        "themes",  # Source table
+        "subjects",  # Target table
+        ["subject_id"],  # Local columns
+        ["id"],  # Remote columns
+        ondelete="CASCADE",  # Model: ondelete="CASCADE"
     )
 
-    # ─── 3. FKs en respuestas_usuarios  (columnas ya existen) ────────────────
-    op.create_foreign_key(
-        "fk_respuestas_user",
-        "respuestas_usuarios",
-        "users",
-        ["user_id"],
-        ["id"],
-        ondelete="CASCADE",
-    )
-    op.create_foreign_key(
-        "fk_respuestas_ejercicio",
-        "respuestas_usuarios",
-        "ejercicios",
-        ["ejercicio_id"],
-        ["id"],
-        ondelete="CASCADE",
-    )
+    # The following FK creations were redundant as they are established
+    # by the initial create_table in 1728521948dc_*.py
+    # ─── FKs en user_responses (columnas ya existen) ────────────────
+    # op.create_foreign_key(
+    #     "fk_user_responses_user_id",
+    #     "user_responses",
+    #     "users",
+    #     ["user_id"],
+    #     ["id"],
+    #     ondelete="CASCADE",
+    # )
+    # op.create_foreign_key(
+    #     "fk_user_responses_exercise_id",
+    #     "user_responses",
+    #     "exercises",
+    #     ["exercise_id"],
+    #     ["id"],
+    #     ondelete="CASCADE",
+    # )
 
 
 def downgrade() -> None:
-    """Revierte los cambios anteriores"""
+    """Reverts the changes made in the upgrade function"""
 
-    # FKs de respuestas_usuarios
-    op.drop_constraint("fk_respuestas_ejercicio", "respuestas_usuarios", type_="foreignkey")
-    op.drop_constraint("fk_respuestas_user", "respuestas_usuarios", type_="foreignkey")
+    # Drop column and FK for themes.subject_id
+    op.drop_constraint("fk_themes_subject_id", "themes", type_="foreignkey")
+    op.drop_column("themes", "subject_id")
 
-    # FK de ejercicios.tema_id
-    op.drop_constraint("fk_ejercicios_tema", "ejercicios", type_="foreignkey")
-
-    # Columna y FK de temas.subject_id
-    op.drop_constraint("fk_temas_subject", "temas", type_="foreignkey")
-    op.drop_column("temas", "subject_id")
+    # Since the other FKs were not created in the upgrade,
+    # no need to drop them here. They are handled by 1728521948dc_*.py's downgrade.

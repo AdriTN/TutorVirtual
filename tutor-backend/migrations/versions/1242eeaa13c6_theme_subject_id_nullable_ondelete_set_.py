@@ -19,54 +19,15 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade():
-    # 1. quitar la FK antigua (CASCADE, NOT NULL)
-    # La FK fue creada por 3bf9705971dd y se llama 'fk_temas_subject'
-    op.drop_constraint(
-        "fk_temas_subject",
-        "temas",  # Tabla es 'temas' (plural)
-        type_="foreignkey",
-    )
-
-    # 2. hacer la columna nullable
-    op.alter_column(
-        "temas",  # Tabla es 'temas' (plural)
-        "subject_id",
-        existing_type=sa.Integer(),
-        nullable=True,
-    )
-
-    # 3. crear nueva FK con SET NULL
-    op.create_foreign_key(
-        "fk_temas_subject_set_null",  # Nuevo nombre para la FK con SET NULL
-        "temas",  # Tabla es 'temas' (plural)
-        "subjects",
-        ["subject_id"],
-        ["id"],
-        ondelete="SET NULL",
-    )
+    # This migration's original purpose was to change themes.subject_id to nullable
+    # and its FK to ON DELETE SET NULL.
+    # However, migration 3bf9705971dd (as corrected) now sets up themes.subject_id
+    # to be nullable=True with ON DELETE CASCADE, which matches the SQLAlchemy model.
+    # Therefore, this migration is now a no-op to maintain model consistency.
+    pass
 
 
 def downgrade():
-    # revertir los pasos en orden inverso
-    op.drop_constraint(
-        "fk_temas_subject_set_null", # Dropear la FK creada en el upgrade
-        "temas", # Tabla es 'temas' (plural)
-        type_="foreignkey",
-    )
-
-    op.alter_column(
-        "temas", # Tabla es 'temas' (plural)
-        "subject_id",
-        existing_type=sa.Integer(),
-        nullable=False, # Volver a NOT NULL
-    )
-
-    # Recrear la FK original con ON DELETE CASCADE
-    op.create_foreign_key(
-        "fk_temas_subject", # Nombre original de la FK
-        "temas", # Tabla es 'temas' (plural)
-        "subjects",
-        ["subject_id"],
-        ["id"],
-        ondelete="CASCADE",
-    )
+    # Since the upgrade is a no-op, the downgrade is also a no-op.
+    # The previous state (matching the model) is maintained by 3bf9705971dd's downgrade.
+    pass
