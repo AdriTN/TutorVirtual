@@ -13,7 +13,7 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL ?? "/api"
 
 export const api = axios.create({
   baseURL: apiUrl,
-  timeout: 10_000,
+  timeout: 30_000,
 });
 
 /* ------------------------------------------------------------------ */
