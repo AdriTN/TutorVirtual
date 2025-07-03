@@ -25,7 +25,7 @@ logger = structlog.get_logger(__name__)
     response_model=AIExerciseOut,
     status_code=status.HTTP_200_OK,
 )
-def ask_ollama(
+async def ask_ollama(
     req: RawOllamaRequest,
     _: dict = Depends(jwt_required),
     db: Session = Depends(get_db),
@@ -33,7 +33,7 @@ def ask_ollama(
     logger.info("Recibida solicitud POST en /api/ai/request", request_data=req.dict(exclude_none=True))
     logger.info("Solicitud a Ollama iniciada", model=req.model, num_messages=len(req.messages) if req.messages else 0)
     try:
-        raw = generate_with_ollama(req.dict())
+        raw = await generate_with_ollama(req.dict())
     except httpx.HTTPError as exc:
         logger.error("Error de comunicación con Ollama", detail=str(exc), exc_info=exc)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, f"Ollama: {exc}")
