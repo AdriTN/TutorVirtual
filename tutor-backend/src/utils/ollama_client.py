@@ -7,7 +7,7 @@ from src.core.config import get_settings
 settings = get_settings()
 logger = structlog.get_logger("ollama")
 
-def generate_with_ollama(payload: dict, request: Request | None = None) -> dict:
+async def generate_with_ollama(payload: dict, request: Request | None = None) -> dict:
     url = settings.ollama_url.rstrip("/") + "/api/chat/completions"
     headers = {"Content-Type": "application/json"}
     if settings.api_key:
@@ -19,13 +19,13 @@ def generate_with_ollama(payload: dict, request: Request | None = None) -> dict:
         req_id = "n/a"
     log = logger.bind(request_id=req_id)
 
-    with httpx.Client(
+    async with httpx.AsyncClient(
         timeout=httpx.Timeout(240, connect=20),
         limits=httpx.Limits(max_connections=20, max_keepalive_connections=15),
     ) as client:
         for attempt in range(1, 4):
             try:
-                r = client.post(url, json=payload, headers=headers)
+                r = await client.post(url, json=payload, headers=headers)
                 r.raise_for_status()
                 log.info("ollama_ok", status=r.status_code)
                 return r.json()
