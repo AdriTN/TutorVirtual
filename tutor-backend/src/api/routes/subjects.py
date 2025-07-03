@@ -346,6 +346,50 @@ def detach_themes(
         logger.info("No se desvincularon temas (ninguno encontrado o no pertenecían a la asignatura)", subject_id=subject_id, requested_ids=body.theme_ids)
 
 
+@router.post(
+    "/{subject_id}/themes/{theme_id}/assign",
+    status_code=status.HTTP_200_OK, # Or 204 if no content returned
+    dependencies=[Depends(admin_required)],
+    summary="Asigna un tema existente a una asignatura"
+)
+def assign_theme_to_subject(
+    subject_id: int,
+    theme_id: int,
+    db: Session = Depends(get_db)
+):
+    logger.info("Intentando asignar tema a asignatura", subject_id=subject_id, theme_id=theme_id)
+
+    subject = db.query(Subject).get(subject_id)
+    if not subject:
+        logger.warn("Asignatura no encontrada al intentar asignar tema", subject_id=subject_id, theme_id=theme_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asignatura con ID {subject_id} no encontrada")
+
+    theme = db.query(Theme).get(theme_id)
+    if not theme:
+        logger.warn("Tema no encontrado al intentar asignar a asignatura", subject_id=subject_id, theme_id=theme_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Tema con ID {theme_id} no encontrado")
+
+    if theme.subject_id == subject_id:
+        logger.info("El tema ya está asignado a esta asignatura", subject_id=subject_id, theme_id=theme_id)
+        # Optionally, could return a 200 OK or 304 Not Modified here,
+        # but for simplicity, updating and returning is fine.
+        # Or raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El tema ya está asignado a esta asignatura")
+
+    theme.subject_id = subject_id
+    db.add(theme) # Not strictly necessary if theme is already persistent and only subject_id changes
+    db.commit()
+    db.refresh(theme)
+    logger.info("Tema asignado exitosamente a la asignatura", subject_id=subject_id, theme_id=theme.id, theme_name=theme.name)
+    
+    # Return the updated theme, similar to how update_theme in themes.py does
+    return {
+        "id": theme.id,
+        "name": theme.name, # or "title" depending on frontend expectation for this response
+        "description": theme.description,
+        "subject_id": theme.subject_id,
+    }
+
+
 # ---------------------------------------------------------------------------
 # 4. Relación Curso ↔ Asignatura
 # ---------------------------------------------------------------------------
