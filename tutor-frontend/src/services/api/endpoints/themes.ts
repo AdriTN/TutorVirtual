@@ -4,8 +4,15 @@ import { api } from "../backend";
 export const adminCreateTheme = (name: string, description: string, subjectId: number) =>
   api.post("/api/themes", { name: name, description: description, subject_id: subjectId });
 
-export const adminAddThemeToSubject = (subjectId: number, themeId: number) =>
-  api.post(`/api/themes/subject/${subjectId}/add`, { theme_id: themeId });
+export const adminAddThemeToSubject = (subjectId: number, themeId: number) => {
+  // Use adminUpdateTheme to set the subject_id for the given themeId
+  return adminUpdateTheme(themeId, { subject_id: subjectId });
+}
+
+export const adminAssignThemeToSubject = (subjectId: number, themeId: number) => {
+  return api.post(`/api/subjects/${subjectId}/themes/${themeId}/assign`);
+  // The backend returns the updated theme, so the promise will resolve with it.
+}
 
 /* editar (name / description / mover a otra asignatura) */
 export const adminUpdateTheme = (
