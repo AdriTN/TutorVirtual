@@ -1,0 +1,364 @@
+%--------------------------------------------------------------------
+%  Anexos (Versión Limpia y Selectiva)
+%--------------------------------------------------------------------
+\appendix % Inicia el apéndice, la numeración de capítulos cambiará (A, B, C...)
+
+%--------------------------------------------------------------------
+\chapter{Modelo de Datos Completo en DBML}
+\label{apx:modelo_dbml_completo}
+
+Este apéndice presenta el código fuente completo en DBML (Database Markup Language) que define la estructura de la base de datos relacional del proyecto \textbf{Tutor Virtual}. Este modelo fue utilizado con herramientas como \texttt{dbdiagram.io} para visualizar y refinar el esquema presentado en la Figura~\ref{fig:er-diagram} del Capítulo~\ref{chap:aportaciones}.
+
+\lstdefinestyle{dbmlappendixstyle}{ 
+  language=SQL, 
+  morekeywords={Table, Ref, PK, UQ, NOTNULL, DEFAULT, TEXT, VARCHAR, INT, BOOL, TIMESTAMP, INCREMENT, indexes, NOTE},
+  keywordstyle=\color{blue!70!black}\bfseries,
+  stringstyle=\color{green!60!black},
+  commentstyle=\color{gray!80}\itshape,
+  identifierstyle=\color{black},
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  frame=tb % Marco arriba y abajo
+}
+
+\begin{lstlisting}[style=dbmlappendixstyle,
+  caption={Modelo Entidad-Relación completo del sistema Tutor Virtual en formato DBML.},
+  label={lst:apx_dbml_completo_contenido}
+]
+// Definición de Tablas y Relaciones para Tutor Virtual
+
+Table users {
+  id        INT          [pk, increment, not null, unique, note: 'Identificador único del usuario']
+  username  VARCHAR(120) [not null, unique, note: 'Nombre de usuario para login']
+  email     VARCHAR(255) [not null, unique, note: 'Correo electrónico del usuario']
+  password  VARCHAR(100) [not null, note: 'Contraseña hasheada']
+  is_admin  BOOL         [default: false, not null, note: 'Indica si el usuario es administrador']
+  created_at TIMESTAMP   [default: `now()`, not null, note: 'Fecha de creación del usuario']
+  updated_at TIMESTAMP   [default: `now()`, not null, note: 'Fecha de última actualización']
+}
+
+Table courses {
+  id          INT          [pk, increment, not null, unique]
+  title       VARCHAR(255) [not null, unique, note: 'Título del curso']
+  description TEXT         [note: 'Descripción detallada del curso']
+  created_at  TIMESTAMP    [default: `now()`, not null]
+  updated_at  TIMESTAMP    [default: `now()`, not null]
+}
+
+Table subjects {
+  id          INT          [pk, increment, not null, unique]
+  name        VARCHAR(255) [not null, unique, note: 'Nombre de la asignatura']
+  description TEXT         [note: 'Descripción de la asignatura']
+  created_at  TIMESTAMP    [default: `now()`, not null]
+  updated_at  TIMESTAMP    [default: `now()`, not null]
+}
+
+Table themes {
+  id          INT          [pk, increment, not null, unique]
+  title       VARCHAR(255) [not null, note: 'Título del tema']
+  description TEXT         [note: 'Descripción del tema']
+  subject_id  INT          [not null, ref: > subjects.id, note: 'FK a la asignatura a la que pertenece']
+  created_at  TIMESTAMP    [default: `now()`, not null]
+  updated_at  TIMESTAMP    [default: `now()`, not null]
+  
+  indexes {
+    (subject_id, title) [unique, name: 'idx_theme_subject_title'] // Un tema debe ser único dentro de una asignatura
+  }
+}
+
+Table exercises {
+  id                INT       [pk, increment, not null, unique]
+  statement         TEXT      [not null, note: 'Enunciado del ejercicio']
+  type              VARCHAR(50) [not null, default: 'open_ended', note: 'Tipo de ejercicio: open_ended, multiple_choice, etc.']
+  difficulty        VARCHAR(50) [not null, default: 'intermedio', note: 'Nivel de dificultad: fácil, intermedio, difícil']
+  expected_solution TEXT      [note: 'Solución esperada o correcta, puede ser JSON para opciones múltiples']
+  explanation       TEXT      [note: 'Explicación de la solución generada por IA o manual']
+  theme_id          INT       [not null, ref: > themes.id, note: 'FK al tema al que pertenece']
+  created_at        TIMESTAMP [default: `now()`, not null]
+  updated_at        TIMESTAMP [default: `now()`, not null]
+}
+
+Table user_enrolled_courses {
+  user_id   INT       [ref: > users.id, not null]
+  course_id INT       [ref: > courses.id, not null]
+  enrollment_date TIMESTAMP [default: `now()`, not null]
+  
+  indexes {
+    (user_id, course_id) [pk] // Clave primaria compuesta
+  }
+}
+
+Table user_enrolled_subjects {
+  user_id    INT      [ref: > users.id, not null]
+  subject_id INT      [ref: > subjects.id, not null]
+  enrollment_date TIMESTAMP [default: `now()`, not null]
+  
+  indexes {
+    (user_id, subject_id) [pk]
+  }
+}
+
+Table course_subjects {
+  course_id  INT      [ref: > courses.id, not null]
+  subject_id INT      [ref: > subjects.id, not null]
+  
+  indexes {
+    (course_id, subject_id) [pk]
+  }
+}
+
+Table user_theme_progress {
+  user_id     INT       [ref: > users.id, not null]
+  theme_id    INT       [ref: > themes.id, not null]
+  exercises_attempted INT [default: 0, not null, note: 'Número de ejercicios intentados en el tema']
+  exercises_correct INT   [default: 0, not null, note: 'Número de ejercicios correctos en el tema']
+  last_activity_at TIMESTAMP [default: `now()`, not null]
+  
+  indexes {
+    (user_id, theme_id) [pk]
+  }
+}
+
+Table user_responses {
+  id                INT       [pk, increment, not null, unique]
+  user_id           INT       [not null, ref: > users.id]
+  exercise_id       INT       [not null, ref: > exercises.id]
+  theme_id          INT       [not null, ref: > themes.id, note: 'Denormalizado para facilitar consultas de progreso']
+  answer_submitted  TEXT      [not null, note: 'Respuesta enviada por el usuario']
+  is_correct        BOOL      [not null, note: 'Indica si la respuesta fue correcta']
+  feedback_provided TEXT      [note: 'Feedback específico para esta respuesta, si lo hubo']
+  time_taken_seconds INT      [note: 'Tiempo en segundos que tardó el usuario en responder']
+  attempt_timestamp TIMESTAMP [default: `now()`, not null]
+}
+\end{lstlisting}
+
+\chapter{Listados de Código Adicionales Seleccionados}
+\label{apx:codigo_adicional_seleccionado}
+
+Este apéndice incluye fragmentos de código adicionales que, por su relevancia para ilustrar patrones de implementación específicos o por su utilidad como referencia completa, se presentan aquí. Se ha buscado un equilibrio para evitar redundancia con el contenido del Capítulo~\ref{chap:desarrollo}.
+
+%------------------------------------------------
+\section{Hook Personalizado para Obtener Cursos (\texttt{useCourses.ts})}
+\label{apx_ssec:useCourses_hook}
+El Listado~\ref{lst:apx_useCourses_content} muestra un ejemplo de hook personalizado para React Query, encargado de obtener la lista de cursos.
+
+\begin{lstlisting}[language=tsx,
+  caption={Hook React Query \texttt{useCourses.ts} para la carga de cursos.},
+  label={lst:apx_useCourses_content},
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  frame=tb,
+  numbers=left,
+  numberstyle=\tiny\color{gray}
+]
+import { useQuery }        from "@tanstack/react-query";
+import { fetchCourses }    from "@/services/api"; // Asumiendo que fetchCourses está en @/services/api
+
+export const useCourses = () =>
+  useQuery({
+    staleTime: 0, // Podría ser más largo si los datos no cambian frecuentemente
+    queryKey: ["courses", "all"], // Clave de consulta más específica
+    queryFn : fetchCourses,
+  });
+\end{lstlisting}
+
+%------------------------------------------------
+\section{Interceptor de Axios para Gestión de Tokens}
+\label{apx_ssec:axios_interceptor_code}
+El Listado~\ref{lst:apx_axiosInterceptor_content} detalla la implementación de un interceptor de Axios para manejar la autenticación JWT, incluyendo la lógica de refresco de tokens.
+
+\begin{lstlisting}[language=typescript,
+  caption={Configuración de un interceptor de Axios para la gestión de tokens JWT.},
+  label={lst:apx_axiosInterceptor_content},
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  frame=tb,
+  numbers=left,
+  numberstyle=\tiny\color{gray}
+]
+import axios from 'axios';
+
+// Funciones simuladas para obtener/guardar tokens y refrescar
+const getAccessToken = (): string | null => localStorage.getItem('accessToken');
+const getRefreshToken = (): string | null => localStorage.getItem('refreshToken');
+const saveTokens = (accessToken: string, refreshToken?: string) => {
+  localStorage.setItem('accessToken', accessToken);
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+};
+const clearTokens = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+};
+
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    // Asume un endpoint /api/auth/refresh-token que devuelve nuevos tokens
+    const response = await axios.post('/api/auth/refresh-token', { refreshToken });
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+    saveTokens(newAccessToken, newRefreshToken);
+    return true;
+  } catch (error) {
+    console.error("Failed to refresh token", error);
+    clearTokens(); // Limpiar tokens si el refresco falla
+    return false;
+  }
+}
+
+// Crear una instancia de Axios
+const apiClient = axios.create({
+  baseURL: '/api/v1', // O la URL base de tu API
+});
+
+// Interceptor de Peticiones
+apiClient.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+// Interceptor de Respuestas
+apiClient.interceptors.response.use(
+  (response) => response, // Simplemente retorna la respuesta si es exitosa
+  async (error) => {
+    const originalRequest = error.config;
+    // Si el error es 401 y no es un reintento de esta misma petición
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Marcar como reintento
+      
+      const tokenRefreshed = await refreshAccessToken();
+      if (tokenRefreshed) {
+        // Actualizar el header de la petición original y reintentarla
+        originalRequest.headers.Authorization = `Bearer ${getAccessToken()}`;
+        return apiClient(originalRequest);
+      } else {
+        // Si el refresco falla, redirigir a login o manejar el error
+        // Ejemplo: window.location.href = '/login';
+        console.error("Session expired. Please login again.");
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;
+\end{lstlisting}
+
+%------------------------------------------------
+\section{Ejemplo de Definición de Rutas Backend (FastAPI)}
+\label{apx_ssec:fastapi_router_example}
+El Listado~\ref{lst:apx_subjectRouter_content} y el Listado~\ref{lst:apx_mainFastAPI_content} muestran cómo se estructuran los routers en FastAPI y cómo se integran en la aplicación principal.
+
+\begin{lstlisting}[language=python, basicstyle=\footnotesize\ttfamily, caption={Ejemplo de Router FastAPI para la entidad Asignaturas (\texttt{subjects_router.py} - extracto).}, label={lst:apx_subjectRouter_content}, frame=tb, numbers=left, numberstyle=\tiny\color{gray}]
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import List
+
+from src.api.dependencies.database import get_db
+from src.api.dependencies.auth import admin_required # Asumiendo dependencia de admin
+from src.models.subject import Subject as SubjectModel
+from src.api.schemas.subject import SubjectPublicOut, SubjectCreateIn, SubjectUpdateIn # Schemas Pydantic
+
+router = APIRouter()
+
+@router.post("/", response_model=SubjectPublicOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(admin_required)])
+def create_subject(subject_in: SubjectCreateIn, db: Session = Depends(get_db)):
+    db_subject = db.query(SubjectModel).filter(SubjectModel.name == subject_in.name).first()
+    if db_subject:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Subject name already exists")
+    new_subject = SubjectModel(**subject_in.model_dump())
+    db.add(new_subject)
+    db.commit()
+    db.refresh(new_subject)
+    return new_subject
+
+@router.get("/", response_model=List[SubjectPublicOut])
+def list_subjects(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
+    return db.query(SubjectModel).offset(skip).limit(limit).all()
+
+// Otros endpoints (GET by ID, PUT, DELETE) seguirían un patrón similar...
+\end{lstlisting}
+
+\begin{lstlisting}[language=python, basicstyle=\footnotesize\ttfamily, caption={Agrupación de routers en la aplicación principal FastAPI (\texttt{main.py} - extracto).},label={lst:apx_mainFastAPI_content}, frame=tb, numbers=left, numberstyle=\tiny\color{gray}]
+from fastapi import FastAPI
+from src.api.routes import auth_router, users_router, courses_router, subjects_router # etc.
+from src.core.config import get_app_settings
+
+settings = get_app_settings()
+app = FastAPI(title=settings.API_TITLE, version=settings.API_VERSION)
+
+# Incluir routers
+app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
+app.include_router(users_router, prefix=f"{settings.API_V1_STR}/users", tags=["Users"])
+app.include_router(courses_router, prefix=f"{settings.API_V1_STR}/courses", tags=["Courses"])
+app.include_router(subjects_router, prefix=f"{settings.API_V1_STR}/subjects", tags=["Subjects"])
+// ... incluir otros routers ...
+
+@app.get("/health", tags=["Health"])
+async def health_check():
+    return {"status": "healthy"}
+\end{lstlisting}
+
+% Comentario: Considera si lst:globalStyles es crucial. Si es muy extenso o estándar, podría omitirse.
+% Si es breve y define tokens de diseño muy específicos y reutilizados, podría ser útil.
+% Por ahora, lo omito para brevedad, pero puedes añadirlo si lo ves necesario.
+
+% \section{Hoja de Estilos Global (Extracto de Tokens CSS)}
+% \label{apx_ssec:global_styles_css}
+% El Listado~\ref{lst:apx_globalStyles_content} muestra las variables CSS globales (tokens de diseño) utilizadas para mantener la consistencia visual en toda la aplicación frontend.
+% \begin{lstlisting}[language=css, basicstyle=\footnotesize\ttfamily, caption={Extracto de variables CSS globales para temas y espaciado.},label={lst:apx_globalStyles_content}, frame=tb, numbers=left, numberstyle=\tiny\color{gray}]
+% :root{
+%   /* Typography */
+%   --font-sans:'Inter',"Helvetica Neue",Arial,sans-serif;
+%   --font-mono:'Fira Code',monospace;
+% 
+%   /* Palette – light by default */
+%   --color-bg:#F9FAFC;
+%   --color-surface:#FFFFFF;
+%   --color-border:#CBD5E0;
+%   --color-primary:#2B6CB0;
+%   --color-text:#1A202C;
+%   /* ... más variables de color ... */
+% 
+%   /* Radii, shadows, spacing */
+%   --radius-md:.4rem;
+%   --shadow-elevated:0 8px 24px rgb(0 0 0 / .12);
+%   --space-md:1rem;
+%   /* ... más variables de espaciado y UI ... */
+% }
+% 
+% @media (prefers-color-scheme: dark){
+%   :root{
+%     --color-bg:#11181F;
+%     --color-surface:#1A202C;
+%     /* ... más variables para tema oscuro ... */
+%   }
+% }
+% \end{lstlisting}
+
+% Comentario: Evalúa si los listados de componentes React como CourseCard, SubjectCard, ConfirmPage,
+% EntityTable, MultiCheckList, StatCard, StudyPage, Dashboard.tsx, AdminDashboard.tsx
+% son lo suficientemente complejos y no están bien descritos en el Capítulo 4 como para justificar
+% su inclusión completa aquí. Si la descripción en el Cap. 4 es suficiente, es mejor omitirlos
+% del anexo para ahorrar espacio.
+
+% Por ejemplo, si decidieras incluir el componente MultiCheckList:
+% \section{Componente Reutilizable MultiCheckList}
+% \label{apx_ssec:multichecklist_component}
+% El Listado~\ref{lst:apx_multichecklist_content} detalla la implementación del componente \texttt{MultiCheckList.tsx}, utilizado para selecciones múltiples en el panel de administración.
+% \begin{lstlisting}[language=tsx, basicstyle=\footnotesize\ttfamily, caption={Implementación del componente \texttt{MultiCheckList.tsx}.},label={lst:apx_multichecklist_content}, frame=tb, numbers=left, numberstyle=\tiny\color{gray}]
+% // ... PEGAR AQUÍ EL CÓDIGO DE lst:multiCheckList DEL ANEXO ORIGINAL ...
+% \end{lstlisting}
+
+\endinput

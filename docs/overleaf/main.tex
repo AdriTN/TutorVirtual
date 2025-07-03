@@ -1,0 +1,56 @@
+\documentclass[oneside,12pt]{book}
+\input{preamble}
+
+% -------------------------------------------------------------------
+%                            PORTADA
+% -------------------------------------------------------------------
+\begin{document}
+\pagenumbering{gobble}
+\input{Front/Portada}
+
+\input{Front/TFT04C}
+
+% -------------------------------------------------------------------
+%                        FRONT-MATTER
+% -------------------------------------------------------------------
+\frontmatter
+
+\cleardoublepage
+\chapter*{Resumen}
+\markboth{Resumen}{}
+\input{Front/Resumen}
+
+\cleardoublepage
+\chapter*{Abstract}
+\markboth{Abstract}{}
+\input{Front/Abstract}
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+\tableofcontents
+\listoffigures
+\listoftables
+\cleardoublepage
+\markboth{}{}
+
+% -------------------------------------------------------------------
+%                          CAPÍTULOS
+% -------------------------------------------------------------------
+\mainmatter
+
+\input{Capítulos/01_introducción}
+\input{Capítulos/02_estado_objetivos}
+\input{Capítulos/03_aportaciones}
+\input{Capítulos/04_desarrollo}
+\input{Capítulos/05_resultados}
+\input{Capítulos/06_conclusiones}
+
+% --------------------- ANEXOS ---------------------
+\appendix
+\input{Capítulos/07_anexos}
+
+% ------------------ BIBLIOGRAFÍA ------------------
+\printbibliography
+
+\end{document}
