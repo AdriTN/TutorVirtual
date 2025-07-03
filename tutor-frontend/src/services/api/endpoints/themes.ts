@@ -2,7 +2,7 @@ import { Theme } from "@/types";
 import { api } from "../backend";
 
 export const adminCreateTheme = (name: string, description: string, subjectId: number) =>
-  api.post("/api/themes", { name: name, descripcion: description, subject_id: subjectId });
+  api.post("/api/themes", { name: name, description: description, subject_id: subjectId });
 
 export const adminAddThemeToSubject = (subjectId: number, themeId: number) =>
   api.post(`/api/themes/subject/${subjectId}/add`, { theme_id: themeId });
