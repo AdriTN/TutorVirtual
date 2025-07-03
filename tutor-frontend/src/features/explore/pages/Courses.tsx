@@ -7,7 +7,7 @@ import StepIndicator     from "@components/molecules/StepIndicator";
 import { useCourses }    from "../hooks/useCourses";
 import CourseCard        from "../components/courseCard/CourseCard";
 
-import styles            from "./Explore.module.css";
+import styles            from "./explore.module.css";
 
 export default function CoursesPage() {
   const { data = [], isLoading } = useCourses();

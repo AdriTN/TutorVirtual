@@ -14,15 +14,6 @@ import { useNotifications } from "@hooks/useNotifications";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/* ---------- utils ------------------------------------------------------- */
-const isAdminFromToken = (token: string): boolean => {
-  try {
-    return Boolean(jwtDecode<JwtPayload>(token).is_admin);
-  } catch {
-    return false;
-  }
-};
-
 /* ------------------------------------------------------------------------ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accessToken, setAccessTokenState] = useState<string | null>(null);

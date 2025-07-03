@@ -1,7 +1,7 @@
 import { CrudModal, ConfirmDialog, SelectField } from "@features/admin/components";
 import Spinner from "@components/atoms/Spinner/Spinner";
 import styles from "../../../pages/AdminDashboard.module.css";
-import { AdminDataKind, AdminDataItem, useAdminData } from "@features/admin/hooks/useAdminData";
+import { useAdminData } from "@features/admin/hooks/useAdminData";
 
 interface AdminModalsProps {
   adminData: ReturnType<typeof useAdminData>;

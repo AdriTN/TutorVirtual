@@ -32,7 +32,6 @@ export default function StudyPage() {
     isLoading: chatLoading,
     error: chatError,
     sendMessage: sendChatMessage,
-    loadInitialConversation, // Para recargar si es necesario
   } = useChat({ exerciseId: exercise?.id || null, currentUserId: user?.id || null });
 
 

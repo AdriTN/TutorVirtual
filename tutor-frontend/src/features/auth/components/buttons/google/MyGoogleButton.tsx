@@ -5,11 +5,8 @@ import { useAuth } from "@context/auth";
 import { useNotifications } from "@hooks/useNotifications";
 import styles from "./MyGoogleButton.module.css";
 
-interface MyGoogleButtonProps {
-    endpointUrl: string;
-}
 
-const MyGoogleButton: React.FC<MyGoogleButtonProps> = ({}) => {
+const MyGoogleButton = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { notifyError } = useNotifications();

@@ -10,7 +10,6 @@ import {
   FiHome,
   FiBookOpen,
   FiBarChart2,
-  FiCalendar,
   FiShield,
   FiLogOut, // Importar el icono de logout
 } from "react-icons/fi";

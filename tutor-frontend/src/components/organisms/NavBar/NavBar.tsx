@@ -6,7 +6,7 @@ import React, {
 import { useAuth } from "@context/auth/AuthContext";
 import Sidebar     from "@components/organisms/Sidebar/Sidebar";
 
-import styles from "./Navbar.module.css";
+import styles from "./NavBar.module.css";
 
 
 const Navbar: React.FC = () => {
