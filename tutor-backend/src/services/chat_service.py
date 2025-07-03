@@ -1,30 +1,28 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.future import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+# Removed: from sqlalchemy.future import select - Not used directly here
+# Removed: from sqlalchemy.ext.asyncio import AsyncSession - Will be handled when DB calls are made async
+# (Keeping Session for now as per plan to defer full async DB)
 
 from src.models.chat import ChatConversation, ChatMessage
 from src.models.user import User
 from src.models.exercise import Exercise
-from src.api.schemas.chat import ChatMessageCreate, UserMessageInput
+from src.api.schemas.chat import ChatMessageCreate, UserMessageInput # ChatMessageCreate not used here, but fine
 from src.utils.ollama_client import generate_with_ollama
-from fastapi import Request, HTTPException # Added HTTPException
-import structlog # Añadir import
+from fastapi import Request, HTTPException
+import structlog
 
-logger = structlog.get_logger(__name__) # Añadir logger
+from src.core.config import get_settings # Ensure this is imported once at the top
+
+settings = get_settings() # Initialize settings once at the top
+logger = structlog.get_logger(__name__) # Initialize logger once at the top
 
 async def get_or_create_conversation(db: Session, user_id: int, exercise_id: int) -> ChatConversation:
     """
     Retrieves an existing chat conversation or creates a new one
     if it doesn't exist.
     """
-    # Corrected to use synchronous session for initial query if not converting fully to async yet
-    # For a fully async app, db would be AsyncSession and all db calls would be awaited
-    # Assuming db is Session for now as per existing project structure in other files
-    
     conversation = db.query(ChatConversation).filter_by(user_id=user_id, exercise_id=exercise_id).first()
     if not conversation:
-        # Ensure user and exercise exist before creating conversation
         user = db.query(User).get(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -39,9 +37,9 @@ async def get_or_create_conversation(db: Session, user_id: int, exercise_id: int
     return conversation
 
 async def add_message_to_conversation(
-    db: Session, # Assuming Session for now, change to AsyncSession if db operations become async
+    db: Session, 
     conversation_id: int,
-    sender_type: str, # "user" or "ai"
+    sender_type: str, 
     message_text: str
 ) -> ChatMessage:
     """
@@ -58,7 +56,7 @@ async def add_message_to_conversation(
     return chat_message
 
 async def process_user_message(
-    db: Session, # Assuming Session for now
+    db: Session, 
     user_message_input: UserMessageInput,
     user_id: int,
     request: Request
@@ -87,38 +85,33 @@ async def process_user_message(
         message_text=user_message_input.message
     )
 
-    # 3. Get AI response (simplified example)
-    # In a real scenario, you might want to include conversation history or exercise context
-    # for a more relevant AI response.
+    # 3. Get AI response
     exercise = db.query(Exercise).get(conversation.exercise_id)
     if not exercise:
-        # This should ideally not happen if conversation was created correctly
         raise HTTPException(status_code=404, detail="Exercise not found for this conversation.")
 
-    # Construct a more detailed prompt for the AI
-    # You might want to include previous messages for context
-    previous_messages = db.query(ChatMessage)\
-        .filter(ChatMessage.conversation_id == conversation.id)\
-        .order_by(ChatMessage.created_at.asc())\
-        .all()
-
-    messages_for_ollama = [{"role": msg.sender_type, "content": msg.message} for msg in previous_messages]
-    # Obtener TODOS los mensajes de la conversación, INCLUYENDO el que acabamos de añadir.
+    # Construct messages for Ollama using windowing
     all_messages_in_conversation = db.query(ChatMessage)\
         .filter(ChatMessage.conversation_id == conversation.id)\
         .order_by(ChatMessage.created_at.asc())\
         .all()
 
     messages_for_ollama = []
-    for msg in all_messages_in_conversation:
+    # Apply windowing: take the last N messages. N = settings.ollama_history_messages_window
+    # The user's current message is already included in all_messages_in_conversation.
+    # So, if window is 6, we take the latest 6, which includes the current user message.
+    start_index = max(0, len(all_messages_in_conversation) - settings.ollama_history_messages_window)
+    windowed_messages = all_messages_in_conversation[start_index:]
+
+    for msg in windowed_messages:
         role = msg.sender_type
-        if role == "ai": # Ollama espera "assistant" para los mensajes de la IA
+        if role == "ai": 
             role = "assistant"
-        if role not in ["user", "assistant", "system"]: 
-            logger.warn(f"Mensaje con rol desconocido '{role}' omitido para Ollama.", message_id=msg.id)
+        if role not in ["user", "assistant"]: 
+            logger.warn(f"Message with unknown role '{role}' skipped for Ollama.", message_id=msg.id)
             continue
         messages_for_ollama.append({"role": role, "content": msg.message})
-
+    
     prompt_context = (
         f"Contexto del Ejercicio (ID: {exercise.id}):\n"
         f"Enunciado: {exercise.statement}\n"
@@ -135,23 +128,20 @@ async def process_user_message(
         "model": "profesor", # Or your preferred model
         "messages": [
             {"role": "system", "content": prompt_context}
-        ] + messages_for_ollama,
+        ] + messages_for_ollama, # Add windowed messages to the system prompt
         "temperature": 0.7,
-         # "stream": False # Assuming non-streaming for now
     }
 
-    logger.info("Payload a enviar a Ollama", ollama_payload_to_send=ollama_payload) # Log del payload
+    logger.info("Payload a enviar a Ollama", ollama_payload_to_send=ollama_payload)
 
     try:
-        ai_response_data = generate_with_ollama(ollama_payload, request)
-        # Ensure 'choices' and 'message' are present and structured as expected
+        ai_response_data = await generate_with_ollama(ollama_payload, request)
         if not ai_response_data.get("choices") or not ai_response_data["choices"][0].get("message"):
             raise HTTPException(status_code=500, detail="Invalid AI response format.")
         ai_message_text = ai_response_data["choices"][0]["message"]["content"]
-    except Exception as e: # Catch generic exception from generate_with_ollama
-        # Log the error e
+    except Exception as e:
+        logger.error("Error getting AI response", error=str(e), exc_info=True) # Added more logging
         raise HTTPException(status_code=500, detail=f"Failed to get AI response: {str(e)}")
-
 
     # 4. Save AI's message
     ai_chat_message = await add_message_to_conversation(
@@ -161,7 +151,7 @@ async def process_user_message(
         message_text=ai_message_text.strip()
     )
 
-    db.refresh(conversation) # Refresh to get updated messages list if using relationships
+    db.refresh(conversation) 
 
     return user_chat_message, ai_chat_message, conversation
 
@@ -173,10 +163,6 @@ async def get_conversation_history(db: Session, conversation_id: int, user_id: i
     conversation = db.query(ChatConversation).filter_by(id=conversation_id, user_id=user_id).first()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found or access denied.")
-    # Messages are loaded via relationship, ensure they are sorted if needed by default order_by in model or here
-    # If lazy loading, accessing conversation.messages will trigger the query.
-    # For explicit loading with sorting:
-    # conversation.messages = db.query(ChatMessage).filter_by(conversation_id=conversation_id).order_by(ChatMessage.created_at.asc()).all()
     return conversation
 
 async def get_user_conversations_for_exercise(db: Session, user_id: int, exercise_id: int) -> list[ChatConversation]:
