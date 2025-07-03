@@ -21,8 +21,8 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade():
     op.execute(sa.text("""
         SELECT setval(
-            pg_get_serial_sequence('themes', 'id'),
-            (SELECT COALESCE(MAX(id),0)+1 FROM themes),
+            pg_get_serial_sequence('temas', 'id'),
+            (SELECT COALESCE(MAX(id),0)+1 FROM temas),
             false
         );
     """))
