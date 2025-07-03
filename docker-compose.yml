@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   tutor_db:
     image: postgres:16
@@ -41,7 +39,7 @@ services:
       # por la aplicación desde su propio tutor-backend/.env.
     volumes:
       - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
-    command: bash -c "alembic upgrade head && uvicorn src.main:create_app --factory --host 0.0.0.0 --port 8000 --reload"
+    command: uvicorn src.main:create_app --factory --reload
   
   frontend:
     build:

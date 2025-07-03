@@ -15,7 +15,11 @@ from src.database.base     import Base
 from src.database.session  import get_engine
 
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+# Path(__file__) is /app/src/main.py in the container
+# .resolve() makes it absolute
+# .parents[0] is /app/src
+# .parents[1] is /app  <-- This is the application root within the container
+APP_ROOT_DIR = Path(__file__).resolve().parents[1]
 logger = structlog.get_logger(__name__)
 
 
@@ -36,8 +40,32 @@ def _configure_database(settings) -> None:
         from alembic import command
         from alembic.config import Config as AlembicConfig
 
-        alembic_cfg = AlembicConfig(str(ROOT_DIR / "alembic.ini"))
+        # APP_ROOT_DIR is now /app, so alembic.ini is at /app/alembic.ini
+        alembic_ini_path = str(APP_ROOT_DIR / "alembic.ini")
+        logger.info("Alembic ini path", path=alembic_ini_path)
+        alembic_cfg = AlembicConfig(alembic_ini_path)
+        alembic_cfg.config_file_name = alembic_ini_path # Explicitly set config_file_name
         alembic_cfg.set_main_option("sqlalchemy.url", str(settings.database_url))
+        
+        # Inspect the AlembicConfig object
+        logger.info("Alembic Config Inspection", 
+                    file_name=alembic_cfg.config_file_name,
+                    script_loc_main_opt=alembic_cfg.get_main_option("script_location"),
+                    # Attributes might be different based on Alembic version, trying a few common ones
+                    # For older versions, script_location might be directly an attribute or in .attributes
+                    script_loc_attr=getattr(alembic_cfg, 'script_location', 'Not found as attr'),
+                    attributes=getattr(alembic_cfg, 'attributes', {}) 
+                   )
+        try:
+            if hasattr(alembic_cfg, 'file_config') and alembic_cfg.file_config:
+                logger.info("Alembic INI Sections", sections=list(alembic_cfg.file_config.sections()))
+                if alembic_cfg.file_config.has_section('alembic'):
+                    logger.info("Alembic INI [alembic] section items", items=list(alembic_cfg.file_config.items('alembic')))
+            else:
+                logger.warn("alembic_cfg.file_config is not set or None")
+        except Exception as e:
+            logger.error("Error inspecting alembic_cfg.file_config", error=str(e))
+
         command.upgrade(alembic_cfg, "head")
 
 

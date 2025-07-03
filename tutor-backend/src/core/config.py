@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     # ── Misc ─────────────────────────────────────────────────
     env:             str           = Field("dev", env="ENV")
     auto_create_tables:       bool = Field(False, env="AUTO_CREATE_TABLES")
-    run_migrations_on_startup: bool = Field(False, env="RUN_MIGRATIONS")
+    run_migrations_on_startup: bool = Field(True, env="RUN_MIGRATIONS")
 
 @lru_cache
 def get_settings() -> Settings:
