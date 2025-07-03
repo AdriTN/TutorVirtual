@@ -10,9 +10,11 @@ import {
   adminCreateCourse, adminUpdateCourse, adminDeleteCourse,
   adminAddSubjectToCourse, adminDetachSubjectsFromCourse,
   adminCreateSubject, adminUpdateSubject, adminDeleteSubject,
-  adminAddThemeToSubject, adminDetachThemesFromSubject,
+  adminAssignThemeToSubject, // Changed from adminAddThemeToSubject
+  adminDetachThemesFromSubject,
   adminCreateTheme, adminUpdateTheme, adminDeleteTheme,
 } from "@services/api/endpoints";
+import { Theme } from "@/types";
 
 export type ToastState =
   | { msg: string; varnt: "success" | "error" | "info" }
@@ -287,12 +289,43 @@ export function useAdminData() {
   // Tema ↔ Asignatura
   const addThemeToSubject = useMutation({
     mutationFn: ({ subjectId, themeId }: { subjectId: number, themeId: number }) =>
-      adminAddThemeToSubject(subjectId, themeId),
+      adminAssignThemeToSubject(subjectId, themeId), // Use the new service function
     onSuccess: async (data, { subjectId, themeId }) => {
-      qc.setQueryData(["themes", subjectId], (prev: AdminDataItem[] = []) => [
-        ...prev,
-        allThemes.find(t => t.id === themeId)!,
-      ]);
+      // The 'data' object here is the response from the new backend endpoint
+      // which is the updated theme: { id, name, description, subject_id }
+      // We should use this 'data' to update caches for consistency.
+
+      // Update the cache for all themes
+      qc.setQueryData(['all-themes'], (oldThemes: Theme[] = []) =>
+        oldThemes.map(theme =>
+          theme.id === themeId
+            ? { ...theme, subject_id: subjectId, title: (data as any).name, description: (data as any).description } // Ensure structure matches Theme type
+            : theme
+        )
+      );
+      
+      // Update the cache for the specific subject's theme list
+      // Ensure the structure of 'data' matches AdminDataItem or transform it
+      // For now, assuming 'data' can be cast or is compatible.
+      // The backend returns {id, name, description, subject_id}.
+      // Theme type is {id, title, description, subject_id}. AdminDataItem is similar.
+      // We need to ensure the object added to ["themes", subjectId] is consistent.
+      // The simplest is to refetch, but if optimistically updating:
+      const themeForCache: AdminDataItem = {
+        id: (data as any).id,
+        title: (data as any).name, // Map 'name' from backend to 'title' for frontend AdminDataItem
+        description: (data as any).description,
+        subject_id: (data as any).subject_id,
+        // Potentially other fields if AdminDataItem expects them, or ensure they are optional
+      };
+
+      qc.setQueryData(["themes", subjectId], (prev: AdminDataItem[] = []) => {
+        // Avoid adding duplicates if already present due to optimistic update race conditions
+        if (prev.find(t => t.id === themeForCache.id)) {
+          return prev.map(t => t.id === themeForCache.id ? themeForCache : t);
+        }
+        return [...prev, themeForCache];
+      });
       await qc.invalidateQueries({ queryKey: ["themes", subjectId], exact: true });
       await qc.invalidateQueries({ queryKey: ["all-themes"], exact: true });
       notifySuccess("Tema vinculado a la asignatura");
