@@ -6,13 +6,18 @@ services:
     container_name: tutor_db
     restart: always
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: postgres # Asegúrate que este usuario y BD coincidan con DATABASE_URL y el healthcheck
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: tutorvirtual
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tutorvirtual -q"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -21,7 +26,8 @@ services:
     container_name: tutor_backend
     restart: always
     depends_on:
-      - tutor_db
+      tutor_db:
+        condition: service_healthy # Espera a que el healthcheck de tutor_db pase
     ports:
       - "8000:8000"
     environment:
