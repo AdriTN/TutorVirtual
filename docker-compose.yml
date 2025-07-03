@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  db:
+  tutor_db:
     image: postgres:16
     container_name: tutor_db
     restart: always
@@ -21,31 +21,37 @@ services:
     container_name: tutor_backend
     restart: always
     depends_on:
-      - db
+      - tutor_db
     ports:
       - "8000:8000"
     environment:
-      # Ajusta user/password/host si deseas
-      DATABASE_URL: "postgresql://postgres:Talaveranaranjo7@db:5432/tutorvirtual"
-      SECRET_KEY: "secret"
+      # Estas variables se pueden definir aquí o, preferiblemente,
+      # cargarse desde un archivo .env en la raíz del proyecto backend
+      # (tutor-backend/.env) ya que la aplicación FastAPI (config.py) lo lee.
+      # DATABASE_URL es crucial para que el backend se conecte a la BD de Docker.
+      DATABASE_URL: "postgresql://postgres:postgres@tutor_db:5432/tutorvirtual"
+      # JWT_SECRET: "${JWT_SECRET}" # Ejemplo si se carga desde el .env de la raíz de docker-compose
+      # Otras variables como GOOGLE_CLIENT_ID, OLLAMA_URL, etc., serán leídas
+      # por la aplicación desde su propio tutor-backend/.env.
     volumes:
-      - ./tutor-backend:/app  # Monta el código local en /app (útil en desarrollo)
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+      - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
+    command: bash -c "alembic upgrade head && uvicorn src.main:create_app --factory --host 0.0.0.0 --port 8000 --reload"
   
   frontend:
     build:
       context: ./tutor-frontend
       dockerfile: Dockerfile
     container_name: tutor_frontend
-    # El front servirá en el puerto 4173 (tras 'serve -s dist')
     ports:
-      - "5173:4173"
+      - "5173:5173" # Asegurar que el puerto expuesto sea 5173
     depends_on:
       - backend
     environment:
-      # variable usada en "vite.config.ts" o `.env` del front
-      # la clave es 'VITE_API_URL' si se usa Vite
-      VITE_API_URL: "http://localhost:8000"
+      # El frontend también puede necesitar un .env en su raíz (tutor-frontend/.env)
+      # para cargar variables como VITE_GOOGLE_CLIENT_ID.
+      # VITE_BACKEND_URL se pasa aquí para asegurar que el frontend sepa dónde está el backend.
+      VITE_BACKEND_URL: "http://localhost:8000"
+      # VITE_GOOGLE_CLIENT_ID: "${VITE_GOOGLE_CLIENT_ID}" # Ejemplo si se carga desde el .env raíz
 
 volumes:
   db_data:
