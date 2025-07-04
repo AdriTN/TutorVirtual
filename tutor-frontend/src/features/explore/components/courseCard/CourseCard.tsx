@@ -9,20 +9,18 @@ export default function CourseCard({ course }:Props){
   const { id, title, description, subjects } = course;
   const fullyEnrolled =
     subjects.length && subjects.every(s => s.enrolled);
-  const allThemes = subjects.flatMap(s => s.themes.map(t => t.title));
-  const uniqueThemes = Array.from(new Set(allThemes)); 
 
   return (
     <li className={styles.card}>
       <h3 className={styles.title}>{title}</h3>
       <p  className={styles.desc}>{description ?? "Sin descripción"}</p>
 
-      {!!uniqueThemes.length && (
+      {!!subjects.length && (
         <div className={styles.themesContainer}>
-          {uniqueThemes.slice(0, 4).map(themeTitle =>
-            <span key={themeTitle} className={styles.badge}>{themeTitle}</span>
+          {subjects.slice(0, 4).map(s =>
+            <span key={s.id} className={styles.badge}>{s.name}</span>
           )}
-          {uniqueThemes.length > 4 && <span className={styles.badge}>y más...</span>}
+          {subjects.length > 4 && <span className={styles.badge}>y más...</span>}
         </div>
       )}
 
