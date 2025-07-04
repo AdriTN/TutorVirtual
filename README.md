@@ -22,6 +22,7 @@ Bienvenido a TutorVirtual, una plataforma educativa diseñada para ofrecer una e
     *   [Archivo `ollama-docker-compose.yml`](#archivo-ollama-docker-composeyml)
     *   [Uso de GPU para Ollama y Open WebUI](#uso-de-gpu-para-ollama-y-open-webui)
     *   [Persistencia de Datos](#persistencia-de-datos)
+9.  [Flujo de Prueba para Generación de Ejercicios (Tribunal TFG)](#9-flujo-de-prueba-para-generación-de-ejercicios-tribunal-tfg)
 
 ---
 
@@ -227,7 +228,8 @@ Una vez que los contenedores estén en funcionamiento:
 *   **Backend API (Documentación Swagger/OpenAPI):** `http://localhost:8000/docs`
 *   **Open WebUI (Interfaz para Ollama):** `http://localhost:3000` (si los servicios `ollama` y `open-webui` están activos).
 
-> ***Nota Importante:*** Recuerda que el proyecto se ejecuta en local y que **Open WebUI** requiere de un inicio de sesión.
+> [!NOTE]
+> **Nota Importante:** Recuerda que el proyecto se ejecuta en local y que **Open WebUI** requiere de un inicio de sesión.
 
 ---
 
@@ -336,3 +338,59 @@ Esta sección pretende comprender cómo se cargan y priorizan las variables de e
 
 ---
 Este README asume que los comandos `docker compose` se ejecutan desde el directorio raíz del proyecto.
+
+---
+
+## 9. Flujo de Prueba para Generación de Ejercicios (Tribunal TFG)
+
+Esta sección describe los pasos recomendados para que un miembro del tribunal del TFG pueda probar la funcionalidad principal de generación de ejercicios. Se asume que la aplicación está desplegada y accesible según las instrucciones anteriores.
+
+**Usuario Requerido:** Se recomienda realizar estos pasos con un usuario que tenga permisos de administrador para poder crear y gestionar cursos, asignaturas y temas. Puede utilizar el usuario administrador creado por defecto (ver `ADMIN_EMAIL`, `ADMIN_PASSWORD` en `tutor-backend/.env`) o registrar un nuevo usuario y asignarle permisos de administrador a través de la interfaz de Open WebUI si es necesario modificar la base de datos directamente (esto último es un paso avanzado).
+
+**Pasos a seguir:**
+
+1.  **Iniciar Sesión:**
+    *   Accede al frontend de TutorVirtual (`http://localhost:5173`).
+    *   Inicia sesión con el usuario administrador.
+
+2.  **Navegar al Panel de Administración:**
+    *   Una vez iniciada la sesión, busca en la barra de navegación o en el menú de usuario una opción que te lleve al "Panel de Administración" o "Admin Dashboard".
+
+3.  **Crear un Nuevo Curso:**
+    *   Dentro del panel de administración, localiza la sección para gestionar "Cursos".
+    *   Crea un nuevo curso (ej. Nombre: "Curso de Prueba TFG", Descripción: "Curso para demostración").
+
+4.  **Crear una Nueva Asignatura:**
+    *   En el panel de administración, ve a la sección de "Asignaturas".
+    *   Crea una nueva asignatura (ej. Nombre: "Matemáticas de Prueba", Descripción: "Asignatura de prueba para TFG").
+
+5.  **Crear un Nuevo Tema:**
+    *   Dirígete a la sección de "Temas" en el panel de administración.
+    *   Crea un nuevo tema (ej. Nombre: "Sumas y Restas Básicas", Descripción: "Tema sobre operaciones aritméticas elementales").
+    *   **Importante:** Al crear el tema, asegúrate de **vincularlo a la Asignatura** "Matemáticas de Prueba" creada en el paso anterior. Debería haber un selector o campo para esto.
+
+6.  **Vincular la Asignatura al Curso:**
+    *   Vuelve a la gestión de "Cursos".
+    *   Edita el "Curso de Prueba TFG".
+    *   Busca una opción para "Añadir Asignaturas" o "Gestionar Asignaturas del Curso".
+    *   Añade la asignatura "Matemáticas de Prueba" a este curso.
+
+7.  **Matricularse en el Curso (como usuario):**
+    *   Sal del panel de administración si es necesario (vuelve a la vista de usuario normal).
+    *   Navega a la sección de "Explorar Cursos" o "Todos los Cursos".
+    *   Busca y selecciona "Curso de Prueba TFG".
+    *   Debería haber una opción para "Matricularse" o "Inscribirse" en el curso. Haz clic en ella.
+    *   Es posible que también necesites matricularte específicamente en la asignatura "Matemáticas de Prueba" dentro del curso si la plataforma lo gestiona de forma granular.
+
+8.  **Acceder a la Sección de Estudio y Generar Ejercicio:**
+    *   Una vez matriculado, navega a "Mis Cursos" o una sección similar.
+    *   Selecciona "Curso de Prueba TFG" y luego la asignatura "Matemáticas de Prueba".
+    *   Dentro de la asignatura, deberías ver el tema "Sumas y Restas Básicas".
+    *   Busca un botón o enlace que diga **"Estudiar"**, "Practicar", "Generar Ejercicio" o similar, asociado al tema.
+    *   Haz clic en él. La aplicación debería comunicarse con el backend para solicitar a Ollama la generación de un ejercicio relacionado con "Sumas y Restas Básicas".
+
+9.  **Verificar el Ejercicio:**
+    *   Se debería mostrar un ejercicio en pantalla.
+    *   Verifica que el contenido del ejercicio sea coherente con el tema.
+
+Este flujo permite probar la creación de la estructura educativa básica y la funcionalidad de generación de ejercicios basada en IA.
