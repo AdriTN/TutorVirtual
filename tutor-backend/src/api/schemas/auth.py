@@ -10,7 +10,7 @@ Username = Annotated[
 
 class RegisterIn(BaseModel):
     username: Username
-    email:    EmailStr
+    email: str
     password: str = Field(
         ...,
         min_length=8,

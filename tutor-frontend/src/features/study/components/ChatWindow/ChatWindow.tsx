@@ -15,7 +15,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   onSendMessage,
   isLoading,
   chatError,
-  currentUserId, // No se usa directamente, pero sender_type lo maneja
 }) => {
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);

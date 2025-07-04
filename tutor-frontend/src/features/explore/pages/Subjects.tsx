@@ -8,7 +8,7 @@ import StepIndicator    from "@components/molecules/StepIndicator";
 import { useCourse }    from "../hooks/useCourse";
 import SubjectCard      from "../components/subjectCard/SubjectCard";
 
-import styles           from "./Explore.module.css";
+import styles           from "./explore.module.css";
 
 export default function SubjectsPage() {
   const { id }           = useParams<{ id: string }>();

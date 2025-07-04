@@ -4,7 +4,7 @@ import { useNotifications } from "@hooks/useNotifications";
 
 import { useCourses } from "@features/explore/hooks/useCourses";
 import { useSubjects } from "./useSubjects";
-import { useThemes, useAllThemes } from "./useThemes";
+import { useAllThemes } from "./useThemes";
 
 import {
   adminCreateCourse, adminUpdateCourse, adminDeleteCourse,
@@ -149,10 +149,10 @@ export function useAdminData() {
   const updateCourse = useMutation({
     mutationFn: (item: AdminDataItem) =>
       adminUpdateCourse(item.id, { title: cTitle, description: cDesc }),
-    onSuccess: (data, item) => {
+    onSuccess: (item) => {
       qc.setQueryData(['courses/all'], (old: AdminDataItem[] = []) =>
         old.map(c =>
-          c.id === item.id ? { ...c, title: cTitle, description: cDesc } : c
+          c.id === item.data.id ? { ...c, title: cTitle, description: cDesc } : c
         )
       );
       qc.invalidateQueries({ queryKey: ['courses/all'], exact: true });
@@ -165,10 +165,10 @@ export function useAdminData() {
   const updateSubject = useMutation({
     mutationFn: (item: AdminDataItem) =>
       adminUpdateSubject(item.id, { name: sName, description: sDesc }),
-    onSuccess: async (data, item) => {
+    onSuccess: async (item) => {
       qc.setQueryData(["subjects"], (old: AdminDataItem[] = []) =>
         old.map((s: AdminDataItem) =>
-          s.id === item.id ? { ...s, name: sName, description: sDesc } : s
+          s.id === item.data.id ? { ...s, name: sName, description: sDesc } : s
         )
       );
       await qc.invalidateQueries({ queryKey: ["subjects"], exact: true });
@@ -183,10 +183,10 @@ export function useAdminData() {
       adminUpdateTheme(item.id, {
         name: tTitle, description: tDesc, subject_id: +tSubj,
       }),
-    onSuccess: async (data, item) => {
+    onSuccess: async (item) => {
       qc.setQueryData(["all-themes"], (old: AdminDataItem[] = []) =>
         old.map((t: AdminDataItem) =>
-          t.id === item.id
+          t.id === item.data.id
             ? { ...t, title: tTitle, description: tDesc, subject_id: +tSubj }
             : t
         )
@@ -254,7 +254,7 @@ export function useAdminData() {
   const addSubjectToCourse = useMutation({
     mutationFn: ({ courseId, subjectId }: { courseId: number, subjectId: number }) =>
       adminAddSubjectToCourse(courseId, subjectId),
-    onSuccess: async (data, { courseId, subjectId }) => {
+    onSuccess: async ({ data: { courseId, subjectId } }) => {
       qc.setQueryData(["courses/all"], (prev: AdminDataItem[] = []) =>
         prev.map(c =>
           c.id === courseId
@@ -271,7 +271,7 @@ export function useAdminData() {
   const detachSubjectsFromCourse = useMutation({
     mutationFn: ({ courseId, subjectIds }: { courseId: number, subjectIds: number[] }) =>
       adminDetachSubjectsFromCourse(courseId, subjectIds),
-    onSuccess: async (data, { courseId, subjectIds }) => {
+    onSuccess: async ({ data: { courseId, subjectIds } }) => {
       qc.setQueryData(["courses/all"], (prev: AdminDataItem[] = []) =>
         prev.map(c =>
           c.id === courseId
@@ -336,7 +336,7 @@ export function useAdminData() {
   const detachThemesFromSubject = useMutation({
     mutationFn: ({ subjectId, themeIds }: { subjectId: number, themeIds: number[] }) =>
       adminDetachThemesFromSubject(subjectId, themeIds),
-    onSuccess: async (data, { subjectId, themeIds }) => {
+    onSuccess: async ({ data: { subjectId, themeIds } }) => {
       qc.setQueryData(["themes", subjectId], (prev: AdminDataItem[] = []) =>
         prev.filter((t: any) => !themeIds.includes(Number(t.id)))
       );

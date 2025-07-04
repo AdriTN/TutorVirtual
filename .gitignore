@@ -42,7 +42,8 @@ venv/
 .venv/
 
 # Fichero .env con credenciales
-.env
+*.env
+!.env.example
 
 ######################################
 # Editores y archivos de sistema

@@ -8,14 +8,26 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from sqlalchemy.orm import Session
+
+from sqlalchemy.orm import Session
+
+from sqlalchemy.orm import Session
+
 from src.api.dependencies.settings import get_settings
 from src.core.logging      import setup_logging
+from src.core.security     import hash_password
 from src.api.routes        import api_router
 from src.database.base     import Base
-from src.database.session  import get_engine
+from src.database.session  import SessionLocal, get_engine
+from src.models.user       import User
 
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+# Path(__file__) is /app/src/main.py in the container
+# .resolve() makes it absolute
+# .parents[0] is /app/src
+# .parents[1] is /app  <-- This is the application root within the container
+APP_ROOT_DIR = Path(__file__).resolve().parents[1]
 logger = structlog.get_logger(__name__)
 
 
@@ -36,9 +48,65 @@ def _configure_database(settings) -> None:
         from alembic import command
         from alembic.config import Config as AlembicConfig
 
-        alembic_cfg = AlembicConfig(str(ROOT_DIR / "alembic.ini"))
+        # APP_ROOT_DIR is now /app, so alembic.ini is at /app/alembic.ini
+        alembic_ini_path = str(APP_ROOT_DIR / "alembic.ini")
+        logger.info("Alembic ini path", path=alembic_ini_path)
+        alembic_cfg = AlembicConfig(alembic_ini_path)
+        alembic_cfg.config_file_name = alembic_ini_path # Explicitly set config_file_name
         alembic_cfg.set_main_option("sqlalchemy.url", str(settings.database_url))
+        
+        # Inspect the AlembicConfig object
+        logger.info("Alembic Config Inspection", 
+                    file_name=alembic_cfg.config_file_name,
+                    script_loc_main_opt=alembic_cfg.get_main_option("script_location"),
+                    # Attributes might be different based on Alembic version, trying a few common ones
+                    # For older versions, script_location might be directly an attribute or in .attributes
+                    script_loc_attr=getattr(alembic_cfg, 'script_location', 'Not found as attr'),
+                    attributes=getattr(alembic_cfg, 'attributes', {}) 
+                   )
+        try:
+            if hasattr(alembic_cfg, 'file_config') and alembic_cfg.file_config:
+                logger.info("Alembic INI Sections", sections=list(alembic_cfg.file_config.sections()))
+                if alembic_cfg.file_config.has_section('alembic'):
+                    logger.info("Alembic INI [alembic] section items", items=list(alembic_cfg.file_config.items('alembic')))
+            else:
+                logger.warn("alembic_cfg.file_config is not set or None")
+        except Exception as e:
+            logger.error("Error inspecting alembic_cfg.file_config", error=str(e))
+
         command.upgrade(alembic_cfg, "head")
+
+
+def _create_admin_user(settings) -> None:
+    if not all([settings.admin_email, settings.admin_username, settings.admin_password]):
+        logger.info("Las variables de entorno del administrador no están configuradas, omitiendo la creación del usuario administrador.")
+        return
+
+    # Usar get_session para obtener una sesión de base de datos
+    # Necesitamos crear el motor primero para que get_session pueda usarlo
+    # engine = get_engine(settings.database_url, settings.pool_size) <--- El motor ya se inicializa para SessionLocal
+    db: Session = SessionLocal()
+
+    try:
+        admin_user = db.query(User).filter(User.email == settings.admin_email).first()
+        if admin_user:
+            logger.info("El usuario administrador ya existe.", email=settings.admin_email)
+        else:
+            hashed_password = hash_password(settings.admin_password)
+            new_admin_user = User(
+                email=settings.admin_email,
+                username=settings.admin_username,
+                password=hashed_password,
+                is_admin=True,
+            )
+            db.add(new_admin_user)
+            db.commit()
+            logger.info("Usuario administrador creado exitosamente.", username=settings.admin_username, email=settings.admin_email)
+    except Exception as e:
+        logger.error("Error al crear el usuario administrador.", error=str(e))
+        db.rollback()
+    finally:
+        db.close()
 
 
 def _configure_cors(app: FastAPI, settings) -> None:
@@ -82,6 +150,8 @@ def create_app() -> FastAPI:            # ← exported factory
 
     _configure_database(settings)
     logger.info("Base de datos configurada.")
+
+    _create_admin_user(settings) # Llamar aquí después de configurar la BD
 
     app = FastAPI(
         title   = settings.api_title,

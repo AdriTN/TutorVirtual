@@ -13,6 +13,7 @@ RUN npm run build
 # Usar un servidor de archivos estáticos
 RUN npm install -g serve
 
-# El servidor corre en 4173 por defecto
-EXPOSE 4173
-CMD ["serve", "-s", "dist"]
+# El servidor 'serve' por defecto escucha en 3000.
+# Lo configuramos para que escuche en 5173.
+EXPOSE 5173
+CMD ["serve", "-s", "dist", "-l", "5173"]

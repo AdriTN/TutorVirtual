@@ -10,7 +10,7 @@ export interface Me {
 }
 
 export const useMe = () => {
-  const { user: authUser, loading: authLoading } = useAuth();
+  const { user: authUser } = useAuth();
 
   return useQuery<Me, Error>({
     queryKey: ["me"],

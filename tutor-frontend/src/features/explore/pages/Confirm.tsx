@@ -8,7 +8,7 @@ import { useNotifications } from "@hooks/useNotifications";
 import { useCourse }        from "../hooks/useCourse";
 import { useEnrollSubject } from "../hooks/useEnrollSubject";
 
-import styles       from "./Explore.module.css";
+import styles       from "./explore.module.css";
 
 export default function ConfirmPage() {
   const { id }       = useParams<{ id: string }>();
