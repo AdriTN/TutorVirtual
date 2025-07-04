@@ -1,84 +1,135 @@
-   .nav{
-    position:static;
-    top:0;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:var(--space-lg) var(--space-md);
-    transition:margin-left .3s ease;
-  }
-  
-  /* ----------  Branding  ---------- */
-  .logo{
-    display:flex;
-    align-items:center;
-    gap:var(--space-sm);
-    margin-left:35px;
-  }
-  .logo img{
-    width:35px;height:35px;
-    border-radius:var(--radius-lg);
-  }
-  
-  .brand{
-    font-size:1.6rem;
-    font-weight:700;
-    margin-left: 10px;
-    color:var(--color-primary);
-    text-decoration:none;
-  }
-  .brand:hover{
-    color:color-mix(in srgb,var(--color-primary) 80%,var(--color-text) 20%);
-  }
-  
-  /* ----------  Links principales  ---------- */
-  .navLinks{
-    list-style:none;
-    display:flex;
-    gap:1.8rem;
-    margin-right:35px;
-    padding:0;
-  }
-  .navLinks li{
-    display:flex;align-items:center;
-  }
-  .navbarItem{
-    color:var(--color-text);
-    text-decoration:none;
-    font-weight:600;
-    cursor:pointer;
-    transition:opacity var(--ease-fast);
-  }
-  .navbarItem:hover{opacity:.8}
-  
-  /* ----------  Botón hamburguesa (modo móvil) ---------- */
-  .menuButton{
-    display:flex;flex-direction:column;gap:5px;
-    background:none;border:none;cursor:pointer;
-  }
-  .hamburger{
-    width:25px;height:3px;
-    background:var(--color-text);
-    border-radius:2px;
-    transition:transform var(--ease-fast);
-  }
-  
-  /* ----------  Sección usuario autenticado ---------- */
-  .userSection{
-    display:flex;
-    align-items:center;
-    margin-left:auto;
-    gap:var(--space-md);
-  }
-  .welcome{
-    color:var(--color-text);
-    font-size:.9rem;
-    white-space:nowrap;
-  }
-  .profileImg{
-    width:32px;height:32px;
-    border-radius:50%;
-    object-fit:cover;
-    cursor:pointer;
-  }
-  
+.nav{
+  position:static;
+  top:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:var(--space-lg) var(--space-md);
+  transition:margin-left .3s ease;
+}
+
+/* ----------  Branding  ---------- */
+.logo{
+  display:flex;
+  align-items:center;
+  gap:var(--space-sm);
+  margin-left:35px;
+}
+.logo img{
+  width:35px;height:35px;
+  border-radius:var(--radius-lg);
+}
+
+.brand{
+  font-size:1.6rem;
+  font-weight:700;
+  margin-left: 10px;
+  color:var(--color-primary);
+  text-decoration:none;
+}
+.brand:hover{
+  color:color-mix(in srgb,var(--color-primary) 80%,var(--color-text) 20%);
+}
+
+/* ----------  Links principales  ---------- */
+.navLinks{
+  list-style:none;
+  display:flex;
+  gap:1.8rem;
+  margin-right:35px;
+  padding:0;
+}
+.navLinks li{
+  display:flex;align-items:center;
+}
+.navbarItem{
+  color:var(--color-text);
+  text-decoration:none;
+  font-weight:600;
+  cursor:pointer;
+  transition:opacity var(--ease-fast);
+}
+.navbarItem:hover{opacity:.8}
+
+/* ----------  Botón hamburguesa (modo móvil) ---------- */
+.menuButton{
+  display:none;
+  flex-direction:column;
+  gap:5px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding: var(--space-xs);
+}
+.hamburger{
+  width:25px;height:3px;
+  background:var(--color-text);
+  border-radius:2px;
+  transition:transform var(--ease-fast);
+}
+
+/* ----------  Sección usuario autenticado ---------- */
+.userSection{
+  display:flex;
+  align-items:center;
+  margin-left:auto;
+  gap:var(--space-md);
+}
+.welcome{
+  color:var(--color-text);
+  font-size:.9rem;
+  white-space:nowrap;
+}
+.profileImg{
+  width:32px;height:32px;
+  border-radius:50%;
+  object-fit:cover;
+  cursor:pointer;
+}
+
+/* ---------- Media Queries para Responsividad ---------- */
+
+@media (max-width: 768px) {
+.nav {
+  padding: var(--space-md) var(--space-sm);
+}
+
+.logo {
+  margin-left: 0;
+}
+
+.brand {
+  font-size: 1.4rem;
+}
+
+.navLinks {
+  display: none;
+}
+
+.menuButton {
+  display: flex;
+}
+
+.userSection .welcome {
+  display: none;
+}
+
+.userSection {
+  margin-right: 0;
+}
+}
+
+@media (max-width: 480px) {
+.brand {
+  font-size: 1.2rem;
+}
+
+.logo img {
+  width: 30px;
+  height: 30px;
+}
+
+.nav {
+  gap: var(--space-sm);
+}
+}

@@ -2,7 +2,8 @@
 .sidebar{
   position:fixed;
   inset:0 0 0 0;
-  max-width:260px;
+  width: 260px;
+  max-width: 90vw;
   background:var(--color-primary-hover);
   color:#fff;
   transform:translateX(-100%);

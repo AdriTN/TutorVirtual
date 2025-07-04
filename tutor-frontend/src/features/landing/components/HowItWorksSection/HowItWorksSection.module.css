@@ -38,7 +38,8 @@
 /* Tarjeta base */
 .card{
   position:relative;
-  width:600px;
+  max-width: 600px;
+  width: 100%;
   aspect-ratio:16/9;
   background:var(--color-surface);
   border-radius:var(--radius-lg);

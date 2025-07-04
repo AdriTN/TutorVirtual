@@ -50,7 +50,10 @@
 }
 
 /* 3. Base styles */
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth;
+  font-size: 100%; /* Default: 16px */
+}
 body{
   min-height:100vh;
   background:var(--color-bg);
@@ -115,3 +118,21 @@ small{font-size:.85rem;color:var(--color-text-muted)}
 .mb-md{margin-bottom:var(--space-md)}
 .mx-auto{margin-inline:auto}
 .text-center{text-align:center}
+
+/* 9. Responsive Adjustments */
+@media (max-width: 768px) {
+  html {
+    font-size: 93.75%;
+  }
+  .container {
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 87.5%;
+  }
+  .container {
+    padding-inline: var(--space-sm);
+  }
+}

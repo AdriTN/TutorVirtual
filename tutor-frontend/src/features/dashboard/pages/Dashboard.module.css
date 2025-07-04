@@ -182,7 +182,31 @@
 }
 
 /* ---------- responsive ---------- */
+@media(max-width: 768px) {
+  .hero {
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+  }
+  .subtitle {
+    max-width: 90%;
+  }
+}
+
 @media(max-width:480px){
   .hero h1{font-size:1.9rem}
   .sectionTitle{font-size:1.4rem}
+  .wrapper {
+    padding: var(--space-md) var(--space-sm) var(--space-lg);
+  }
+  .cardGrid {
+    gap: 1rem;
+  }
+  .courseCard {
+    padding: 1.5rem 1.2rem;
+  }
+  .cardTitle {
+    max-width: none;
+    white-space: normal;
+    text-overflow: clip;
+  }
 }
