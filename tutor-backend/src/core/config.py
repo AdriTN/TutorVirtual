@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     ollama_url:      str           = Field("http://localhost:11434", env="OLLAMA_URL")
     api_key:         Optional[str] = Field(None, env="API_KEY")
     ollama_history_messages_window: PositiveInt = Field(6, env="OLLAMA_HISTORY_MESSAGES_WINDOW")
+    ollama_model:     str           = Field("profesor", env="OLLAMA_MODEL")
+    ollama_warmup_retries: PositiveInt = Field(5, env="OLLAMA_WARMUP_RETRIES")
+    ollama_warmup_delay:   PositiveInt = Field(10, env="OLLAMA_WARMUP_DELAY")
 
     # ── Misc ─────────────────────────────────────────────────
     env:             str           = Field("dev", env="ENV")

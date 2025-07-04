@@ -29,7 +29,7 @@ class OllamaClient:
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
                 base_url=self.base_url.rstrip("/") + "/api",
-                timeout=httpx.Timeout(240, connect=20),
+                timeout=httpx.Timeout(15, connect=20),
                 limits=httpx.Limits(max_connections=20, max_keepalive_connections=15),
             )
         return self._client
@@ -82,7 +82,7 @@ class OllamaClient:
             try:
                 if self._client is None or self._client.is_closed:
                     self._client = httpx.AsyncClient(
-                        timeout=httpx.Timeout(240, connect=20),
+                        timeout=httpx.Timeout(15, connect=20),
                         limits=httpx.Limits(max_connections=20, max_keepalive_connections=15),
                     )
                 
