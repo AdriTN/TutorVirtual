@@ -39,7 +39,7 @@ services:
       # JWT_SECRET: "${JWT_SECRET}" # Ejemplo si se carga desde el .env de la raíz de docker-compose
       # Otras variables como GOOGLE_CLIENT_ID, OLLAMA_URL, etc., serán leídas
       # por la aplicación desde su propio tutor-backend/.env.
-      OLLAMA_URL: "http://open-webui:8080/ollama"
+      OLLAMA_URL: "http://open-webui:8080"
     volumes:
       - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
     command: uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000

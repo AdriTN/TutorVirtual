@@ -109,74 +109,45 @@ class OllamaClient:
 
         req_id = getattr(request.state, "request_id", "n/a") if request and hasattr(request, "state") else "n/a"
         log = logger.bind(request_id=req_id)
+        
+        # Ensure payload includes "stream": false for OpenAI-compatible non-streaming response
+        final_payload = payload.copy()
+        if "stream" not in final_payload:
+            final_payload["stream"] = False
 
-        client = await self._get_client()
+        # Construct the target URL for Open WebUI's OpenAI-compatible endpoint
+        # self.base_url is expected to be like "http://open-webui:8080/ollama"
+        target_openai_endpoint = "/api/chat/completions"
+        full_url = self.base_url.rstrip("/") + target_openai_endpoint
         
         for attempt in range(1, 4):
             try:
-                log.debug("Sending request to Ollama", endpoint=chat_endpoint, attempt=attempt, payload=payload)
-                r = await client.post(chat_endpoint, json=payload, headers=headers)
-                r.raise_for_status()
-                log.info("Ollama chat completion successful", status=r.status_code, attempt=attempt)
-                # Ollama's /api/chat endpoint streams responses.
-                # We need to aggregate it if we want a single JSON object like OpenAI's API.
-                # Or, adapt to handle streaming if the original `generate_with_ollama` expected a single JSON.
-                # The original code expected r.json() directly. This means the Ollama server
-                # might have been run with OLLAMA_COMPATIBILITY_MODE=openai or similar,
-                # or the /api/chat/completions endpoint was a custom proxy.
-                # Given the payload structure, it looks like OpenAI compatibility.
-                # If it's standard Ollama /api/chat, then "stream": false must be in payload for non-streaming.
-                
-                # Assuming the payload might need "stream": False for non-streaming response
-                # and that the response is then a single JSON object.
-                # If "stream": True (or default), it's a series of JSON objects.
-                # The original code `return r.json()` implies a single JSON response.
-                # Let's add "stream": False to the payload if not present.
-                final_payload = payload.copy()
-                if "stream" not in final_payload:
-                    final_payload["stream"] = False
-
-                # If using the standard /api/chat endpoint, the response for stream:false is a single JSON object.
-                # If the original setup was using an OpenAI-compatible endpoint like /v1/chat/completions,
-                # then the structure is different.
-                # The original code used "/api/chat/completions", which is NOT standard Ollama.
-                # Standard Ollama is "/api/chat".
-                # Let's assume the user wants standard Ollama /api/chat.
-                # The response format for /api/chat (stream: false) is:
-                # { "model": "...", "created_at": "...", "message": {"role": "assistant", "content": "..."}, "done": true, ... }
-                # The original code expected: { "choices": [{"message": {"content": "..."}}]}
-                # This means we need to adapt the response or the client is misconfigured for standard Ollama.
-
-                # For now, let's assume the endpoint and response structure of the original function was correct
-                # and the Ollama server is set up to provide that (e.g. via a proxy or specific configuration).
-                # So, if client base_url is "http://ollama:11434/api", then client.post("/chat/completions",...)
-                # This was a misinterpretation. Original URL was `settings.ollama_url.rstrip("/") + "/api/chat/completions"`
-                # So, if ollama_url is `http://ollama:11434`, then full URL is `http://ollama:11434/api/chat/completions`
-                # The AsyncClient should have `base_url=settings.ollama_url` and endpoint `"/api/chat/completions"`
-                # Let's correct the client instantiation and endpoint usage.
-
-                # Corrected client logic:
-                # _get_client should use self.base_url (which is settings.ollama_url)
-                # and the post should be to the full path part "/api/chat/completions"
-                
-                # Re-correction:
-                # self.base_url = "http://ollama:11434" (from settings.ollama_url)
-                # self._client = httpx.AsyncClient(base_url=self.base_url, ...)
-                # r = await client.post("/api/chat/completions", json=final_payload, headers=headers)
-
-                # This is how it should be:
-                if self._client is None or self._client.is_closed: # Re-initialize client if closed
-                     self._client = httpx.AsyncClient(
+                # Initialize or get the client instance
+                # We will use one client instance for the retries of this specific request.
+                # This client is initialized without a base_url, so full_url must be used.
+                if self._client is None or self._client.is_closed:
+                    self._client = httpx.AsyncClient(
                         timeout=httpx.Timeout(240, connect=20),
                         limits=httpx.Limits(max_connections=20, max_keepalive_connections=15),
                     )
                 
-                # Target Open WebUI's OpenAI-compatible endpoint
-                full_url = self.base_url.rstrip("/") + "api/chat/completions" 
+                log.debug(
+                    "Attempting OpenAI-compatible chat completion with Open WebUI", 
+                    url=full_url, 
+                    attempt=attempt, 
+                    model=final_payload.get("model")
+                )
+                
                 r = await self._client.post(full_url, json=final_payload, headers=headers)
-                r.raise_for_status()
-                log.info("API call to Open WebUI successful", status=r.status_code, url=full_url)
-                return r.json()
+                r.raise_for_status() # Raises HTTPStatusError for 4xx/5xx responses
+
+                log.info(
+                    "OpenAI-compatible chat completion successful via Open WebUI", 
+                    status=r.status_code, 
+                    url=full_url,
+                    attempt=attempt
+                )
+                return r.json() # Expecting OpenAI response structure: {"choices": [...]}
 
             except httpx.ReadTimeout:
                 log.warning("Open WebUI chat completion timeout", attempt=attempt, url=full_url if 'full_url' in locals() else "api/chat/completions")
@@ -197,7 +168,7 @@ class OllamaClient:
                     error_body = exc.response.text
                 
                 log.error(
-                    "Ollama chat completion HTTP error", 
+                    "Open WebUI chat completion HTTP error", 
                     status=exc.response.status_code,
                     ollama_url=str(exc.request.url),
                     ollama_response_body=error_body,
