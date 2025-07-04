@@ -228,8 +228,9 @@ Una vez que los contenedores estén en funcionamiento:
 *   **Backend API (Documentación Swagger/OpenAPI):** `http://localhost:8000/docs`
 *   **Open WebUI (Interfaz para Ollama):** `http://localhost:3000` (si los servicios `ollama` y `open-webui` están activos).
 
-> [!NOTA]
+:::nota
 > Recuerda que el proyecto se ejecuta en local y que **Open WebUI** requiere de un inicio de sesión.
+:::
 
 ---
 
