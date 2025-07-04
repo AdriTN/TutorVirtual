@@ -53,13 +53,8 @@
 
 /* ----------  Botón hamburguesa (modo móvil) ---------- */
 .menuButton{
-  display:none;
-  flex-direction:column;
-  gap:5px;
-  background:none;
-  border:none;
-  cursor:pointer;
-  padding: var(--space-xs);
+  display:flex;flex-direction:column;gap:5px;
+  background:none;border:none;cursor:pointer;
 }
 .hamburger{
   width:25px;height:3px;
@@ -85,51 +80,4 @@
   border-radius:50%;
   object-fit:cover;
   cursor:pointer;
-}
-
-/* ---------- Media Queries para Responsividad ---------- */
-
-@media (max-width: 768px) {
-.nav {
-  padding: var(--space-md) var(--space-sm);
-}
-
-.logo {
-  margin-left: 0;
-}
-
-.brand {
-  font-size: 1.4rem;
-}
-
-.navLinks {
-  display: none;
-}
-
-.menuButton {
-  display: flex;
-}
-
-.userSection .welcome {
-  display: none;
-}
-
-.userSection {
-  margin-right: 0;
-}
-}
-
-@media (max-width: 480px) {
-.brand {
-  font-size: 1.2rem;
-}
-
-.logo img {
-  width: 30px;
-  height: 30px;
-}
-
-.nav {
-  gap: var(--space-sm);
-}
 }
