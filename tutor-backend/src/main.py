@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 import asyncio 
 import httpx
-from src.api.dependencies.settings import get_settings
+from src.api.dependencies.settings import get_settings, Settings
 from src.core.logging      import setup_logging
 from src.core.security     import hash_password
 from src.api.routes        import api_router
@@ -134,28 +134,44 @@ def create_app() -> FastAPI:
 
     _create_admin_user(settings)
 
+
+# ────────────────────────────────────────────────────────────
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI, settings_obj: Settings):
+    # Código de inicio
     logger.info("Iniciando aplicación...")
-    settings = get_settings()
-    _configure_database(settings)
+    _configure_database(settings_obj)
     logger.info("Base de datos configurada.")
-    _create_admin_user(settings)
+    _create_admin_user(settings_obj)
     
-    logger.info("Iniciando proceso de calentamiento de Ollama con reintentos...")
+    logger.info("Creando tarea en segundo plano para el calentamiento de Ollama.")
+    asyncio.create_task(_ollama_warmup_task(settings_obj))
+
+    yield
+
+    logger.info("Apagando aplicación...")
+    await ollama_client.close()
+    logger.info("Cliente Ollama cerrado.")
+
+
+async def _ollama_warmup_task(settings: Settings):
+    """
+    Tarea en segundo plano para calentar Ollama con reintentos.
+    """
+    logger.info("Iniciando proceso de calentamiento de Ollama en segundo plano...")
 
     max_retries = settings.ollama_warmup_retries
     retry_delay = settings.ollama_warmup_delay
     warmup_successful = False
 
     for attempt in range(1, max_retries + 1):
-        logger.info(f"Intento de calentamiento de Ollama {attempt}/{max_retries}...")
+        logger.info(f"Intento de calentamiento de Ollama (background) {attempt}/{max_retries}...")
         try:
-            ollama_client.is_enabled = True 
+            ollama_client.is_enabled = True
             
             available = await ollama_client.check_availability()
             if available:
-                logger.info("Ollama service check OK. Procediendo a generar ejercicio de prueba para calentamiento.")
+                logger.info("Ollama service check OK (background). Procediendo a generar ejercicio de prueba.")
                 
                 warmup_payload = {
                     "model": settings.ollama_model or "mistral",
@@ -166,50 +182,44 @@ async def lifespan(app: FastAPI):
                     "stream": False,
                 }
                 
-                logger.debug("Payload de calentamiento para Ollama:", payload=warmup_payload)
+                logger.debug("Payload de calentamiento para Ollama (background):", payload=warmup_payload)
                 response_data = await ollama_client.generate_chat_completion(payload=warmup_payload)
-                logger.info("Respuesta del ejercicio de prueba de calentamiento de Ollama recibida.")
-                logger.debug("Respuesta completa de Ollama:", response_data=response_data)
+                logger.info("Respuesta del ejercicio de prueba de calentamiento de Ollama recibida (background).")
+                logger.debug("Respuesta completa de Ollama (background):", response_data=response_data)
 
                 if response_data and "choices" in response_data and len(response_data["choices"]) > 0:
                     message_content = response_data["choices"][0].get("message", {}).get("content")
                     if message_content:
-                        logger.info("Contenido del ejercicio de calentamiento generado con éxito.", exercise_text=message_content)
+                        logger.info("Contenido del ejercicio de calentamiento generado con éxito (background).", exercise_text=message_content)
                     else:
-                        logger.warn("No se encontró contenido de mensaje en la respuesta del ejercicio de calentamiento.")
+                        logger.warn("No se encontró contenido de mensaje en la respuesta del ejercicio de calentamiento (background).")
                 else:
-                    logger.warn("La respuesta del ejercicio de calentamiento no tuvo el formato esperado.")
+                    logger.warn("La respuesta del ejercicio de calentamiento no tuvo el formato esperado (background).")
                 
                 warmup_successful = True
                 break
             else:
-                logger.warn("Intento de calentamiento: Ollama service check falló.")
+                logger.warn("Intento de calentamiento (background): Ollama service check falló.")
         
         except httpx.TimeoutException as e:
-            logger.warn(f"Intento de calentamiento fallido por Timeout: {str(e)}")
+            logger.warn(f"Intento de calentamiento (background) fallido por Timeout: {str(e)}")
         except httpx.ConnectError as e:
-            logger.warn(f"Intento de calentamiento fallido por ConnectError: {str(e)}")
+            logger.warn(f"Intento de calentamiento (background) fallido por ConnectError: {str(e)}")
         except OllamaNotAvailableError as e:
-            logger.warn(f"Intento de calentamiento fallido, Ollama no disponible: {e.detail}")
+            logger.warn(f"Intento de calentamiento (background) fallido, Ollama no disponible: {e.detail}")
         except Exception as e:
-            logger.error(f"Error inesperado durante el intento de calentamiento {attempt}/{max_retries}.", error=str(e), exc_info=True)
+            logger.error(f"Error inesperado durante el intento de calentamiento (background) {attempt}/{max_retries}.", error=str(e), exc_info=True)
 
         if attempt < max_retries:
-            logger.info(f"Esperando {retry_delay} segundos antes del siguiente intento de calentamiento...")
+            logger.info(f"Esperando {retry_delay} segundos antes del siguiente intento de calentamiento (background)...")
             await asyncio.sleep(retry_delay)
         else:
-            logger.error("Todos los intentos de calentamiento de Ollama fallaron.")
+            logger.error("Todos los intentos de calentamiento de Ollama (background) fallaron.")
 
     if warmup_successful:
-        logger.info("Calentamiento de Ollama completado exitosamente.")
+        logger.info("Calentamiento de Ollama en segundo plano completado exitosamente.")
     else:
-        logger.warn("No se pudo completar el calentamiento de Ollama después de todos los intentos. La aplicación continuará, pero Ollama podría no estar disponible.")
-
-    yield
-
-    logger.info("Apagando aplicación...")
-    await ollama_client.close()
-    logger.info("Cliente Ollama cerrado.")
+        logger.warn("No se pudo completar el calentamiento de Ollama (background) después de todos los intentos.")
 
 
 def create_app() -> FastAPI:
@@ -218,11 +228,10 @@ def create_app() -> FastAPI:
     settings = get_settings()
     logger.info("Configuración cargada.", settings=settings)
 
-
     app = FastAPI(
         title   = settings.api_title,
         version = settings.api_version,
-        lifespan=lifespan
+        lifespan=lambda app_instance: lifespan(app_instance, settings_obj=settings)
     )
     logger.info("Aplicación FastAPI creada.", title=settings.api_title, version=settings.api_version)
 
