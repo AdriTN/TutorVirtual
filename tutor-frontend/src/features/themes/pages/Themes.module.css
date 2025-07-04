@@ -1,5 +1,9 @@
-¡/* ------ wrapper para fijar el footer ------ */
-.page{display:flex;flex-direction:column;min-height:100vh}
+/* ------ wrapper para fijar el footer ------ */
+.page{
+  display:flex;
+  flex-direction:column;
+  flex-grow: 1;
+}
 .main{flex:1;padding:var(--space-lg) var(--space-md)}
 
 /* ------ cabecera ------ */

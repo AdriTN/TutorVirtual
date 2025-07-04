@@ -13,6 +13,12 @@ export default function SubjectCard({ subject }:Props){
       <h3 className={styles.title}>{subject.name}</h3>
       <p  className={styles.desc}>{subject.description ?? "Sin descripción"}</p>
 
+      <div className={styles.themes}>
+        {subject.themes?.map(t => (
+          <span key={t.id} className={styles.badge}>{t.title}</span>
+        ))}
+      </div>
+
       {subject.enrolled
         ? <span className={styles.feedback}>Matriculada</span>
         : (

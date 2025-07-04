@@ -30,7 +30,9 @@
 }
 
 /* ---------- sections ---------- */
-.section{margin-bottom:3.5rem}
+.section{
+  margin-bottom:3.5rem;
+}
 .sectionTitle{
   font-size:1.7rem;
   font-weight:600;

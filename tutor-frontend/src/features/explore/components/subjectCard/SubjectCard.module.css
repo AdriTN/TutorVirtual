@@ -11,6 +11,13 @@
   
   .title{font-size:1.1rem;font-weight:600;color:var(--color-primary)}
   .desc {font-size:.9rem;line-height:1.35;color:var(--color-text);flex:1}
+
+  .themes{display:flex;flex-wrap:wrap;gap:.3rem}
+  .badge{
+    font-size:.72rem;
+    background:var(--color-accent);color:var(--color-text-black);
+    padding:4px 9px;border-radius:12px;
+  }
   
   .feedback{margin-top:.6rem;font-size:.82rem;color:#22c55e}
   
