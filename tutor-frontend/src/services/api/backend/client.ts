@@ -5,7 +5,6 @@ import {
   clearTokens,
 } from "@services/auth";
 import { showErrorNotification } from "@hooks/useNotifications";
-import { log } from "node:console";
 
 /* ------------------------------------------------------------------ */
 /* 1) Instancia base ------------------------------------------------- */
