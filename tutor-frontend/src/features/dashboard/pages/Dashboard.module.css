@@ -7,8 +7,10 @@
 
 /* ---------- layout wrapper ---------- */
 .wrapper{
-  margin:0 auto;
+  width: 100%;
+  margin:0;
   padding:var(--space-lg) var(--space-md) var(--space-xl);
+  box-sizing: border-box;
 }
 
 /* ---------- hero ---------- */
@@ -31,6 +33,8 @@
 
 /* ---------- sections ---------- */
 .section{
+  width: 100%;
+  text-align: left;
   margin-bottom:3.5rem;
 }
 .sectionTitle{
