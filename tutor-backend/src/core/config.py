@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
 
-from pydantic import Field, HttpUrl, PositiveInt, PostgresDsn
+from pydantic import EmailStr, Field, HttpUrl, PositiveInt, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     env:             str           = Field("dev", env="ENV")
     auto_create_tables:       bool = Field(False, env="AUTO_CREATE_TABLES")
     run_migrations_on_startup: bool = Field(True, env="RUN_MIGRATIONS")
+
+    # ── Admin User ───────────────────────────────────────────
+    admin_email:     Optional[EmailStr] = Field(None, env="ADMIN_EMAIL")
+    admin_username:  Optional[str]      = Field(None, env="ADMIN_USERNAME")
+    admin_password:  Optional[str]      = Field(None, env="ADMIN_PASSWORD")
 
 @lru_cache
 def get_settings() -> Settings:

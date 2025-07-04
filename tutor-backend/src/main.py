@@ -8,11 +8,19 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from sqlalchemy.orm import Session
+
+from sqlalchemy.orm import Session
+
+from sqlalchemy.orm import Session
+
 from src.api.dependencies.settings import get_settings
 from src.core.logging      import setup_logging
+from src.core.security     import hash_password
 from src.api.routes        import api_router
 from src.database.base     import Base
-from src.database.session  import get_engine
+from src.database.session  import SessionLocal, get_engine
+from src.models.user       import User
 
 
 # Path(__file__) is /app/src/main.py in the container
@@ -69,6 +77,38 @@ def _configure_database(settings) -> None:
         command.upgrade(alembic_cfg, "head")
 
 
+def _create_admin_user(settings) -> None:
+    if not all([settings.admin_email, settings.admin_username, settings.admin_password]):
+        logger.info("Las variables de entorno del administrador no están configuradas, omitiendo la creación del usuario administrador.")
+        return
+
+    # Usar get_session para obtener una sesión de base de datos
+    # Necesitamos crear el motor primero para que get_session pueda usarlo
+    # engine = get_engine(settings.database_url, settings.pool_size) <--- El motor ya se inicializa para SessionLocal
+    db: Session = SessionLocal()
+
+    try:
+        admin_user = db.query(User).filter(User.email == settings.admin_email).first()
+        if admin_user:
+            logger.info("El usuario administrador ya existe.", email=settings.admin_email)
+        else:
+            hashed_password = hash_password(settings.admin_password)
+            new_admin_user = User(
+                email=settings.admin_email,
+                username=settings.admin_username,
+                password=hashed_password,
+                is_admin=True,
+            )
+            db.add(new_admin_user)
+            db.commit()
+            logger.info("Usuario administrador creado exitosamente.", username=settings.admin_username, email=settings.admin_email)
+    except Exception as e:
+        logger.error("Error al crear el usuario administrador.", error=str(e))
+        db.rollback()
+    finally:
+        db.close()
+
+
 def _configure_cors(app: FastAPI, settings) -> None:
     # Convertir HttpUrl a string para la lista de orígenes
     configured_origins = [str(url).rstrip('/') for url in settings.cors_origins] # rstrip para quitar / extras de HttpUrl
@@ -110,6 +150,8 @@ def create_app() -> FastAPI:            # ← exported factory
 
     _configure_database(settings)
     logger.info("Base de datos configurada.")
+
+    _create_admin_user(settings) # Llamar aquí después de configurar la BD
 
     app = FastAPI(
         title   = settings.api_title,
