@@ -39,7 +39,7 @@ services:
       # por la aplicación desde su propio tutor-backend/.env.
     volumes:
       - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
-    command: uvicorn src.main:create_app --factory --reload
+    command: uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000
   
   frontend:
     build:

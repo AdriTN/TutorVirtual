@@ -2,14 +2,8 @@ import os
 from dotenv import load_dotenv
 
 from src.database.base import Base
-from src.models.user import User, UserProvider, RefreshToken
-from src.models.course import Course
-from src.models.subject import Subject
-from src.models.theme import Theme
-from src.models.exercise import Exercise
-from src.models.user_response import UserResponse
-from src.models.user_theme_progress import UserThemeProgress
-from src.models.chat import ChatConversation, ChatMessage
+# Import all models from src.models to ensure Alembic detects them
+from src.models import * # noqa
 
 from logging.config import fileConfig
 

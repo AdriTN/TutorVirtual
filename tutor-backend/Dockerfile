@@ -16,8 +16,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiamos el resto del código
 COPY . .
 
+# Copiar y dar permisos al entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Exponer el puerto en el contenedor (por defecto FastAPI en 8000)
 EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Comando para iniciar la app: uvicorn con hotreload no se recomienda en producción,
 # pero para desarrollo puedes usarlo. En producción, querrás uvicorn sin reload o gunicorn.

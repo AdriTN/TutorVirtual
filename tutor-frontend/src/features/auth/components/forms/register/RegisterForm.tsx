@@ -33,12 +33,33 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
 
     try {
       setLoading(true);
-      await api.post(endpointUrl, {
-        username: name,
-        email,
-        password: pwd,
-        confirmPassword: pwd2,
-      });
+      try {
+        await api.post(endpointUrl, {
+          username: name,
+          email,
+          password: pwd,
+          confirm_password: pwd2,
+        });
+        notifySuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
+        navigate("/login", { replace: true });
+      } catch (error) {
+        setLoading(false);
+        if ((error as any)?.response?.status === 422) {
+          const errorDetails = (error as any)?.response?.data?.detail;
+          if (errorDetails && errorDetails.length > 0) {
+            notifyError(errorDetails[0].msg); 
+          } else {
+            notifyError("Error de validación. Revisa los datos.");
+          }
+        } else {
+          notifyError("Error inesperado en el registro.");
+        }
+        if (error instanceof Error) {
+          console.error("Error en registro:", (error as any)?.response || error.message);
+        } else {
+          console.error("Error en registro:", error);
+        }
+      }
       notifySuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
       navigate("/login", { replace: true });
     } finally {
