@@ -57,7 +57,6 @@ def decode_token(token: str, secret: str | None = None) -> dict | None:
     try:
         return jwt.decode(token, cfg.jwt_secret, algorithms=[cfg.jwt_algorithm])
     except jwt.PyJWTError:
-        # Token mal formado, firma inválida distinta de expirado, etc.
         return None
 
 

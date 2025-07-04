@@ -1,13 +1,12 @@
-// src/pages/Stats/StatCard/StatCard.tsx
 import React from "react";
 import styles from "./StatCard.module.css";
 
 interface Props {
   title:   string;
-  value?:  number | string;   // puede venir indefinido hasta que cargue
-  trend?:  number;            // +/- %
+  value?:  number | string;
+  trend?:  number;
   loading?: boolean;
-  children?: React.ReactNode; // mini-chart opcional
+  children?: React.ReactNode;
 }
 
 const StatCard: React.FC<Props> = ({ title, value, trend, loading, children }) => {

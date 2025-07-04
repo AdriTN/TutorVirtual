@@ -13,7 +13,6 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, user, loading: authLoading } = useAuth();
 
   /** -------- estado -------- */
-  // userData and loadingUser states are removed
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /** -------- ref del botón hamburguesa (opener) -------- */

@@ -17,6 +17,5 @@ export const useMe = () => {
     queryFn: () => api.get<Me>("/api/users/me").then(r => r.data),
 
     initialData: authUser ? (authUser as UserData as Me) : undefined,
-    // enabled: !authLoading && (authUser ? someConditionToRefetch : true) // Más control si se necesita
   });
 };

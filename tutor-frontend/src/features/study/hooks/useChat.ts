@@ -24,7 +24,6 @@ export const useChat = ({ exerciseId, currentUserId }: UseChatProps): UseChatRet
 
   const loadInitialConversation = useCallback(async () => {
     if (!exerciseId || !currentUserId) {
-      // No cargar si no hay ejercicio o usuario
       setMessages([]);
       setConversation(null);
       return;
@@ -34,8 +33,6 @@ export const useChat = ({ exerciseId, currentUserId }: UseChatProps): UseChatRet
     try {
       const conversations = await apiGetExerciseConversations(exerciseId);
       if (conversations && conversations.length > 0) {
-        // Asumir que queremos la más reciente o la primera encontrada
-        // Podrías añadir lógica para seleccionar una específica si hay múltiples
         const activeConversation = conversations[0];
         setConversation(activeConversation);
         setMessages(activeConversation.messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
@@ -52,7 +49,6 @@ export const useChat = ({ exerciseId, currentUserId }: UseChatProps): UseChatRet
     }
   }, [exerciseId, currentUserId]);
 
-  // Cargar conversación inicial cuando cambia el exerciseId
   useEffect(() => {
     loadInitialConversation();
   }, [loadInitialConversation]);
@@ -74,10 +70,9 @@ export const useChat = ({ exerciseId, currentUserId }: UseChatProps): UseChatRet
       conversation_id: conversation?.id,
     };
 
-    // Optimistic update: show user message immediately
     const optimisticUserMessage: ChatMessage = {
-      id: Date.now(), // Temporary ID
-      conversation_id: conversation?.id || 0, // Placeholder if no conversation yet
+      id: Date.now(),
+      conversation_id: conversation?.id || 0,
       sender_type: "user",
       message: messageText,
       created_at: new Date().toISOString(),
@@ -87,12 +82,10 @@ export const useChat = ({ exerciseId, currentUserId }: UseChatProps): UseChatRet
     try {
       const updatedConversation = await apiSendMessage(userMessageInput);
       setConversation(updatedConversation);
-      // Sort messages by creation time to ensure correct order
       const sortedMessages = updatedConversation.messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       setMessages(sortedMessages);
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to send message.');
-      // Revert optimistic update if error
       setMessages(prevMessages => prevMessages.filter(msg => msg.id !== optimisticUserMessage.id));
     } finally {
       setIsLoading(false);

@@ -6,128 +6,81 @@ Esta aplicación se puede desplegar fácilmente utilizando Docker y Docker Compo
 
 ### Prerrequisitos
 
-- Docker instalado
-- Docker Compose instalado
+- Docker Desktop (o Docker Engine) instalado. Puedes encontrar las instrucciones de instalación en la [documentación oficial de Docker](https://docs.docker.com/get-docker/).
+- Docker Compose.
+    - Docker Compose V2 viene incluido con las instalaciones recientes de Docker Desktop y se invoca con `docker compose` (con espacio).
+    - Si tienes una versión más antigua (Docker Compose V1, invocada con `docker-compose` con guion), considera actualizar, ya que V1 ya no recibe actualizaciones. Puedes encontrar más información [aquí](https://docs.docker.com/compose/install/).
 
 ### Estructura de Servicios
+(...)
 
-El archivo `docker-compose.yml` define los siguientes servicios:
 
-- **tutor_db**:
-    - Imagen: `postgres:16`
-    - Contenedor: `tutor_db`
-    - Variables de entorno:
-        - `POSTGRES_USER`: postgres
-        - `POSTGRES_PASSWORD`: postgres
-        - `POSTGRES_DB`: tutorvirtual
-    - Puertos: `5432:5432`
-    - Volúmenes: `db_data:/var/lib/postgresql/data` (para persistencia de datos)
-- **backend**:
-    - Construcción: a partir de `tutor-backend/Dockerfile`
-    - Contenedor: `tutor_backend`
-    - Depende de: `tutor_db`
-    - Puertos: `8000:8000`
-    - Variables de entorno:
-        - `DATABASE_URL`: "postgresql://postgres:postgres@tutor_db:5432/tutorvirtual" (Configurada para la red Docker).
-        - Otras variables (como `JWT_SECRET`, `GOOGLE_CLIENT_ID`, etc.) son cargadas por la aplicación FastAPI desde `tutor-backend/.env`.
-    - Volúmenes: `./tutor-backend:/app` (monta el código local, permitiendo que `tutor-backend/.env` sea accesible).
-    - Comando: Ejecuta las migraciones de Alembic (`alembic upgrade head`) y luego inicia el servidor Uvicorn (`uvicorn src.main:create_app --factory --host 0.0.0.0 --port 8000 --reload`).
-- **frontend**:
-    - Construcción: a partir de `tutor-frontend/Dockerfile`.
-    - Contenedor: `tutor_frontend`.
-    - Depende de: `backend`.
-    - Puertos: `5173:5173`.
-    - Variables de entorno:
-        - `VITE_BACKEND_URL`: "http://localhost:8000" (URL para que el frontend se comunique con el backend).
-        - Otras variables como `VITE_GOOGLE_CLIENT_ID` son cargadas por la aplicación Vite desde `tutor-frontend/.env`.
+**Nota sobre `ollama-docker-compose.yml`:**
+(...)
 
 ### Pasos para el Despliegue
+(...)
 
-1.  **Clonar el repositorio (si aún no lo has hecho):**
-    ```bash
-    git clone <url-del-repositorio>
-    cd <nombre-del-repositorio>
-    ```
+---
 
-2.  **Preparar archivos `.env`:**
-    *   **Para el Backend:**
-        Navega a la carpeta `tutor-backend/`. Si no existe un archivo `.env` allí, cópialo desde el ejemplo general (que está en la raíz del proyecto):
+### Explicación de Variables de Entorno
+(...)
+
+---
+### Gestión y Prioridad de Variables de Entorno
+(...)
+
+---
+### Notas Adicionales y Consideraciones
+
+*   **Migraciones de Base de Datos (Alembic):**
+    *   El `Dockerfile` de `tutor-backend` (ubicado en `tutor-backend/Dockerfile`) utiliza un `entrypoint.sh` que está diseñado para ejecutar las migraciones de base de datos (`alembic upgrade head`) antes de iniciar la aplicación FastAPI. Esto asegura que el esquema de la base de datos esté actualizado.
+    *   Sin embargo, la directiva `command` en el servicio `backend` dentro de `docker-compose.yml` (`uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000`) **anula el `CMD` por defecto del Dockerfile y podría también anular la ejecución del `ENTRYPOINT` si no está configurado para pasar el comando.**
+    *   **Verificación:** Después de iniciar los servicios con `docker compose up`, verifica los logs del contenedor `backend` para confirmar si las migraciones se ejecutaron.
         ```bash
-        cd tutor-backend
-        cp ../.env.example .env 
-        # Si .env.example estuviera en tutor-backend/: cp .env.example .env
-        cd .. 
+        docker compose logs backend
         ```
-        Luego, **edita `tutor-backend/.env`** con los valores correctos para `PORT`, `DATABASE_URL` (aunque el de Docker Compose suele tener precedencia si la app no lo define explícitamente), `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `OLLAMA_URL`, y `API_KEY`.
-    *   **Para el Frontend:**
-        Navega a la carpeta `tutor-frontend/`. Si no existe un archivo `.env` allí, puedes crear uno. Las variables relevantes del `.env.example` general son `VITE_BACKEND_URL` (aunque ya se pasa en `docker-compose.yml`) y `VITE_GOOGLE_CLIENT_ID`.
+    *   **Ejecución Manual (si es necesario):** Si las migraciones no se aplican automáticamente, puedes ejecutarlas manualmente en el contenedor `backend` (mientras los demás servicios, especialmente `tutor_db`, están corriendo):
         ```bash
-        cd tutor-frontend
-        # Crea un archivo .env aquí si es necesario, por ejemplo:
-        # echo "VITE_GOOGLE_CLIENT_ID=tu_id_de_cliente_google_para_frontend" > .env
-        # echo "VITE_BACKEND_URL=http://localhost:8000" >> .env # Opcional si ya está en docker-compose
-        cd ..
+        docker compose exec backend alembic upgrade head
         ```
-        Asegúrate de que los archivos `.env` específicos de cada subdirectorio (`tutor-backend/.env`, `tutor-frontend/.env`) estén en el `.gitignore` si decides usar esta estructura (ej. `tutor-backend/.env`, `tutor-frontend/.env`). El `.gitignore` actual cubre `*.env` globalmente, lo cual es bueno. El archivo `.env.example` general en la raíz sirve como plantilla maestra.
+    *   **Solución Permanente (Recomendado):** Para asegurar que las migraciones siempre se ejecuten antes de que inicie el servidor, modifica el `command` en `docker-compose.yml` para el servicio `backend` de la siguiente manera:
+        ```yaml
+        services:
+          backend:
+            # ... otras configuraciones ...
+            command: bash -c "alembic upgrade head && uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000"
+            # ...
+        ```
+        Esto primero ejecuta `alembic upgrade head` y, si tiene éxito (`&&`), entonces inicia el servidor Uvicorn.
 
-3.  **Construir y ejecutar los contenedores:**
-    Desde el directorio raíz del proyecto (donde se encuentra `docker-compose.yml`), ejecuta:
-    ```bash
-    docker-compose up --build
-    ```
-    Para ejecuciones posteriores sin cambios en Dockerfiles:
-    ```bash
-    docker-compose up
-    ```
-    En segundo plano:
-    ```bash
-    docker-compose up -d
-    ```
+*   **Configuración para Desarrollo vs. Producción:**
+    La configuración actual en `docker-compose.yml` está optimizada para desarrollo. Para un entorno de producción, considera lo siguiente:
+    *   **Recarga Automática del Backend (`--reload`):** La opción `--reload` en el comando de Uvicorn para el servicio `backend` es útil para desarrollo, ya que reinicia el servidor automáticamente con los cambios en el código. En producción, esto debe eliminarse para mejorar el rendimiento y la estabilidad.
+        *Producción `command`: `bash -c "alembic upgrade head && uvicorn src.main:create_app --factory --host 0.0.0.0 --port 8000"`*
+    *   **Montaje de Volúmenes de Código:** El montaje de directorios locales como volúmenes (ej., `./tutor-backend:/app`) permite que los cambios en el código fuente se reflejen instantáneamente en el contenedor, ideal para desarrollo. En producción, el código de la aplicación debe ser copiado dentro de la imagen Docker durante el proceso de `build` (usando `COPY` en el Dockerfile). Esto crea imágenes autocontenidas y más portables. Deberías eliminar o modificar estas monturas de volumen para producción.
+    *   **Modo Debug:** Asegúrate de que cualquier modo de depuración en FastAPI o Vite esté desactivado en producción.
+    *   **Servicio de Archivos Estáticos del Frontend:** El `Dockerfile` del frontend (`tutor-frontend/Dockerfile`) ya compila la aplicación Vite para producción (`npm run build`) y utiliza `serve` para servir los archivos estáticos. Esto es adecuado para producción.
 
-4.  **Acceder a la aplicación:**
-    -   Frontend: `http://localhost:5173`
-    -   Backend API: `http://localhost:8000` (docs en `http://localhost:8000/docs`)
+*   **Conexión a `OLLAMA_URL`:**
+    *   Como se mencionó en la sección de variables de entorno, el `docker-compose.yml` establece `OLLAMA_URL: "http://open-webui:8080"` para el servicio `backend`. Esto dirige las solicitudes del backend al servicio `open-webui` en su puerto interno `8080`.
+    *   Si prefieres que el backend se comunique **directamente** con el servicio `ollama`, deberías cambiar esta variable en `docker-compose.yml` a `OLLAMA_URL: "http://ollama_service:11434"`.
+    *   La elección depende de si `open-webui` actúa como un simple proxy, si añade alguna capa de gestión/API que el backend necesita, o si prefieres la comunicación directa.
 
-5.  **Detener los contenedores:**
-    `Ctrl+C` (si están en primer plano) o `docker-compose down` (si están en segundo plano o para detener y eliminar).
-    Para eliminar volúmenes (¡cuidado, borra datos de BD!): `docker-compose down -v`
+*   **Archivo `ollama-docker-compose.yml`:**
+    *   Este archivo parece ser una configuración alternativa o simplificada que solo define el servicio `open-webui` (y su dependencia implícita en Ollama, que podría estar corriendo externamente o ser manejado por la imagen de `open-webui` si esta lo incluye).
+    *   Dado que el `docker-compose.yml` principal ya integra `ollama` y `open-webui` de manera completa con el resto de la aplicación (backend, frontend, db), **se recomienda utilizar el `docker-compose.yml` principal para el despliegue completo.**
+    *   Para evitar confusiones, considera **eliminar el archivo `ollama-docker-compose.yml`** si no tiene un propósito específico y documentado que difiera del despliegue principal. Si se decide mantenerlo, su propósito debería ser claramente documentado en este README.
 
-### Gestión Detallada de Variables de Entorno
+*   **Uso de GPU para Ollama y Open WebUI (Recordatorio):**
+    *   Los servicios `ollama` y `open-webui` en `docker-compose.yml` están configurados para solicitar acceso a GPUs NVIDIA a través de la sección `deploy.resources`.
+    *   **Si no tienes una GPU NVIDIA** o no deseas usarla, **debes comentar o eliminar la sección `deploy` completa** en la definición de *ambos* servicios dentro de `docker-compose.yml`. De lo contrario, Docker Compose podría intentar asignar recursos de GPU inexistentes y fallar, o los servicios podrían no iniciarse correctamente.
+    *   Al eliminar esta sección, Ollama (y por extensión Open WebUI) funcionará utilizando la CPU, lo cual puede ser significativamente más lento para la inferencia de modelos grandes.
 
--   **`.env.example` (Raíz del Proyecto):**
-    Este archivo, ubicado en la raíz del proyecto, sirve como una **plantilla maestra** que documenta **todas** las variables de entorno que la aplicación (backend y frontend) podría necesitar. Es la fuente de verdad para saber qué configurar.
+*   **Persistencia de Datos:**
+    *   **Base de Datos (`tutor_db`):** Utiliza un volumen nombrado `db_data` para persistir los datos de PostgreSQL. Esto significa que los datos de tu base de datos sobrevivirán si detienes y reinicias los contenedores (ej. `docker compose down` y luego `docker compose up`). Sin embargo, si ejecutas `docker compose down -v`, el volumen `db_data` (y por lo tanto todos los datos de la BD) será eliminado.
+    *   **Ollama (`ollama_service`):** Utiliza un volumen nombrado `ollama_data` para persistir los modelos de lenguaje descargados y otros datos de configuración de Ollama. Esto evita tener que volver a descargar modelos grandes cada vez que reinicias el servicio. Similar a `db_data`, `docker compose down -v` eliminará este volumen.
+    *   **Open WebUI:** El servicio `open-webui` monta `./open-webui:/app/backend/data`. Esto significa que los datos de Open WebUI se guardarán en una carpeta llamada `open-webui` en el directorio raíz de tu proyecto en la máquina host.
 
--   **Carga de Variables en el Backend (`tutor-backend/.env`):**
-    -   La aplicación FastAPI (`tutor-backend/src/core/config.py`) está configurada para leer un archivo llamado `.env` desde su directorio de trabajo (que, dentro del contenedor Docker, es `/app`, correspondiente a `tutor-backend/` gracias al montaje de volumen).
-    -   Por lo tanto, debes asegurarte de que exista un archivo `tutor-backend/.env` con las configuraciones necesarias para el backend. Puedes crearlo copiando las secciones relevantes del `.env.example` raíz.
-    -   La variable `DATABASE_URL` en `docker-compose.yml` para el servicio `backend` anulará cualquier `DATABASE_URL` en `tutor-backend/.env` si la aplicación la lee de las variables de entorno del proceso antes que del archivo, o si `pydantic-settings` prioriza las variables de entorno del sistema/proceso. Generalmente, para la URL de la base de datos en Docker, es más robusto definirla en `docker-compose.yml` para asegurar que apunta al servicio de base de datos de Docker (`tutor_db`).
-
--   **Carga de Variables en el Frontend (`tutor-frontend/.env`):**
-    -   Las aplicaciones Vite (como el frontend) cargan variables de entorno desde archivos `.env` en la raíz del proyecto frontend (`tutor-frontend/`). Solo las variables prefijadas con `VITE_` son expuestas al código del cliente.
-    -   Debes crear un archivo `tutor-frontend/.env` con las variables como `VITE_GOOGLE_CLIENT_ID`.
-    -   La variable `VITE_BACKEND_URL` se pasa explícitamente en `docker-compose.yml` al entorno del contenedor frontend, lo que generalmente tiene precedencia o es la forma más directa de configurar la URL del backend para el entorno de Docker.
-
--   **Prioridad de Carga (General):**
-    1.  Variables pasadas directamente en `docker-compose.yml` en la sección `environment` de un servicio.
-    2.  Variables de entorno del shell del host (si se usa interpolación como `${VAR_HOST}` en `docker-compose.yml`).
-    3.  Variables definidas en un archivo `.env` en la raíz del proyecto Docker Compose (usadas por `docker-compose` mismo para interpolación).
-    4.  Variables definidas en un archivo `.env` específico de la aplicación (ej. `tutor-backend/.env`) cargadas por el código de la aplicación.
-
--   **Seguridad:**
-    -   **Nunca subas archivos `.env` reales a Git.** El `.gitignore` ya está configurado para esto (`*.env`).
-    -   Para producción, considera mecanismos más seguros para gestionar secretos que archivos `.env` en el servidor (ej. variables de entorno del sistema host, Docker secrets, servicios de gestión de secretos en la nube).
-
-### Notas Adicionales
-
--   **Migraciones de Base de Datos:** El servicio `backend` ejecuta `alembic upgrade head` al inicio.
--   **Desarrollo vs. Producción:**
-    -   **Recarga del Backend:** El comando del backend en `docker-compose.yml` incluye `--reload`. Elimínalo para producción.
-    -   **Montaje de Código:** El montaje de código local es para desarrollo. En producción, copia el código en la imagen.
-    -   **JWT_SECRET:** Usa una clave fuerte y única en producción (ver `.env.example` para cómo generarla).
-    -   **OLLAMA_URL:** Configura `OLLAMA_URL` en `tutor-backend/.env` según la ubicación de tu servicio Ollama:
-        -   Si Ollama es otro servicio en el mismo `docker-compose.yml` (ej. llamado `ollama_service`): `http://ollama_service:11434` (o el puerto que use).
-        -   Si Ollama corre en la máquina host (fuera de Docker, pero accesible desde Docker Desktop): `http://host.docker.internal:PUERTO_OLLAMA`.
-        -   Si Ollama es un servicio externo: `https://tu.ollama.externo/api`.
--   **Dockerfile del Frontend:** Compila para producción y sirve estáticos.
-    -   **Dockerfile del Frontend:** El `tutor-frontend/Dockerfile` está configurado para construir la aplicación de frontend para producción (`npm run build`) y luego servir los archivos estáticos resultantes usando `serve`. Esto es una práctica estándar para desplegar aplicaciones frontend.
--   **Ollama Docker Compose:** Existe un archivo `ollama-docker-compose.yml` en el repositorio. Este archivo parece estar destinado a una configuración separada o alternativa que podría incluir un servicio `ollama` (posiblemente para inferencia de modelos de lenguaje). Las instrucciones y configuraciones en este `README.md` se centran en el despliegue principal de la aplicación definido en el archivo `docker-compose.yml` principal. Si necesitas información sobre cómo desplegar o usar la configuración relacionada con Ollama, deberás consultar `ollama-docker-compose.yml` y posiblemente documentación adicional específica para esa parte del sistema.
+Este README asume que estás ejecutando los comandos `docker compose` desde el directorio raíz del proyecto donde se encuentra el archivo `docker-compose.yml`.
+```

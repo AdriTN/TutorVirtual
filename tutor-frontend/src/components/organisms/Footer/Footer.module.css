@@ -1,15 +1,10 @@
-/* ==========================================================================
-   Footer – versión avanzada
-   ==========================================================================*/
-
-   .footerContainer{
+  .footerContainer{
     background:var(--color-bg);
     border-top:1px solid var(--color-border);
     padding:var(--space-xl) var(--space-md) var(--space-lg);
     color:var(--color-text);
   }
-  
-  /* ---------- Grid principal ---------- */
+
   .footerGrid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -17,8 +12,7 @@
     max-width:1180px;
     margin-inline:auto;
   }
-  
-  /* ---------- Brand ---------- */
+
   .brandTitle{
     font-size:1.2rem;
     font-weight:700;
@@ -31,8 +25,7 @@
     line-height:1.4;
     margin:0;
   }
-  
-  /* ---------- Columnas nav ---------- */
+
   .navColumn{display:flex;flex-direction:column;gap:.4rem}
   .colTitle{
     font-size:1rem;
@@ -40,8 +33,7 @@
     margin-bottom:.3rem;
     color:var(--color-text);
   }
-  
-  /* ---------- Enlaces ---------- */
+
   .footerLink{
     display:inline-flex;
     align-items:center;
@@ -55,8 +47,7 @@
     color:color-mix(in srgb,var(--color-primary) 70%,var(--color-text) 30%);
     text-decoration:underline;
   }
-  
-  /* ---------- Iconos sociales ---------- */
+
   .socialRow{display:flex;gap:var(--space-sm);margin-top:.5rem}
   .socialIcon{
     display:inline-flex;
@@ -72,8 +63,7 @@
     background:var(--color-primary);
     color:#fff;
   }
-  
-  /* ---------- Línea inferior ---------- */
+
   .footerBottom{
     margin-top:var(--space-lg);
     padding-top:var(--space-sm);
@@ -83,7 +73,7 @@
     border-top:1px solid var(--color-border);
   }
   
-  /* ---------- Responsivo ---------- */
+
   @media (max-width:480px){
     .footerGrid{gap:var(--space-lg)}
   }

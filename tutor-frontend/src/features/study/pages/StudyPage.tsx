@@ -6,27 +6,25 @@ import Footer        from "@/components/organisms/Footer/Footer";
 import HeaderBar     from "../components/HeaderBar/HeaderBar";
 import ExerciseCard  from "../components/ExerciseCard/ExerciseCard";
 import Controls      from "../components/Controls/Controls";
-import ChatWindow    from "../components/ChatWindow/ChatWindow"; // Importar ChatWindow
+import ChatWindow    from "../components/ChatWindow/ChatWindow";
 
 import { useExercise } from "../hooks/useExercise";
-import { useChat }     from "../hooks/useChat"; // Importar useChat
+import { useChat }     from "../hooks/useChat";
 import { fetchCourse, fetchThemes } from "@services/api";
-import { useAuth } from "@/context/auth"; // Para obtener el ID del usuario actual
+import { useAuth } from "@/context/auth";
 
 import styles from "./study.module.css";
 
 export default function StudyPage() {
   const { courseId, subjectId } = useParams<{ courseId: string; subjectId: string }>();
   const nav = useNavigate();
-  const { user } = useAuth(); // Obtener información del usuario, incluido el ID
+  const { user } = useAuth();
 
   const {
     exercise, loading: exerciseLoading, error: exerciseError,
     checked, isCorrect, generate, check,
   } = useExercise();
 
-  // Hook para el chat
-  // Asumimos que exercise.id existe cuando hay un ejercicio
   const {
     messages: chatMessages,
     isLoading: chatLoading,

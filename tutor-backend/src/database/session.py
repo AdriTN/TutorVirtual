@@ -7,15 +7,9 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from src.core.config import get_settings
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Configuración
-# ────────────────────────────────────────────────────────────────────────────────
+
 _settings = get_settings()
 
-# from sqlalchemy import create_engine # No es necesaria aquí, ya está importada globalmente
-# from ..core.config import get_settings # No es necesaria aquí, _settings ya está definido
-
-# _settings = get_settings() # Redundante
 
 def get_engine(db_url: str | None = None, pool_size: int | None = None):
     """
@@ -48,7 +42,7 @@ def get_db() -> Generator[Session, None, None]:
     db: Session = SessionLocal()
     try:
         yield db          # ← FastAPI inyecta aquí la sesión real
-        db.commit()       # Opcional: comenta si prefieres commits explícitos
+        db.commit()       # Comentar para commits explícitos
     except Exception:
         db.rollback()
         raise

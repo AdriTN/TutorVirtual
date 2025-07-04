@@ -45,7 +45,6 @@ def overview(db: Session, user_id: int):
       - trend24h: diferencia de precisión entre las últimas 24h y las 24h anteriores.
     """
     logger.info("Iniciando overview para usuario", user_id=user_id)
-    # Cálculo global
     q_global = (
         db.query(
             func.count().label("total"),
@@ -59,7 +58,6 @@ def overview(db: Session, user_id: int):
     porcentaje_global = round(correct_global * 100.0 / total_global, 1) if total_global else 0.0
     logger.debug("Estadísticas globales calculadas", user_id=user_id, total_global=total_global, correct_global=correct_global, porcentaje_global=porcentaje_global)
 
-    # Cálculo de tendencia 24h
     now = datetime.now(timezone.utc)
     end_P1 = now
     start_P1 = now - timedelta(days=1)

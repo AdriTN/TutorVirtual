@@ -1,7 +1,3 @@
-/* ==========================================================================
-   Navbar – paleta clara académica + tokens globales
-   ==========================================================================*/
-
    .nav{
     position:static;
     top:0;
@@ -17,7 +13,7 @@
     display:flex;
     align-items:center;
     gap:var(--space-sm);
-    margin-left:35px;                     /* conserva ancho de sidebar */
+    margin-left:35px;
   }
   .logo img{
     width:35px;height:35px;
@@ -28,7 +24,7 @@
     font-size:1.6rem;
     font-weight:700;
     margin-left: 10px;
-    color:var(--color-primary);           /* antes #00ffde */
+    color:var(--color-primary);
     text-decoration:none;
   }
   .brand:hover{
@@ -47,7 +43,7 @@
     display:flex;align-items:center;
   }
   .navbarItem{
-    color:var(--color-text);              /* antes #ffffff */
+    color:var(--color-text);
     text-decoration:none;
     font-weight:600;
     cursor:pointer;

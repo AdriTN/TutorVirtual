@@ -6,8 +6,7 @@ import {
   refreshAccessToken, clearTokens,
 } from '@/services/auth';
 import { jwtDecode } from 'jwt-decode';
-import type { JwtPayload, AuthContextValue, UserData } from './auth.types'; // Import UserData
-// Correctly import getUserMe from the new users endpoint file
+import type { JwtPayload, AuthContextValue, UserData } from './auth.types';
 import { logoutUser as apiLogoutUser } from '@/services/api/endpoints/auth';
 import { getUserMe } from '@/services/api/endpoints/users';
 import { useNotifications } from "@hooks/useNotifications";
@@ -39,9 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     try {
-      const userData = await getUserMe(); // UserData should now include is_admin
+      const userData = await getUserMe();
       setUser(userData);
-      setIsAdmin(userData.is_admin); // Use is_admin from API response
+      setIsAdmin(userData.is_admin);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       notifyErrorRef.current("No se pudieron cargar los datos del usuario.");

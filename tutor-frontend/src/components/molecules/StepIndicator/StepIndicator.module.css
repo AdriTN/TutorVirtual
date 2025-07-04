@@ -19,7 +19,7 @@
   flex: 1;
   text-align: center;
   position: relative;
-  z-index: 1;           /* sobre la línea */
+  z-index: 1;
 }
 
 .circle {
@@ -48,9 +48,9 @@
 .step:not(:last-child)::after {
   content: "";
   position: absolute;
-  top: 17px;                         /* centro vertical del círculo */
-  left: calc(50% + 17px);            /* borde derecho */
-  width: calc(100% - 34px);          /* hasta siguiente círculo */
+  top: 17px;
+  left: calc(50% + 17px);
+  width: calc(100% - 34px);
   height: 3px;
   background: var(--color-bg-muted);
   z-index: -1;

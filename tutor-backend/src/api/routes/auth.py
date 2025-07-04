@@ -62,7 +62,6 @@ def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
         logger.error("Intento de refrescar token inválido", refresh_token=data.refresh_token)
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Token inválido")
 
-    # ── token caducado ────────────────────────────────────────────────────
     exp = stored.expires_at
     if exp.tzinfo is None:
         exp = exp.replace(tzinfo=timezone.utc)
@@ -73,7 +72,6 @@ def refresh(data: RefreshIn, db: Session = Depends(get_db)) -> TokenOut:
         db.commit()
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Token expirado")
 
-    # ── rotación garantizando unicidad ───────────────────────────────────
     while True:
         stored.token = create_refresh_token()
         stored.expires_at = datetime.now(timezone.utc) + timedelta(days=3)

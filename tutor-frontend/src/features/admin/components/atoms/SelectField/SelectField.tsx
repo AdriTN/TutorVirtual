@@ -30,7 +30,6 @@ export default function SelectField({
         id={id}
         multiple={multiple}
         className={styles.select}
-        /* string  ✦  string[] */
         value={value}
         onChange={(e) =>
           onChange(
@@ -40,7 +39,7 @@ export default function SelectField({
           )
         }
       >
-        {/* ⚠️  el placeholder SOLO cuando NO es multiple */}
+        {/* el placeholder SOLO cuando NO es multiple */}
         {!multiple && <option value="">— seleccionar —</option>}
 
         {options.map((o) => (

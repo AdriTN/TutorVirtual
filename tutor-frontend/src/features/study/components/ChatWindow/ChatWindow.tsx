@@ -7,7 +7,7 @@ interface ChatWindowProps {
   onSendMessage: (messageText: string) => Promise<void>;
   isLoading: boolean;
   chatError: string | null;
-  currentUserId: number | null; // Para alinear mensajes del usuario actual
+  currentUserId: number | null;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -30,9 +30,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!inputText.trim()) return;
     try {
       await onSendMessage(inputText);
-      setInputText(''); // Clear input only on successful send
+      setInputText('');
     } catch (error) {
-      // Error is handled by the hook, just log or display if needed here
       console.error("Send message failed from component:", error)
     }
   };

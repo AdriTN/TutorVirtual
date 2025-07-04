@@ -19,7 +19,7 @@ def create_exercise_from_ai(data: dict, tema, db: Session) -> Exercise:
         theme_id    = tema.id,
     )
     db.add(ej)
-    # db.commit() # Commit será manejado por la sesión de FastAPI get_db
+    # db.commit()
     db.flush()
     db.refresh(ej)
     return ej
@@ -38,7 +38,6 @@ def register_user_answer(
     """
     correcto = strip_and_lower(answer) == strip_and_lower(ej.answer)
 
-    # 1) guardamos la respuesta
     resp = UserResponse(
         user_id      = user_id,
         exercise_id  = ej.id,
@@ -48,7 +47,6 @@ def register_user_answer(
     )
     db.add(resp)
 
-    # 2) buscamos (user_id, tema_id) en UserThemeProgress
     prog = db.get(UserThemeProgress, (user_id, ej.theme_id))
     if prog is None:
         prog = UserThemeProgress(
@@ -62,5 +60,5 @@ def register_user_answer(
         prog.completed += 1
         prog.correct   += 1 if correcto else 0
 
-    # db.commit() # Commit será manejado por la sesión de FastAPI get_db
+    # db.commit()
     return correcto

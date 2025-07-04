@@ -6,7 +6,7 @@
     width:100%;
     max-width:460px;
     padding:2.5rem;
-    background:#24303c;            /* se mantiene fondo oscuro local */
+    background:#24303c;
     border-radius:var(--radius-lg);
     box-shadow:0 8px 30px rgba(0,0,0,.35);
     color:#fff;
@@ -39,7 +39,7 @@
   .checkboxContainer {
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* separa checkbox y texto */
+    gap: 0.5rem;
     cursor: pointer;
     position: relative;
     font-size: 20px;

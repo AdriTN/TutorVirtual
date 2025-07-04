@@ -11,10 +11,10 @@ import {
   FiBookOpen,
   FiBarChart2,
   FiShield,
-  FiLogOut, // Importar el icono de logout
+  FiLogOut,
 } from "react-icons/fi";
 import { FaMagnifyingGlass } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom"; // Importar useNavigate
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@context/auth/AuthContext";
 import styles     from "./Sidebar.module.css";
@@ -26,13 +26,13 @@ interface Props {
 }
 
 const Sidebar = ({ isOpen, onClose, openerRef }: Props) => {
-  const { isAdmin, logout } = useAuth(); // Obtener logout del contexto
-  const navigate = useNavigate(); // Hook para la navegación
+  const { isAdmin, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    onClose(); // Cerrar el sidebar
-    await logout(); // Llama a la función de logout del contexto (que ahora es async)
-    navigate("/login"); // Redirigir a la página de login
+    onClose();
+    await logout();
+    navigate("/login");
   };
 
   /* ---------- 1. Lista de enlaces ---------- */
@@ -102,7 +102,7 @@ const Sidebar = ({ isOpen, onClose, openerRef }: Props) => {
             <li key={key} className={styles.menuItem}>
               <NavLink
                 ref={idx === 0 ? firstLinkRef : undefined}
-                to={to!} // to puede ser undefined si es un botón de acción, pero NavLink lo requiere
+                to={to!}
                 className={({ isActive }) =>
                   `${styles.menuLink} ${isActive ? styles.active : ""}`
                 }
@@ -120,7 +120,7 @@ const Sidebar = ({ isOpen, onClose, openerRef }: Props) => {
             <li key={key} className={styles.menuItem}>
               <button
                 type="button"
-                className={styles.menuLink} // Reutilizar estilo de enlace para consistencia
+                className={styles.menuLink}
                 onClick={action}
               >
                 <Icon className={styles.menuIcon} />

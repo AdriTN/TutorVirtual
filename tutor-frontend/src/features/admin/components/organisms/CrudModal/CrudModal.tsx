@@ -10,7 +10,7 @@ interface Props {
 
 function CrudModal({ open, title, onClose, children }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
-  const focused = useRef(false);          // ⬅️ sólo una vez por apertura
+  const focused = useRef(false);          // sólo una vez por apertura
 
   useEffect(() => {
     if (!open) { focused.current = false; return; }

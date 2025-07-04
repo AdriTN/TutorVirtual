@@ -1,9 +1,6 @@
 .button {
-    /* Para hacerlo más ancho */
     width: 100%;
-    max-width: 270px; /* Ajusta el valor a lo que desees */
-    
-    /* Centrarlo automáticamente si tiene menos del 100% de la pantalla */
+    max-width: 270px;
     margin: 1rem auto;
     
     display: flex;

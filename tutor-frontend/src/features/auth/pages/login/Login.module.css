@@ -1,16 +1,12 @@
-/* ==========================================================================
-   Página centrada – landing / 404 / etc.
-   ==========================================================================*/
-
    .page{
-    min-height:100vh;                     /* ocupa toda la altura */
+    min-height:100vh;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
   
-    gap:var(--space-xl);                  /* antes 2rem */
-    padding:var(--space-lg);              /* antes 1rem */
+    gap:var(--space-xl);
+    padding:var(--space-lg);
   
     background:var(--color-bg);
     color:var(--color-text);

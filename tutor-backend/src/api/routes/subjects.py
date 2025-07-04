@@ -47,7 +47,7 @@ def create_subject(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "El nombre y la descripción son obligatorios")
 
     if db.query(Subject).filter(
-        (Subject.name == name) | (Subject.description == description) # TODO: Revisar si este OR es correcto, podría ser AND o dos queries.
+        (Subject.name == name) | (Subject.description == description)
     ).first():
         logger.warn("Conflicto: La asignatura ya existe", name=name, description=description)
         raise HTTPException(status.HTTP_409_CONFLICT, "La asignatura ya existe")
@@ -348,7 +348,7 @@ def detach_themes(
 
 @router.post(
     "/{subject_id}/themes/{theme_id}/assign",
-    status_code=status.HTTP_200_OK, # Or 204 if no content returned
+    status_code=status.HTTP_200_OK,
     dependencies=[Depends(admin_required)],
     summary="Asigna un tema existente a una asignatura"
 )
@@ -371,20 +371,17 @@ def assign_theme_to_subject(
 
     if theme.subject_id == subject_id:
         logger.info("El tema ya está asignado a esta asignatura", subject_id=subject_id, theme_id=theme_id)
-        # Optionally, could return a 200 OK or 304 Not Modified here,
-        # but for simplicity, updating and returning is fine.
-        # Or raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El tema ya está asignado a esta asignatura")
+        
 
     theme.subject_id = subject_id
-    db.add(theme) # Not strictly necessary if theme is already persistent and only subject_id changes
+    db.add(theme)
     db.commit()
     db.refresh(theme)
     logger.info("Tema asignado exitosamente a la asignatura", subject_id=subject_id, theme_id=theme.id, theme_name=theme.name)
     
-    # Return the updated theme, similar to how update_theme in themes.py does
     return {
         "id": theme.id,
-        "name": theme.name, # or "title" depending on frontend expectation for this response
+        "name": theme.name,
         "description": theme.description,
         "subject_id": theme.subject_id,
     }

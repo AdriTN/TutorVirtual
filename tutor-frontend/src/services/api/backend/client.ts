@@ -5,6 +5,7 @@ import {
   clearTokens,
 } from "@services/auth";
 import { showErrorNotification } from "@hooks/useNotifications";
+import { log } from "node:console";
 
 /* ------------------------------------------------------------------ */
 /* 1) Instancia base ------------------------------------------------- */
@@ -47,7 +48,7 @@ api.interceptors.response.use(
         const refreshed = await refreshAccessToken();
         if (refreshed) {
           const newAccessToken = getAccessToken();
-          console.log('Token para reintento:', newAccessToken); // <-- LOG DE DEBUG
+          console.log('Token para reintento:', newAccessToken);
           if (newAccessToken) {
             original.headers.set('Authorization', `Bearer ${newAccessToken}`);
           } else {
@@ -74,7 +75,6 @@ api.interceptors.response.use(
     }
 
     let errorMessage = "Ocurrió un error inesperado.";
-    // Prioritize 'detail' from FastAPI, then 'message', then string data, then Axios error message
     if (data && typeof data === 'object') {
       if ('detail' in data && typeof data.detail === 'string' && data.detail.length > 0) {
         errorMessage = data.detail;
@@ -83,7 +83,7 @@ api.interceptors.response.use(
       }
     } else if (typeof data === 'string' && data.length > 0) {
       errorMessage = data;
-    } else if (error.message) { // Fallback to Axios error message
+    } else if (error.message) {
       errorMessage = error.message;
     }
     

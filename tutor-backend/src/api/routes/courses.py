@@ -80,10 +80,8 @@ def my_courses(payload: dict = Depends(jwt_required), db: Session = Depends(get_
     user_id = payload["user_id"]
     logger.info("Obteniendo cursos para el usuario (my courses)", user_id=user_id)
     
-    # Obtener las matrículas de asignaturas del usuario
     subject_enrollments = _get_subject_enrollments_for_user(user_id, db)
     
-    # Obtener el usuario con sus cursos y las relaciones anidadas necesarias
     user_with_courses = db.query(User).options(
         selectinload(User.courses)
         .selectinload(Course.subjects)
@@ -185,7 +183,6 @@ def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_
         logger.warn("Curso no encontrado al intentar actualizar", course_id=course_id)
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Curso no encontrado")
 
-    # ── título/descr ─────────────────────────────────────────
     if body.title:
         dup = db.query(Course).filter(Course.title == body.title, Course.id != course_id).first()
         if dup:
@@ -195,7 +192,6 @@ def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_
     if body.description is not None:
         course.description = body.description
 
-    # ── reemplazar asignaturas ───────────────────────────────
     if body.subject_ids is not None:
         logger.info("Actualizando asignaturas del curso", course_id=course_id, new_subject_ids=body.subject_ids)
         subjects = db.query(Subject).filter(Subject.id.in_(body.subject_ids)).all()
@@ -203,25 +199,10 @@ def update_course(course_id: int, body: CourseUpdate, db: Session = Depends(get_
 
     db.commit()
     db.refresh(course)
-    # Es necesario recargar las relaciones de asignaturas y temas si se modificaron y se quieren devolver actualizadas.
-    # joinedload(Course.subjects).selectinload(Subject.themes) podría ser necesario aquí si no están ya cargadas.
-    # Sin embargo, _course_to_schema espera que course.subjects ya tenga los temas cargados.
-    # Las operaciones de selectinload/joinedload en la carga inicial del curso deberían ser suficientes.
-    db.refresh(course) # Asegura que course.subjects está actualizado si se cambió la lista de subjects
-    # Para asegurar que los temas dentro de las asignaturas están cargados para _course_to_schema:
-    # Es posible que necesitemos una nueva carga aquí si las asignaturas o sus temas fueron modificados
-    # y no se reflejan automáticamente. Por ahora, asumimos que db.refresh(course) y las cargas
-    # eager previas son suficientes. Si los tests fallan, se revisará esta parte.
-    # Para estar seguros, recargamos explícitamente con las opciones necesarias.
-    
-    # Se quita la recarga completa para evitar complejidad innecesaria si no se requiere.
-    # Si las subject_ids se actualizan, la relación course.subjects se actualiza.
-    # _course_to_schema iterará sobre course.subjects, y cada subject.themes ya está cargado por
-    # las opciones de selectinload en las queries GET. La actualización de course.subjects
-    # no debería afectar la carga eager de subject.themes de esas instancias de Subject.
+    db.refresh(course)
 
     logger.info("Curso actualizado exitosamente", course_id=course.id, title=course.title)
-    return _course_to_schema(course, None) # User es None porque no es relevante para el contexto de admin
+    return _course_to_schema(course, None)
 
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(admin_required)])
 def delete_course(course_id: int, db: Session = Depends(get_db)):

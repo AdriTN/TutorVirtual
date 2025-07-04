@@ -5,7 +5,7 @@ import {
   Github,
   Linkedin,
   Twitter,
-} from "lucide-react";          // lucide-react ya está disponible
+} from "lucide-react";
 
 import styles from "./Footer.module.css";
 

@@ -6,8 +6,8 @@
     padding: 16px;
     margin-top: 20px;
     background-color: #f9f9f9;
-    max-height: 500px; /* Altura máxima para la ventana de chat */
-    overflow: hidden; /* Para que el scroll interno funcione */
+    max-height: 500px;
+    overflow: hidden;
   }
   
   .chatTitle {
@@ -22,12 +22,12 @@
   
   .messagesContainer {
     flex-grow: 1;
-    overflow-y: auto; /* Scroll para los mensajes */
+    overflow-y: auto;
     padding: 8px;
     background-color: #fff;
     border-radius: 4px;
     margin-bottom: 12px;
-    min-height: 150px; /* Altura mínima para ver algo incluso vacío */
+    min-height: 150px;
   }
   
   .message {
@@ -42,7 +42,7 @@
     background-color: #007bff;
     color: white;
     align-self: flex-end;
-    margin-left: auto; /* Alinea a la derecha */
+    margin-left: auto;
     border-bottom-right-radius: 5px;
   }
   
@@ -50,7 +50,7 @@
     background-color: #e9ecef;
     color: #333;
     align-self: flex-start;
-    margin-right: auto; /* Alinea a la izquierda */
+    margin-right: auto;
     border-bottom-left-radius: 5px;
   }
   
@@ -63,19 +63,19 @@
   .timestamp {
     display: block;
     font-size: 0.75em;
-    color: #aaa; /* Color más claro para el timestamp en mensajes AI */
+    color: #aaa;
     margin-top: 4px;
     text-align: right;
   }
   
   .userMessage .timestamp {
-    color: #e0e0e0; /* Color claro para timestamp en mensajes de usuario */
+    color: #e0e0e0;
   }
   
   
   .inputForm {
     display: flex;
-    margin-top: auto; /* Empuja el formulario hacia abajo */
+    margin-top: auto;
   }
   
   .inputField {

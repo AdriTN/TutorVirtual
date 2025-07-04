@@ -1,7 +1,3 @@
-/* ==========================================================================
-   Sidebar – paleta clara + tokens globales
-   ==========================================================================*/
-
 /* ---------- Contenedor off-canvas ---------- */
 .sidebar{
   position:fixed;
@@ -44,10 +40,10 @@
 /* ---------- Navegación ---------- */
 .nav{
   margin-top:6.5rem;
-  display: flex; /* Añadido */
-  flex-direction: column; /* Añadido */
-  height: calc(100% - 6.5rem); /* Añadido - para que el nav ocupe el espacio restante */
-  padding-bottom: 1rem; /* Añadido - espacio en la parte inferior */
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 6.5rem);
+  padding-bottom: 1rem;
 }
 
 .menu{
@@ -59,7 +55,7 @@
 .menuLink{
   display:flex;align-items:center;gap:.75rem;
   padding:.75rem;
-  color:var(--color-text-muted);           /* antes #cbd8e3 */
+  color:var(--color-text-muted);
   text-decoration:none;
   border-radius:var(--radius-md);
   transition:background var(--ease-fast),color var(--ease-fast);
@@ -69,20 +65,20 @@
   background:rgba(255,255,255,.08);
   color:#fff;
 }
-.active{color:var(--color-accent)}          /* antes #00ffde */
+.active{color:var(--color-accent)}
 
 .menuIcon{font-size:1.25rem}
 
 /* Estilos para el menú inferior (logout) */
 .bottomMenu {
-  margin-top: auto; /* Empuja este menú hacia abajo */
+  margin-top: auto;
 }
 
 /* Asegurar que el botón de logout ocupe todo el ancho y no tenga bordes por defecto de botón */
 .bottomMenu .menuLink {
   width: 100%;
   border: none;
-  background: none; /* Para resetear estilos de botón si los hereda */
-  text-align: left; /* Alinear texto a la izquierda como los NavLink */
-  cursor: pointer; /* Mantener cursor de puntero */
+  background: none;
+  text-align: left;
+  cursor: pointer;
 }

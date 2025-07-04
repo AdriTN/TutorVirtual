@@ -33,13 +33,11 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
     setPwd2Error("");
     setAgreedError("");
 
-    // Username validation
     if (name.trim().length < 3) {
       setNameError("El nombre de usuario debe tener al menos 3 caracteres.");
       isValid = false;
     }
 
-    // Email validation (basic)
     if (!email) {
       setEmailError("El correo electrónico es obligatorio.");
       isValid = false;
@@ -48,7 +46,6 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
       isValid = false;
     }
 
-    // Password validation
     if (pwd.length < 8) {
       setPwdError("La contraseña debe tener al menos 8 caracteres.");
       isValid = false;
@@ -66,18 +63,16 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
     }
     
 
-    // Confirm password validation
     if (pwd !== pwd2) {
       setPwd2Error("Las contraseñas no coinciden.");
       isValid = false;
     }
-     if (!pwd2 && !pwdError && isValid) { // Solo mostrar si no hay ya error en pwd
+     if (!pwd2 && !pwdError && isValid) {
       setPwd2Error("Por favor, confirma la contraseña.");
       isValid = false;
     }
 
 
-    // Agreement validation
     if (!agreed) {
       setAgreedError("Debes aceptar los términos y condiciones.");
       isValid = false;
@@ -107,22 +102,18 @@ const RegisterForm = ({ endpointUrl = "/api/auth/register" }: Props) => {
       if (error?.response?.status === 422) {
         const errorDetails = error?.response?.data?.detail;
         if (Array.isArray(errorDetails)) {
-          // Múltiples errores de validación de Pydantic
           errorDetails.forEach((err: { loc: string[], msg: string }) => {
             if (err.loc.includes("username")) setNameError(err.msg);
             else if (err.loc.includes("email")) setEmailError(err.msg);
             else if (err.loc.includes("password")) setPwdError(err.msg);
-            // No hay un campo específico para "confirm_password" en el error de Pydantic si falla _match_passwords
-            // pero el validador _match_passwords de Pydantic levanta un ValueError que será el msg general.
             else notifyError(err.msg); 
           });
         } else if (typeof errorDetails === 'string') {
-           // Error de validación único (cadena)
            notifyError(errorDetails);
         }else {
           notifyError("Error de validación. Revisa los datos e inténtalo de nuevo.");
         }
-      } else if (error?.response?.status === 409) { // Conflicto (usuario/email ya existe)
+      } else if (error?.response?.status === 409) {
         notifyError(error?.response?.data?.detail || "El usuario o email ya está registrado.");
       }
        else {

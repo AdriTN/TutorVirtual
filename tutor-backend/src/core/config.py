@@ -36,7 +36,6 @@ class Settings(BaseSettings):
     google_redirect_uri:  str      = Field("", env="GOOGLE_REDIRECT_URI")
 
     # ── Ollama / RAG ─────────────────────────────────────────
-    # We keep this as `str` so we don’t get HttpUrl’s extra slash
     ollama_url:      str           = Field("http://localhost:11434", env="OLLAMA_URL")
     api_key:         Optional[str] = Field(None, env="API_KEY")
     ollama_history_messages_window: PositiveInt = Field(6, env="OLLAMA_HISTORY_MESSAGES_WINDOW")

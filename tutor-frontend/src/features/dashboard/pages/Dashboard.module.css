@@ -1,7 +1,3 @@
-/* ==========================================================================
-   Dashboard – versión basada en la paleta académica global
-   ==========================================================================*/
-
 /* ---------- loader ---------- */
 .loading{
   padding:3rem;
@@ -161,7 +157,7 @@
 
 /* ---------- tarjeta de recomendación ---------- */
 .recoCard{
-  background:linear-gradient(135deg,#bde0fe 0%,#a2d2ff 100%); /* mantiene acento azul suave */
+  background:linear-gradient(135deg,#bde0fe 0%,#a2d2ff 100%);
   color:#033046;
   padding:2rem;
   border-radius:var(--radius-lg);

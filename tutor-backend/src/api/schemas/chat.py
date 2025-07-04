@@ -36,5 +36,5 @@ from typing import Optional
 
 class UserMessageInput(BaseModel):
     message: str
-    exercise_id: int # To identify or create the conversation
-    conversation_id: Optional[int] = None # Optional: if a conversation already exists
+    exercise_id: int
+    conversation_id: Optional[int] = None

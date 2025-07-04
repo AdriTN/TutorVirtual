@@ -1,7 +1,4 @@
 from sqlalchemy.orm import Session
-# Removed: from sqlalchemy.future import select - Not used directly here
-# Removed: from sqlalchemy.ext.asyncio import AsyncSession - Will be handled when DB calls are made async
-# (Keeping Session for now as per plan to defer full async DB)
 
 from src.models.chat import ChatConversation, ChatMessage
 from src.models.user import User
@@ -11,10 +8,11 @@ from src.utils.ollama_client import generate_with_ollama, OllamaNotAvailableErro
 from fastapi import Request, HTTPException
 import structlog
 
-from src.core.config import get_settings # Ensure this is imported once at the top
+from src.core.config import get_settings
 
-settings = get_settings() # Initialize settings once at the top
-logger = structlog.get_logger(__name__) # Initialize logger once at the top
+
+settings = get_settings()
+logger = structlog.get_logger(__name__)
 
 async def get_or_create_conversation(db: Session, user_id: int, exercise_id: int) -> ChatConversation:
     """
@@ -69,7 +67,6 @@ async def process_user_message(
     4. Saves the AI's message.
     5. Returns both messages and the conversation.
     """
-    # 1. Get or create conversation
     if user_message_input.conversation_id:
         conversation = db.query(ChatConversation).get(user_message_input.conversation_id)
         if not conversation or conversation.user_id != user_id or conversation.exercise_id != user_message_input.exercise_id:
@@ -77,7 +74,6 @@ async def process_user_message(
     else:
         conversation = await get_or_create_conversation(db, user_id, user_message_input.exercise_id)
 
-    # 2. Save user's message
     user_chat_message = await add_message_to_conversation(
         db,
         conversation_id=conversation.id,
@@ -85,21 +81,16 @@ async def process_user_message(
         message_text=user_message_input.message
     )
 
-    # 3. Get AI response
     exercise = db.query(Exercise).get(conversation.exercise_id)
     if not exercise:
         raise HTTPException(status_code=404, detail="Exercise not found for this conversation.")
 
-    # Construct messages for Ollama using windowing
     all_messages_in_conversation = db.query(ChatMessage)\
         .filter(ChatMessage.conversation_id == conversation.id)\
         .order_by(ChatMessage.created_at.asc())\
         .all()
 
     messages_for_ollama = []
-    # Apply windowing: take the last N messages. N = settings.ollama_history_messages_window
-    # The user's current message is already included in all_messages_in_conversation.
-    # So, if window is 6, we take the latest 6, which includes the current user message.
     start_index = max(0, len(all_messages_in_conversation) - settings.ollama_history_messages_window)
     windowed_messages = all_messages_in_conversation[start_index:]
 
@@ -125,10 +116,10 @@ async def process_user_message(
     )
 
     ollama_payload = {
-        "model": "profesor", # Or your preferred model
+        "model": "profesor",
         "messages": [
             {"role": "system", "content": prompt_context}
-        ] + messages_for_ollama, # Add windowed messages to the system prompt
+        ] + messages_for_ollama,
         "temperature": 0.7,
     }
 
@@ -139,12 +130,7 @@ async def process_user_message(
 
     if global_ollama_client.is_enabled:
         try:
-            # Check availability before making the call, or rely on the client's internal state.
-            # Forcing a check here can be redundant if the client already knows its state.
-            # if not await global_ollama_client.check_availability(request):
-            #     raise OllamaNotAvailableError("Ollama service check failed before sending message.")
-
-            ai_response_data = await generate_with_ollama(ollama_payload, request) # Uses the global client via wrapper
+            ai_response_data = await generate_with_ollama(ollama_payload, request)
             
             if not ai_response_data.get("choices") or \
                not isinstance(ai_response_data["choices"], list) or \
@@ -152,29 +138,21 @@ async def process_user_message(
                not ai_response_data["choices"][0].get("message") or \
                not ai_response_data["choices"][0]["message"].get("content"):
                 logger.error("Invalid AI response format from Ollama.", received_data=ai_response_data)
-                # Keep default message: "Lo siento, no puedo generar una respuesta en este momento..."
-                # but log that we did get *something* from Ollama.
                 ai_message_text = "Lo siento, la respuesta del asistente de IA no tuvo el formato esperado. Por favor, inténtalo de nuevo."
             else:
                 ai_message_text = ai_response_data["choices"][0]["message"]["content"]
                 ai_response_successful = True
         except OllamaNotAvailableError as e:
             logger.warn("Ollama not available during user message processing.", detail=str(e.detail))
-            # ai_message_text is already set to the default unavailability message
-        except HTTPException as e: # Catch other HTTPExceptions that might be raised by generate_with_ollama
+        except HTTPException as e:
             logger.error("HTTP error while getting AI response", error_detail=str(e.detail), status_code=e.status_code, exc_info=True)
-            # Potentially pass along a more specific error or stick to a generic one.
             ai_message_text = f"Error al comunicarse con el servicio de IA: {e.detail}"
         except Exception as e:
             logger.error("Unexpected error getting AI response", error=str(e), exc_info=True)
-            # ai_message_text is already set to the default unavailability message
-            # Potentially add more specific error message for admins/logs
             ai_message_text = "Lo siento, ocurrió un error inesperado al intentar obtener una respuesta del asistente de IA."
     else:
         logger.warn("Ollama is disabled. Skipping AI response generation.")
-        # ai_message_text is already set to the default "not available" message
 
-    # 4. Save AI's (or placeholder) message
     ai_chat_message = await add_message_to_conversation(
         db,
         conversation_id=conversation.id,

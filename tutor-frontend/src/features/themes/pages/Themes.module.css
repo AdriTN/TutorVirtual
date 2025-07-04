@@ -1,8 +1,4 @@
-/* ==========================================================================
-   Themes Page – layout & búsqueda
-   ==========================================================================*/
-
-/* ------ wrapper para fijar el footer ------ */
+¡/* ------ wrapper para fijar el footer ------ */
 .page{display:flex;flex-direction:column;min-height:100vh}
 .main{flex:1;padding:var(--space-lg) var(--space-md)}
 

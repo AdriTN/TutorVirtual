@@ -23,10 +23,6 @@ const queryClient = new QueryClient({
 /* ────────────── Google OAuth guard ──────────────── */
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 if (!googleClientId) {
-  // Este error es crítico para el funcionamiento de Google Login.
-  // Podríamos lanzar una excepción o mostrar un mensaje muy visible.
-  // Por ahora, mantenemos el console.error, ya que una notificación Toast podría no ser
-  // visible si el resto de la app no puede inicializar.
   console.error(
     "[CRITICAL STARTUP ERROR] Falta VITE_GOOGLE_CLIENT_ID en las variables de entorno. "+
     "El inicio de sesión con Google no funcionará."
