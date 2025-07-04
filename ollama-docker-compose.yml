@@ -1,5 +1,5 @@
 services:
-  open-webui:
+  open-webui2:
     image: ghcr.io/open-webui/open-webui:ollama
     ports:
       - "3000:3000"

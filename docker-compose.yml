@@ -26,6 +26,8 @@ services:
     depends_on:
       tutor_db:
         condition: service_healthy # Espera a que el healthcheck de tutor_db pase
+      # ollama: # Ollama is now an optional dependency
+      #   condition: service_started 
     ports:
       - "8000:8000"
     environment:
@@ -37,6 +39,7 @@ services:
       # JWT_SECRET: "${JWT_SECRET}" # Ejemplo si se carga desde el .env de la raíz de docker-compose
       # Otras variables como GOOGLE_CLIENT_ID, OLLAMA_URL, etc., serán leídas
       # por la aplicación desde su propio tutor-backend/.env.
+      OLLAMA_URL: "http://ollama:11434"
     volumes:
       - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
     command: uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000
@@ -57,5 +60,24 @@ services:
       VITE_BACKEND_URL: "http://localhost:8000"
       # VITE_GOOGLE_CLIENT_ID: "${VITE_GOOGLE_CLIENT_ID}" # Ejemplo si se carga desde el .env raíz
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:3000"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      # - ollama_data:/root/.ollama # No longer needed if OpenWebUI doesn't run its own Ollama
+      - open-webui_data:/app/backend/data # Use the named volume for open-webui data
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
 volumes:
   db_data:
+  open-webui_data: # Define a named volume for open-webui

@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from src.models.chat import ChatConversation, ChatMessage
 from src.models.user import User
 from src.models.exercise import Exercise
-from src.api.schemas.chat import ChatMessageCreate, UserMessageInput # ChatMessageCreate not used here, but fine
-from src.utils.ollama_client import generate_with_ollama
+from src.api.schemas.chat import ChatMessageCreate, UserMessageInput 
+from src.utils.ollama_client import generate_with_ollama, OllamaNotAvailableError, ollama_client as global_ollama_client
 from fastapi import Request, HTTPException
 import structlog
 
@@ -134,16 +134,47 @@ async def process_user_message(
 
     logger.info("Payload a enviar a Ollama", ollama_payload_to_send=ollama_payload)
 
-    try:
-        ai_response_data = await generate_with_ollama(ollama_payload, request)
-        if not ai_response_data.get("choices") or not ai_response_data["choices"][0].get("message"):
-            raise HTTPException(status_code=500, detail="Invalid AI response format.")
-        ai_message_text = ai_response_data["choices"][0]["message"]["content"]
-    except Exception as e:
-        logger.error("Error getting AI response", error=str(e), exc_info=True) # Added more logging
-        raise HTTPException(status_code=500, detail=f"Failed to get AI response: {str(e)}")
+    ai_message_text = "Lo siento, no puedo generar una respuesta en este momento. El servicio de IA no está disponible."
+    ai_response_successful = False
 
-    # 4. Save AI's message
+    if global_ollama_client.is_enabled:
+        try:
+            # Check availability before making the call, or rely on the client's internal state.
+            # Forcing a check here can be redundant if the client already knows its state.
+            # if not await global_ollama_client.check_availability(request):
+            #     raise OllamaNotAvailableError("Ollama service check failed before sending message.")
+
+            ai_response_data = await generate_with_ollama(ollama_payload, request) # Uses the global client via wrapper
+            
+            if not ai_response_data.get("choices") or \
+               not isinstance(ai_response_data["choices"], list) or \
+               len(ai_response_data["choices"]) == 0 or \
+               not ai_response_data["choices"][0].get("message") or \
+               not ai_response_data["choices"][0]["message"].get("content"):
+                logger.error("Invalid AI response format from Ollama.", received_data=ai_response_data)
+                # Keep default message: "Lo siento, no puedo generar una respuesta en este momento..."
+                # but log that we did get *something* from Ollama.
+                ai_message_text = "Lo siento, la respuesta del asistente de IA no tuvo el formato esperado. Por favor, inténtalo de nuevo."
+            else:
+                ai_message_text = ai_response_data["choices"][0]["message"]["content"]
+                ai_response_successful = True
+        except OllamaNotAvailableError as e:
+            logger.warn("Ollama not available during user message processing.", detail=str(e.detail))
+            # ai_message_text is already set to the default unavailability message
+        except HTTPException as e: # Catch other HTTPExceptions that might be raised by generate_with_ollama
+            logger.error("HTTP error while getting AI response", error_detail=str(e.detail), status_code=e.status_code, exc_info=True)
+            # Potentially pass along a more specific error or stick to a generic one.
+            ai_message_text = f"Error al comunicarse con el servicio de IA: {e.detail}"
+        except Exception as e:
+            logger.error("Unexpected error getting AI response", error=str(e), exc_info=True)
+            # ai_message_text is already set to the default unavailability message
+            # Potentially add more specific error message for admins/logs
+            ai_message_text = "Lo siento, ocurrió un error inesperado al intentar obtener una respuesta del asistente de IA."
+    else:
+        logger.warn("Ollama is disabled. Skipping AI response generation.")
+        # ai_message_text is already set to the default "not available" message
+
+    # 4. Save AI's (or placeholder) message
     ai_chat_message = await add_message_to_conversation(
         db,
         conversation_id=conversation.id,
