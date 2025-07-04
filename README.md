@@ -10,8 +10,8 @@ Bienvenido a TutorVirtual, una plataforma educativa diseñada para ofrecer una e
     *   [Variables del Backend (`tutor-backend/.env`)](#variables-del-backend-tutor-backendenv)
     *   [Variables del Frontend (`tutor-frontend/.env`)](#variables-del-frontend-tutor-frontendenv)
 4.  [Pasos para el Despliegue](#pasos-para-el-despliegue)
-    *   [Opción 1: Despliegue desde Repositorio GitHub (Recomendado para usuarios finales)](#opción-1-despliegue-desde-repositorio-github-recomendado-para-usuarios-finales)
-    *   [Opción 2: Despliegue y Desarrollo desde Código Fuente (Para desarrolladores)](#opción-2-despliegue-y-desarrollo-desde-código-fuente-para-desarrolladores)
+    *   [Opción 1: Despliegue desde Repositorio GitHub](#opción-1-despliegue-desde-repositorio-github-recomendado-para-usuarios-finales)
+    *   [Opción 2: Despliegue y Desarrollo desde Código Fuente (Recomendado para el Tribunal TFG)](#opción-2-despliegue-y-desarrollo-desde-código-fuente-para-desarrolladores)
 5.  [Acceder a la Aplicación](#acceder-a-la-aplicación)
 6.  [Detener la Aplicación](#detener-la-aplicación)
 7.  [Gestión y Prioridad de Variables de Entorno en Docker](#gestión-y-prioridad-de-variables-de-entorno-en-docker)
@@ -94,7 +94,7 @@ Antes de iniciar la aplicación, necesitas configurar variables de entorno espec
     *   En `tutor-frontend/`: `cp .env.example .env`
 3.  Edita los archivos `.env` recién creados con tus valores específicos.
 
-**¡Importante!** Los archivos `.env` contienen información sensible y **NUNCA** deben ser subidos a repositorios Git. El archivo `.gitignore` del proyecto ya está configurado para excluirlos.
+**¡Importante!** Los archivos `.env` contienen información sensible y **NUNCA** deben ser subidos a repositorios Git. El archivo `.gitignore` del proyecto ya está configurado para excluirlos. Por esto no adjunto determinados datos reales en el `.env.example`.
 
 ### Variables del Backend (`tutor-backend/.env`)
 
@@ -102,7 +102,7 @@ Edita `tutor-backend/.env` con la siguiente información:
 
 *   `PORT=8000`
     *   **Descripción:** Puerto interno en el que escuchará el servidor FastAPI.
-    *   **Acción:** Generalmente no necesitas cambiarlo.
+    *   **Acción:** No necestia cambios.
 
 *   `DATABASE_URL="postgresql://postgres:Talaveranaranjo7@localhost:5432/tutorvirtual"`
     *   **Descripción:** URL de conexión a PostgreSQL.
@@ -110,11 +110,11 @@ Edita `tutor-backend/.env` con la siguiente información:
 
 *   `JWT_SECRET="...tu_secreto_aqui..."`
     *   **Descripción:** Clave secreta para firmar y verificar JSON Web Tokens (JWT) para la autenticación.
-    *   **Acción:** **¡CRÍTICO!** Reemplaza el valor de ejemplo por una cadena larga, aleatoria y segura. Puedes generar una con: `openssl rand -hex 32`.
+    *   **Acción:** **¡CRÍTICO!** Reemplaza el valor de ejemplo por una cadena larga, aleatoria y segura. Puedes generar una con: `openssl rand -hex 32`, o bien hacer uso de la que se presta en `.env.example`.
 
 *   `GOOGLE_CLIENT_ID="...tu_client_id.apps.googleusercontent.com"`
     *   **Descripción:** ID de Cliente OAuth 2.0 de Google para la funcionalidad "Iniciar sesión con Google".
-    *   **Acción:** Obtén esto desde la [Consola de Google Cloud](https://console.cloud.google.com/apis/credentials) creando credenciales de tipo "ID de cliente de OAuth 2.0" para una "Aplicación web".
+    *   **Acción:** Obtén esto desde la [Consola de Google Cloud](https://console.cloud.google.com/apis/credentials) creando credenciales de tipo "ID de cliente de OAuth 2.0" para una "Aplicación web". No adjunto la mía en este repositorio Git por seguridad.
 
 *   `GOOGLE_CLIENT_SECRET="...tu_google_client_secret..."`
     *   **Descripción:** Secreto de Cliente OAuth 2.0 de Google.
@@ -122,22 +122,20 @@ Edita `tutor-backend/.env` con la siguiente información:
 
 *   `GOOGLE_REDIRECT_URI="http://localhost:5173"`
     *   **Descripción:** URI al que Google redirigirá después de una autenticación exitosa.
-    *   **Acción:** Debe coincidir exactamente con uno de los "URI de redireccionamiento autorizados" configurados en tus credenciales de Google Cloud. Para desarrollo local, `http://localhost:5173` (URL del frontend) es común. Si tu frontend maneja la callback en una ruta específica (ej. `/auth/google/callback`), ajústalo: `http://localhost:5173/auth/google/callback`.
+    *   **Acción:** Debe coincidir exactamente con uno de los "URI de redireccionamiento autorizados" configurados en tus credenciales de Google Cloud. Para desarrollo local, `http://localhost:5173` (URL del frontend) es común.
 
 *   `OLLAMA_URL="http://localhost:3000"`
     *   **Descripción:** URL del servicio Ollama o su interfaz (Open WebUI).
     *   **Acción en Docker:** Este valor es **ignorado** cuando se ejecuta con `docker compose`, ya que `docker-compose.yml` provee `OLLAMA_URL="http://open-webui:8080"` que apunta al servicio Docker de Open WebUI. El valor en `.env` se usaría si ejecutas el backend directamente.
-        *   Para comunicación directa con Ollama dentro de Docker (si lo prefieres): `http://ollama_service:11434`.
 
 *   `API_KEY="...tu_api_key..."`
-    *   **Descripción:** Clave API genérica. El comentario en `.env.example` sugiere su uso para "OpenWeb UI como RAG".
-    *   **Acción:** Verifica la documentación de Open WebUI o de tu implementación RAG para saber si es necesaria, cómo obtenerla y su propósito. Si no es requerida, puedes dejarla vacía o con un placeholder, pero es mejor confirmarlo.
+    *   **Descripción:** Clave API genérica para usar "OpenWeb UI como RAG".
+    *   **Acción:** Verifica la documentación de Open WebUI para saber cómo obtenerla y su propósito.
 
 *   `ADMIN_EMAIL="admin@example.com"`
 *   `ADMIN_USERNAME="admin"`
 *   `ADMIN_PASSWORD="SecureAdminPassword123!"`
-    *   **Descripción:** Credenciales para un usuario administrador inicial (la aplicación podría crearlo automáticamente o puedes usarlo para pruebas).
-    *   **Acción:** **Cambia `ADMIN_PASSWORD` por una contraseña fuerte y única.**
+    *   **Descripción:** Credenciales para un usuario administrador inicial (puedes usarlo para pruebas).
 
 ### Variables del Frontend (`tutor-frontend/.env`)
 
@@ -157,16 +155,15 @@ Edita `tutor-frontend/.env` con la siguiente información:
 
 Elige una de las siguientes opciones para desplegar TutorVirtual.
 
-### Opción 1: Despliegue desde Repositorio GitHub (Recomendado para usuarios finales)
+### Opción 1: Despliegue desde Repositorio GitHub
 
-Esta opción es la más sencilla si solo quieres ejecutar la aplicación.
+Esta opción es la más sencilla si solo quieres ejecutar la aplicación sin posibilidad de realizar ejercicios o ver el chat bot.
 
 1.  **Clonar el Repositorio:**
     ```bash
-    git clone https://github.com/tu_usuario/tu_repositorio.git 
+    git clone https://github.com/AdriTN/TutorVirtual.git 
     cd tu_repositorio 
     ```
-    *(Reemplaza con la URL real del repositorio)*
 
 2.  **Configurar Variables de Entorno:**
     *   Navega a `tutor-backend/` y crea/edita tu archivo `.env` como se describe en la sección [Variables del Backend](#variables-del-backend-tutor-backendenv).
@@ -174,50 +171,47 @@ Esta opción es la más sencilla si solo quieres ejecutar la aplicación.
     *   Regresa al directorio raíz del proyecto.
 
 3.  **(Opcional) Ajustes para Equipos sin GPU:**
-    Si no tienes una GPU NVIDIA, edita el archivo `docker-compose.yml` y comenta o elimina las secciones `deploy` de los servicios `ollama` y `open-webui` como se detalla en la sección [Uso de GPU](#uso-de-gpu-para-ollama-y-open-webui).
+    Si no tienes una GPU NVIDIA, edita el archivo `docker-compose.yml` y comenta o elimina los servicios `ollama` y `open-webui` como se detalla en la sección [Uso de GPU](#uso-de-gpu-para-ollama-y-open-webui).
 
 4.  **Construir y Ejecutar:**
     Desde el directorio raíz del proyecto (donde está `docker-compose.yml`):
     ```bash
-    docker compose up --build -d
+    docker compose up --build
     ```
     *   `--build`: Construye las imágenes si no existen o si los Dockerfiles cambiaron.
-    *   `-d`: Ejecuta en modo "detached" (segundo plano).
     *   La primera vez puede tardar un poco mientras se descargan las imágenes base y se construyen las de la aplicación.
 
 5.  **Acceder a la Aplicación:**
     Consulta la sección [Acceder a la Aplicación](#acceder-a-la-aplicación).
 
-### Opción 2: Despliegue y Desarrollo desde Código Fuente (Para desarrolladores)
+### Opción 2: Despliegue y Desarrollo desde Código Fuente (Recomendado para el Tribunal TFG)
 
-Esta opción es para desarrolladores que quieren modificar el código fuente y ver los cambios reflejados.
+Esta opción es para el Tribunal de este TFG que quiera visualizar la aplicación y probarla.
 
 1.  **Obtener el Código Fuente:**
-    *   Clona el repositorio (si aún no lo has hecho) o asegúrate de tener la última versión del código.
+    *   Clona el repositorio (si aún no lo has hecho).
         ```bash
-        git clone https://github.com/tu_usuario/tu_repositorio.git
+        git clone https://github.com/AdriTN/TutorVirtual.git
         cd tu_repositorio
         ```
-        *(Reemplaza con la URL real del repositorio)*
 
 2.  **Configurar Variables de Entorno:**
-    *   Sigue los mismos pasos que en la "Opción 1" para configurar tus archivos `tutor-backend/.env` y `tutor-frontend/.env`. La explicación detallada de cada variable se encuentra en la sección [Configuración Inicial: Variables de Entorno](#configuración-inicial-variables-de-entorno-env).
+    *   En este caso no hace falta configurar las variables de entorno ya que el `.zip` facilitado con el código fuente hace uso de mis variables de entorno personales. Por favor, **no las difundas**, solo las he compartido por comodidad para las pruebas.
 
 3.  **(Opcional) Ajustes para Equipos sin GPU:**
     *   Si no tienes una GPU NVIDIA, modifica `docker-compose.yml` como se describe en la "Opción 1" y se detalla en la sección [Uso de GPU](#uso-de-gpu-para-ollama-y-open-webui).
 
-4.  **Construir (si es necesario) y Ejecutar:**
+4.  **Construir y Ejecutar:**
     Desde el directorio raíz del proyecto:
     ```bash
     docker compose up --build
     ```
     *   La opción `--build` es importante si has modificado los `Dockerfile` o si es la primera vez que construyes las imágenes.
-    *   Para desarrollo, usualmente se ejecuta sin `-d` para ver los logs de los servicios directamente en la terminal.
     *   **Recarga en Caliente:** Gracias a los volúmenes montados en `docker-compose.yml` (ej. `./tutor-backend:/app`) y a las herramientas de desarrollo (Uvicorn con `--reload` para el backend, Vite HMR para el frontend), los cambios que hagas en el código fuente de `tutor-backend/` o `tutor-frontend/` deberían reflejarse automáticamente en los contenedores en ejecución (el backend se reiniciará, el frontend se actualizará en el navegador).
 
 5.  **Verificar Logs y Estado:**
     *   Si ejecutas sin `-d`, los logs se mostrarán en tu terminal.
-    *   Si ejecutas con `-d`, puedes ver los logs con: `docker compose logs -f` (todos los servicios) o `docker compose logs -f backend` (un servicio específico).
+    *   Si ejecutas con `-d`, puedes ver los logs con: `docker compose logs -f` (todos los servicios) o `docker compose logs -f backend`, `docker compose logs -f frontend` (un servicio específico).
     *   Verifica el estado de los contenedores: `docker compose ps`
 
 6.  **Acceder a la Aplicación:**
@@ -232,6 +226,8 @@ Una vez que los contenedores estén en funcionamiento:
 *   **Frontend (Interfaz Principal):** `http://localhost:5173`
 *   **Backend API (Documentación Swagger/OpenAPI):** `http://localhost:8000/docs`
 *   **Open WebUI (Interfaz para Ollama):** `http://localhost:3000` (si los servicios `ollama` y `open-webui` están activos).
+
+> ***Nota Importante:*** Recuerda que el proyecto se ejecuta en local y que **Open WebUI** requiere de un inicio de sesión.
 
 ---
 
@@ -252,9 +248,7 @@ Una vez que los contenedores estén en funcionamiento:
 
 ## 7. Gestión y Prioridad de Variables de Entorno en Docker
 
-(Esta sección se mantendrá como se desarrolló previamente, explicando la precedencia de .env vs docker-compose.yml variables, etc.)
-
-Comprender cómo se cargan y priorizan las variables de entorno es fundamental para una configuración correcta, especialmente en un entorno Dockerizado.
+Esta sección pretende comprender cómo se cargan y priorizan las variables de entorno para una configuración correcta en un entorno Dockerizado.
 
 *   **Archivos `.env.example` vs. `.env`**:
     *   Los archivos con extensión `.env.example` (ej., `tutor-backend/.env.example`) son **plantillas**. Deben incluirse en el control de versiones (Git) y sirven como guía de las variables requeridas por cada servicio. **No deben contener valores sensibles o secretos reales.**
@@ -286,7 +280,7 @@ Comprender cómo se cargan y priorizan las variables de entorno es fundamental p
     *   Para otras variables específicas de la aplicación (como `JWT_SECRET`, credenciales de Google, `API_KEY`, `ADMIN_*`), estas deben configurarse en los archivos `tutor-backend/.env` y `tutor-frontend/.env` respectivamente, ya que la aplicación las leerá desde allí.
 
 *   **Seguridad de Secretos en Producción**:
-    Para entornos de producción, almacenar secretos directamente en archivos `.env` en el servidor puede no ser la práctica más segura. Considera alternativas más robustas como:
+    Para entornos de producción, almacenar secretos directamente en archivos `.env` en el servidor puede no ser la práctica más segura. Se pueden considera alternativas más robustas como:
     *   **Variables de entorno inyectadas por el sistema host o el orquestador de contenedores:** Por ejemplo, definidas a nivel del sistema operativo del servidor o mediante mecanismos de secretos de plataformas como Kubernetes (Secrets), Docker Swarm (Secrets), o servicios PaaS.
     -   **Servicios de gestión de secretos dedicados:** Herramientas como HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, o Google Cloud Secret Manager proporcionan almacenamiento seguro y gestión centralizada de secretos con control de acceso granular.
 
@@ -294,38 +288,44 @@ Comprender cómo se cargan y priorizan las variables de entorno es fundamental p
 
 ## 8. Notas Adicionales y Consideraciones
 
-*   **Migraciones de Base de Datos (Alembic):**
-    *   El `Dockerfile` de `tutor-backend` utiliza un `entrypoint.sh` que intenta ejecutar `alembic upgrade head`.
-    *   El `command` en `docker-compose.yml` para el servicio `backend` (`uvicorn src.main:create_app ...`) anula el `CMD` del Dockerfile. Para asegurar que las migraciones se ejecuten, el `command` debería ser:
-        ```yaml
-        command: bash -c "alembic upgrade head && uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000"
-        ```
-        *(Ajusta `--reload` para producción).*
-    *   Si no se aplican, ejecuta manualmente: `docker compose exec backend alembic upgrade head`.
-
-*   **Configuración para Desarrollo vs. Producción:**
-    *   **Recarga Automática (`--reload`):** Elimina `--reload` de Uvicorn en producción.
-    *   **Montaje de Volúmenes de Código:** En producción, el código debe copiarse a la imagen (quita los montajes de volumen de código fuente).
-    *   **Modo Debug:** Desactiva cualquier modo debug en FastAPI/Vite.
-
-*   **Conexión a `OLLAMA_URL`:**
-    *   Por defecto, el backend usa `OLLAMA_URL: "http://open-webui:8080"` (vía `docker-compose.yml`).
-    *   Para conexión directa a Ollama: cambia a `OLLAMA_URL: "http://ollama_service:11434"` en `docker-compose.yml` para el servicio backend.
-
 *   **Archivo `ollama-docker-compose.yml`:**
-    *   Este archivo parece redundante. Se recomienda usar el `docker-compose.yml` principal. Considera eliminar `ollama-docker-compose.yml` o documentar claramente su propósito específico si se conserva.
+    *   Este archivo sirve para desplegar en el host local el servicio de Open WebUI. Esto es para facilitar el desarrollo del programa.
 
 *   **Uso de GPU para Ollama y Open WebUI:**
     *   Los servicios `ollama` y `open-webui` están configurados para GPUs NVIDIA.
-    *   **Sin GPU NVIDIA:** **Comenta o elimina la sección `deploy` completa** en *ambos* servicios en `docker-compose.yml` para usar CPU.
+    *   **Sin GPU NVIDIA:** **Comenta o elimina los servicios `ollama` y `open-webui` completas** para usar CPU.
         ```yaml
-        # deploy:
-        #   resources:
-        #     reservations:
-        #       devices:
-        #         - driver: nvidia
-        #           count: all
-        #           capabilities: [gpu]
+        #  ollama:
+        #    image: ollama/ollama
+        #    container_name: ollama_service
+        #    ports:
+        #    - "11434:11434"
+        #    volumes:
+        #    - ollama_data:/root/.ollama
+        #    restart: always
+        #    deploy:
+        #    resources:
+        #        reservations:
+        #        devices:
+        #            - driver: nvidia
+        #            count: all
+        #            capabilities: [gpu]
+
+        #  open-webui:
+        #      image: ghcr.io/open-webui/open-webui:ollama
+        #      ports:
+        #      - "3000:8080"
+        #      volumes:
+        #      - ./ollama:/root/.ollama
+        #      - ./open-webui:/app/backend/data
+        #      restart: always
+        #      deploy:
+        #      resources:
+        #          reservations:
+        #          devices:
+        #              - driver: nvidia
+        #              count: all
+        #              capabilities: [gpu]
         ```
 
 *   **Persistencia de Datos:**
