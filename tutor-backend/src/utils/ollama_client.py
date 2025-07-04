@@ -171,22 +171,23 @@ class OllamaClient:
                         limits=httpx.Limits(max_connections=20, max_keepalive_connections=15),
                     )
                 
-                full_url = self.base_url.rstrip("/") + "/api/chat/completions"
+                # Target Open WebUI's OpenAI-compatible endpoint
+                full_url = self.base_url.rstrip("/") + "api/chat/completions" 
                 r = await self._client.post(full_url, json=final_payload, headers=headers)
                 r.raise_for_status()
-                log.info("Ollama API call successful", status=r.status_code, url=full_url)
+                log.info("API call to Open WebUI successful", status=r.status_code, url=full_url)
                 return r.json()
 
             except httpx.ReadTimeout:
-                log.warning("Ollama chat completion timeout", attempt=attempt, url=full_url if 'full_url' in locals() else chat_endpoint)
+                log.warning("Open WebUI chat completion timeout", attempt=attempt, url=full_url if 'full_url' in locals() else "api/chat/completions")
                 if attempt == 3:
                     self.is_enabled = False # Disable on persistent timeout
-                    log.error("Ollama disabled due to persistent timeout.")
-                    raise OllamaNotAvailableError("Ollama service timed out after several attempts.")
+                    log.error("Open WebUI disabled due to persistent timeout.")
+                    raise OllamaNotAvailableError("Open WebUI service timed out after several attempts.")
             except httpx.ConnectError:
-                log.error("Ollama chat completion connection error", attempt=attempt, url=full_url if 'full_url' in locals() else chat_endpoint)
+                log.error("Open WebUI chat completion connection error", attempt=attempt, url=full_url if 'full_url' in locals() else "api/chat/completions")
                 self.is_enabled = False # Disable on connection error
-                log.error("Ollama disabled due to connection error.")
+                log.error("Open WebUI disabled due to connection error.")
                 raise OllamaNotAvailableError("Failed to connect to Ollama service.")
             except httpx.HTTPStatusError as exc:
                 error_body = None

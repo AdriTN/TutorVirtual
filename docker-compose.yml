@@ -39,7 +39,7 @@ services:
       # JWT_SECRET: "${JWT_SECRET}" # Ejemplo si se carga desde el .env de la raíz de docker-compose
       # Otras variables como GOOGLE_CLIENT_ID, OLLAMA_URL, etc., serán leídas
       # por la aplicación desde su propio tutor-backend/.env.
-      OLLAMA_URL: "http://ollama:11434"
+      OLLAMA_URL: "http://open-webui:8080/ollama"
     volumes:
       - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
     command: uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000
@@ -60,15 +60,29 @@ services:
       VITE_BACKEND_URL: "http://localhost:8000"
       # VITE_GOOGLE_CLIENT_ID: "${VITE_GOOGLE_CLIENT_ID}" # Ejemplo si se carga desde el .env raíz
 
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:main
+  ollama:
+    image: ollama/ollama
+    container_name: ollama_service
     ports:
-      - "3000:3000"
-    environment:
-      OLLAMA_BASE_URL: http://ollama:11434
+      - "11434:11434"
     volumes:
-      # - ollama_data:/root/.ollama # No longer needed if OpenWebUI doesn't run its own Ollama
-      - open-webui_data:/app/backend/data # Use the named volume for open-webui data
+      - ollama_data:/root/.ollama
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:ollama
+    ports:
+      - "3000:8080"
+    volumes:
+      - ./ollama:/root/.ollama
+      - ./open-webui:/app/backend/data
     restart: always
     deploy:
       resources:
@@ -80,4 +94,5 @@ services:
 
 volumes:
   db_data:
-  open-webui_data: # Define a named volume for open-webui
+  open-webui_data:
+  ollama_data:
