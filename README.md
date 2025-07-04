@@ -228,8 +228,8 @@ Una vez que los contenedores estén en funcionamiento:
 *   **Backend API (Documentación Swagger/OpenAPI):** `http://localhost:8000/docs`
 *   **Open WebUI (Interfaz para Ollama):** `http://localhost:3000` (si los servicios `ollama` y `open-webui` están activos).
 
-> [!NOTA]
-> Recuerda que el proyecto se ejecuta en local y que **Open WebUI** requiere de un inicio de sesión.
+> [!NOTE]
+> **Nota:** Recuerda que el proyecto se ejecuta en local y que **Open WebUI** requiere de un inicio de sesión.
 
 ---
 
@@ -394,5 +394,5 @@ Esta sección describe los pasos recomendados para que un miembro del tribunal d
 
 Este flujo permite probar la creación de la estructura educativa básica y la funcionalidad de generación de ejercicios basada en IA.
 
-> [!NOTA]
-> Es importante crear el tema de ejemplo mencionado (**Números Naturales**), ya que el modelos está entrenado únicamente para ejercicios relacionados con dicho tema.
+> [!NOTE]
+> **Nota:** Es importante crear el tema de ejemplo mencionado (**Números Naturales**), ya que el modelos está entrenado únicamente para ejercicios relacionados con dicho tema.
