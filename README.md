@@ -328,6 +328,9 @@ Esta sección pretende comprender cómo se cargan y priorizan las variables de e
         #              - driver: nvidia
         #              count: all
         #              capabilities: [gpu]
+
+        #    open-webui_data:
+        #    ollama_data:
         ```
 
 *   **Persistencia de Datos:**
