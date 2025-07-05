@@ -58,7 +58,7 @@ def test_setup_logging_default_level_and_handler_and_formatter(monkeypatch):
     assert handler.formatter._fmt == fmt
 
     # 4) structlog.configure recibió el wrapper_class correcto
-    assert recorded["wrapper_class"] == "WRAPPER_INFO"
+    assert recorded["wrapper_class"] == f"WRAPPER_{logging.INFO}"
 
     # 5) Y la lista de processors en el orden exacto
     procs = recorded["processors"]
@@ -93,12 +93,12 @@ def test_setup_logging_custom_level_changes_root_and_wrapper(monkeypatch, level_
         lambda **kw: recorded.update(kw)
     )
 
-    core_logging.setup_logging(level=level_name)
+    core_logging.setup_logging(level_name=level_name)
 
     # El nivel del root logger coincide con la constante
     assert logging.root.level == level_const
     # Y el wrapper_class fue invocado con ese nivel
-    assert recorded["wrapper_class"] == f"WRAPPER_{level_name}"
+    assert recorded["wrapper_class"] == f"WRAPPER_{level_const}"
 
 
 def test_basicconfig_no_duplicates_on_repeated_calls(monkeypatch):
@@ -125,7 +125,7 @@ def test_logging_output_format(capsys):
     # parcheamos structlog para no interferir
     structlog.configure = lambda **kw: None
 
-    core_logging.setup_logging(level="ERROR")
+    core_logging.setup_logging(level_name="ERROR")
     logger = logging.getLogger("mi.test")
     logger.error("¡Fallo!")  # debe imprimirse en stdout
 

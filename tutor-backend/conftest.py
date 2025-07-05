@@ -78,7 +78,7 @@ from src.api.dependencies import auth as auth_src
 # ───────────── 4) Vars de entorno mínimas ────────────────
 @pytest.fixture(scope="session", autouse=True)
 def _min_env_vars():
-    os.environ.setdefault("DATABASE_URL", "sqlite://")
+    os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost/testdb")
     os.environ.setdefault("JWT_SECRET", "x" * 32)
     os.environ.setdefault("OLLAMA_URL", "http://localhost")
     yield
@@ -179,6 +179,7 @@ def reset_root_logger():
 def _clean_db(db_session: Session):
     """Después de cada test borra todas las filas de todas las tablas."""
     yield
+    db_session.rollback()  # Asegurar que la sesión esté limpia de estados anteriores
     for table in reversed(Base.metadata.sorted_tables):
         db_session.execute(table.delete())
     db_session.commit()

@@ -37,17 +37,17 @@ class DummyResponse:
             raise httpx.HTTPStatusError("HTTP error", request=None, response=self)
 
 
-class DummyClientFactory:
+class AsyncDummyClientFactory:  # Renombrado y adaptado para async
     def __init__(self, *args, responses):
         self._responses = list(responses)
 
-    def __enter__(self):
+    async def __aenter__(self): # Context manager asíncrono
         return self
 
-    def __exit__(self, exc_type, exc, tb):
+    async def __aexit__(self, exc_type, exc, tb): # Context manager asíncrono
         return False
 
-    def post(self, url, json, headers):
+    async def post(self, url, json, headers): # Método post asíncrono
         resp = self._responses.pop(0)
         if isinstance(resp, Exception):
             raise resp
@@ -56,41 +56,42 @@ class DummyClientFactory:
 
 @pytest.fixture(autouse=True)
 def no_real_http(monkeypatch):
-    # Bloquea cualquier httpx.Client no mockeado
+    # Bloquea cualquier httpx.AsyncClient no mockeado
+    async def mock_error_client(*args, **kwargs):
+        raise RuntimeError("httpx.AsyncClient no mockeado en este test")
+    
     monkeypatch.setattr(
         httpx,
-        "Client",
-        lambda *args, **kwargs: (_ for _ in ()).throw(
-            RuntimeError("httpx.Client no mockeado en este test")
-        )
+        "AsyncClient",  # Mockear AsyncClient
+        mock_error_client
     )
     yield
 
 
-def test_success(monkeypatch):
+async def test_success(monkeypatch): # Convertido a async
     payload = {"foo": "bar"}
     expected = {"reply": "ok"}
 
     resp = DummyResponse(200, json_data=expected)
     monkeypatch.setattr(
         httpx,
-        "Client",
-        lambda *args, **kwargs: DummyClientFactory(responses=[resp])
+        "AsyncClient",  # Mockear AsyncClient
+        lambda *args, **kwargs: AsyncDummyClientFactory(responses=[resp])
     )
 
-    out = generate_with_ollama(payload, request=DummyRequest("req-1"))
+    out = await generate_with_ollama(payload, request=DummyRequest("req-1")) # Añadido await
     assert out == expected
 
 
-def test_timeout_then_success(monkeypatch):
+async def test_timeout_then_success(monkeypatch): # Convertido a async
     payload = {"q": "test"}
     expected = {"answer": 42}
 
     resp_ok = DummyResponse(200, json_data=expected)
     monkeypatch.setattr(
         httpx,
-        "Client",
-        lambda *args, **kwargs: DummyClientFactory(
+        "AsyncClient",  # Mockear AsyncClient
+        lambda *args, **kwargs: AsyncDummyClientFactory(
             responses=[
                 httpx.ReadTimeout("timeout"),
                 httpx.ReadTimeout("timeout"),
@@ -99,25 +100,25 @@ def test_timeout_then_success(monkeypatch):
         )
     )
 
-    out = generate_with_ollama(payload, request=DummyRequest("req-2"))
+    out = await generate_with_ollama(payload, request=DummyRequest("req-2")) # Añadido await
     assert out == expected
 
 
-def test_http_status_error_bubbles_up(monkeypatch):
+async def test_http_status_error_bubbles_up(monkeypatch): # Convertido a async
     payload = {"hello": "world"}
 
     resp_500 = DummyResponse(500)
     monkeypatch.setattr(
         httpx,
-        "Client",
-        lambda *args, **kwargs: DummyClientFactory(responses=[resp_500])
+        "AsyncClient",  # Mockear AsyncClient
+        lambda *args, **kwargs: AsyncDummyClientFactory(responses=[resp_500])
     )
 
     with pytest.raises(httpx.HTTPStatusError):
-        generate_with_ollama(payload, request=DummyRequest("req-3"))
+        await generate_with_ollama(payload, request=DummyRequest("req-3")) # Añadido await
 
 
-def test_authorization_header(monkeypatch):
+async def test_authorization_header(monkeypatch): # Convertido a async
     payload = {"x": "y"}
     expected = {"ok": True}
 
@@ -126,42 +127,43 @@ def test_authorization_header(monkeypatch):
 
     captured = {}
 
-    class CaptureClient(DummyClientFactory):
-        def post(self, url, json, headers):
+    class CaptureClient(AsyncDummyClientFactory): # Hereda de AsyncDummyClientFactory
+        async def post(self, url, json, headers): # Convertido a async
             captured["headers"] = headers
-            return super().post(url, json, headers)
+            return await super().post(url, json, headers) # Usa await
 
     resp = DummyResponse(200, json_data=expected)
     monkeypatch.setattr(
         httpx,
-        "Client",
+        "AsyncClient", # Mockear AsyncClient
         lambda *args, **kwargs: CaptureClient(responses=[resp])
     )
 
-    out = generate_with_ollama(payload, request=None)
+    out = await generate_with_ollama(payload, request=None) # Añadido await
     assert out == expected
     assert "Authorization" in captured["headers"]
     assert captured["headers"]["Authorization"] == f"Bearer {settings.api_key}"
 
 
-def test_no_api_key_header(monkeypatch):
+async def test_no_api_key_header(monkeypatch):
     payload = {"z": "w"}
 
     settings.api_key = None
 
     captured = {}
 
-    class CaptureClient(DummyClientFactory):
-        def post(self, url, json, headers):
+    class CaptureClient(AsyncDummyClientFactory): # Hereda de AsyncDummyClientFactory
+        async def post(self, url, json, headers): # Convertido a async
             captured["headers"] = headers.copy()
+            # No es necesario llamar a super() si siempre devuelve una nueva DummyResponse
             return DummyResponse(200, json_data={"foo": "bar"})
 
     monkeypatch.setattr(
         httpx,
-        "Client",
+        "AsyncClient", # Mockear AsyncClient
         lambda *args, **kwargs: CaptureClient(responses=[DummyResponse(200, {"foo": "bar"})])
     )
 
-    out = generate_with_ollama(payload)
+    out = await generate_with_ollama(payload) # Añadido await
     assert out == {"foo": "bar"}
     assert "Authorization" not in captured["headers"]

@@ -38,8 +38,9 @@ def insert_theme(db_session, name="Números naturales", description="Tema de pru
 ])
 def test_ollama_http_error_bubbles_up(client, monkeypatch, raise_exc, status_code):
     # Simulamos que generate_with_ollama lanza HTTPError
-    monkeypatch.setattr(ai_module, "generate_with_ollama",
-                        lambda payload: (_ for _ in ()).throw(raise_exc))
+    async def mock_generate_with_ollama_http_error(payload):
+        raise raise_exc
+    monkeypatch.setattr(ai_module, "generate_with_ollama", mock_generate_with_ollama_http_error)
 
     resp = client.post("/api/ai/request", json={
         "model": "m",
@@ -52,8 +53,9 @@ def test_ollama_http_error_bubbles_up(client, monkeypatch, raise_exc, status_cod
 
 def test_invalid_json_response(client, monkeypatch):
     # Simulamos respuesta válida HTTP, pero content no es JSON
-    monkeypatch.setattr(ai_module, "generate_with_ollama",
-                        lambda payload: {"choices": [{"message": {"content": "no-json"}}]})
+    async def mock_generate_with_ollama_invalid_json(payload):
+        return {"choices": [{"message": {"content": "no-json"}}]}
+    monkeypatch.setattr(ai_module, "generate_with_ollama", mock_generate_with_ollama_invalid_json)
 
     resp = client.post("/api/ai/request", json={
         "model": "m",
@@ -73,8 +75,9 @@ def test_theme_not_found(client, monkeypatch):
         "respuesta": "42",
         "explicacion": ""
     }
-    monkeypatch.setattr(ai_module, "generate_with_ollama",
-                        lambda payload: {"choices": [{"message": {"content": json.dumps(data)}}]})
+    async def mock_generate_with_ollama_theme_not_found(payload):
+        return {"choices": [{"message": {"content": json.dumps(data)}}]}
+    monkeypatch.setattr(ai_module, "generate_with_ollama", mock_generate_with_ollama_theme_not_found)
 
     resp = client.post("/api/ai/request", json={
         "model": "m",
@@ -98,8 +101,9 @@ def test_success_path(client, db_session, monkeypatch):
         "respuesta": "4",
         "explicacion": "Suma sencilla"
     }
-    monkeypatch.setattr(ai_module, "generate_with_ollama",
-                        lambda payload: {"choices": [{"message": {"content": json.dumps(data)}}]})
+    async def mock_generate_with_ollama_success(payload):
+        return {"choices": [{"message": {"content": json.dumps(data)}}]}
+    monkeypatch.setattr(ai_module, "generate_with_ollama", mock_generate_with_ollama_success)
 
     resp = client.post("/api/ai/request", json={
         "model": "m",
