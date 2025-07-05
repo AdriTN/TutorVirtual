@@ -4,7 +4,7 @@ services:
     container_name: tutor_db
     restart: always
     environment:
-      POSTGRES_USER: postgres # Asegúrate que este usuario y BD coincidan con DATABASE_URL y el healthcheck
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: tutorvirtual
     ports:
@@ -19,29 +19,21 @@ services:
 
   backend:
     build:
-      context: ./tutor-backend   # El Dockerfile está dentro de "tutor-backend"
+      context: ./tutor-backend
       dockerfile: Dockerfile
     container_name: tutor_backend
     restart: always
     depends_on:
       tutor_db:
-        condition: service_healthy # Espera a que el healthcheck de tutor_db pase
-      # ollama: # Ollama is now an optional dependency
-      #   condition: service_started 
+        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
-      # Estas variables se pueden definir aquí o, preferiblemente,
-      # cargarse desde un archivo .env en la raíz del proyecto backend
-      # (tutor-backend/.env) ya que la aplicación FastAPI (config.py) lo lee.
-      # DATABASE_URL es crucial para que el backend se conecte a la BD de Docker.
       DATABASE_URL: "postgresql://postgres:postgres@tutor_db:5432/tutorvirtual"
-      # JWT_SECRET: "${JWT_SECRET}" # Ejemplo si se carga desde el .env de la raíz de docker-compose
-      # Otras variables como GOOGLE_CLIENT_ID, OLLAMA_URL, etc., serán leídas
-      # por la aplicación desde su propio tutor-backend/.env.
+
       OLLAMA_URL: "http://open-webui:8080"
     volumes:
-      - ./tutor-backend:/app  # Monta el código local, incluyendo tutor-backend/.env si existe
+      - ./tutor-backend:/app
     command: uvicorn src.main:create_app --factory --reload --host 0.0.0.0 --port 8000
   
   frontend:
@@ -50,15 +42,12 @@ services:
       dockerfile: Dockerfile
     container_name: tutor_frontend
     ports:
-      - "5173:5173" # Asegurar que el puerto expuesto sea 5173
+      - "5173:5173"
     depends_on:
       - backend
     environment:
-      # El frontend también puede necesitar un .env en su raíz (tutor-frontend/.env)
-      # para cargar variables como VITE_GOOGLE_CLIENT_ID.
-      # VITE_BACKEND_URL se pasa aquí para asegurar que el frontend sepa dónde está el backend.
+
       VITE_BACKEND_URL: "http://localhost:8000"
-      # VITE_GOOGLE_CLIENT_ID: "${VITE_GOOGLE_CLIENT_ID}" # Ejemplo si se carga desde el .env raíz
 
   ollama:
     image: ollama/ollama
